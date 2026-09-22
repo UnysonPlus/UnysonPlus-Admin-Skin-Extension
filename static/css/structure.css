@@ -1,0 +1,1931 @@
+/**
+ * UnysonPlus Admin Skin — structure layer.
+ *
+ * Restyles the wp-admin skeleton without changing its markup or its layout
+ * mechanics (folding, responsive off-canvas, sticky menu): the admin menu
+ * becomes a grouped sidebar, the admin bar a slim top bar, #wpcontent a
+ * max-width canvas. Everything reads the --upa-* tokens the extension inlines
+ * from the active skin.json, so a skin never has to touch this file.
+ */
+
+/* ---------------------------------------------------------------------------
+ * Base
+ * ------------------------------------------------------------------------ */
+
+html.wp-toolbar {
+	padding-top: var(--upa-bar-h, 52px) !important;
+	background: var(--upa-bg);
+}
+
+body.upa {
+	font-family: var(--upa-font-ui);
+	font-size: var(--upa-font-size, 14px);
+	line-height: var(--upa-line-height, 1.5);
+	letter-spacing: var(--upa-tracking, 0);
+	color: var(--upa-text);
+	background: var(--upa-bg);
+	-webkit-font-smoothing: antialiased;
+}
+
+body.upa #wpwrap {
+	background: var(--upa-bg);
+}
+
+body.upa code,
+body.upa kbd,
+body.upa pre,
+body.upa textarea.code,
+body.upa .code {
+	font-family: var(--upa-font-mono);
+}
+
+body.upa a {
+	color: var(--upa-accent);
+}
+
+body.upa a:hover,
+body.upa a:focus {
+	color: var(--upa-accent2);
+}
+
+body.upa :focus-visible {
+	outline: 2px solid var(--upa-accent);
+	outline-offset: 1px;
+	box-shadow: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Sidebar (#adminmenu)
+ * ------------------------------------------------------------------------ */
+
+body.upa #adminmenuback,
+body.upa #adminmenuwrap,
+body.upa #adminmenu,
+body.upa #adminmenu .wp-submenu {
+	width: var(--upa-sidebar-w, 248px);
+}
+
+body.upa #adminmenuback {
+	background: var(--upa-bg2);
+	border-right: 1px solid var(--upa-border);
+	top: 0;
+}
+
+/* Full height: the sidebar owns the top-left corner (brand block) and sits
+ * above the bar there; the bar itself starts at the sidebar's edge. */
+body.upa #adminmenuwrap {
+	position: fixed !important;
+	top: 0 !important;
+	bottom: 0;
+	left: 0;
+	display: flex;
+	flex-direction: column;
+	background: var(--upa-bg2);
+	border-right: 1px solid var(--upa-border);
+	z-index: 100000;
+}
+
+body.upa #adminmenu {
+	flex: 1 1 auto;
+	margin: 0;
+	padding: 6px 12px 12px;
+	box-sizing: border-box;
+	overflow-y: auto;
+	overflow-x: hidden;
+	overscroll-behavior: contain;
+	scrollbar-width: thin;
+	scrollbar-color: var(--upa-border2) transparent;
+}
+
+body.upa #adminmenu,
+body.upa #adminmenu .wp-submenu,
+body.upa #adminmenuback,
+body.upa #adminmenuwrap {
+	background-color: var(--upa-bg2);
+}
+
+body.upa #wpcontent,
+body.upa #wpfooter {
+	margin-left: var(--upa-sidebar-w, 248px);
+}
+
+/* Brand block (injected) */
+.upa-brand {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0 10px 0 16px;
+	height: var(--upa-bar-h, 52px);
+	box-sizing: border-box;
+	border-bottom: 1px solid var(--upa-border);
+	margin-bottom: 8px;
+	color: var(--upa-text);
+}
+
+.upa-brand-link {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	text-decoration: none;
+	color: var(--upa-text);
+}
+
+.upa-brand-link:hover,
+.upa-brand-link:focus {
+	color: var(--upa-text);
+}
+
+.upa-brand-visit {
+	flex: 0 0 auto;
+}
+
+.upa-brand-mark {
+	flex: 0 0 auto;
+	width: 30px;
+	height: 30px;
+	border-radius: var(--upa-radius-sm, 6px);
+	background: var(--upa-accent);
+	color: var(--upa-accent-fg);
+	display: grid;
+	place-items: center;
+	font-weight: 700;
+	font-size: 15px;
+	overflow: hidden;
+}
+
+.upa-brand-mark.has-icon {
+	width: 34px;
+	height: 34px;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	box-sizing: border-box;
+	padding: 2px;
+}
+
+.upa-brand-mark img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	display: block;
+	border-radius: 4px;
+}
+
+.upa-brand-name {
+	font-weight: 650;
+	font-size: 14.5px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-width: 0;
+}
+
+/* Sidebar search (injected) */
+.upa-search {
+	position: relative;
+	margin: 2px 12px 8px;
+}
+
+body.upa .upa-search input[type="search"] {
+	width: 100%;
+	height: 34px;
+	padding: 0 32px 0 34px;
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	background: var(--upa-panel2);
+	color: var(--upa-text);
+	font: inherit;
+	font-size: 13px;
+	box-shadow: none;
+	margin: 0;
+}
+
+body.upa .upa-search input[type="search"]:focus {
+	border-color: var(--upa-accent);
+	box-shadow: 0 0 0 3px var(--upa-accent-ring);
+	outline: none;
+}
+
+.upa-search input::placeholder {
+	color: var(--upa-text3);
+}
+
+.upa-search svg {
+	position: absolute;
+	left: 11px;
+	top: 50%;
+	width: 15px;
+	height: 15px;
+	transform: translateY(-50%);
+	color: var(--upa-text3);
+	pointer-events: none;
+}
+
+.upa-search kbd {
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-family: var(--upa-font-ui);
+	font-size: 10.5px;
+	color: var(--upa-text3);
+	border: 1px solid var(--upa-border);
+	border-radius: 5px;
+	padding: 1px 5px;
+	background: var(--upa-bg2);
+}
+
+.upa-search-empty {
+	display: none;
+	padding: 8px 12px;
+	font-size: 12.5px;
+	color: var(--upa-text3);
+}
+
+/* Group headings (injected) */
+body.upa #adminmenu li.upa-group-label {
+	margin: 14px 0 4px;
+	padding: 0 10px;
+	font-size: 10.5px;
+	font-weight: 650;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--upa-text3);
+	pointer-events: none;
+}
+
+body.upa #adminmenu li.upa-group-label:first-child {
+	margin-top: 4px;
+}
+
+body.upa #adminmenu li.wp-menu-separator {
+	display: none;
+}
+
+/* Top-level items */
+body.upa #adminmenu li.menu-top {
+	margin: 1px 0;
+	min-height: 0;
+}
+
+body.upa #adminmenu li.menu-top > a,
+body.upa #adminmenu a.menu-top {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-height: 0;
+	padding: 7px 10px;
+	border-radius: var(--upa-radius, 9px);
+	color: var(--upa-text2);
+	font-size: 13.5px;
+	font-weight: 500;
+	line-height: 1.3;
+	transition: background-color .12s ease, color .12s ease;
+}
+
+body.upa #adminmenu li.menu-top:hover > a,
+body.upa #adminmenu li.menu-top > a:focus,
+body.upa #adminmenu li.opensub > a.menu-top,
+body.upa #adminmenu li.upa-open > a.menu-top,
+body.upa #adminmenu li > a.menu-top:focus {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+	box-shadow: none;
+}
+
+body.upa #adminmenu li.wp-has-current-submenu > a.menu-top,
+body.upa #adminmenu li.current > a.menu-top,
+body.upa #adminmenu li.wp-has-current-submenu:hover > a.menu-top,
+body.upa #adminmenu a.current:hover {
+	background: var(--upa-accent-soft);
+	color: var(--upa-accent);
+	font-weight: 600;
+}
+
+body.upa #adminmenu li.menu-top,
+body.upa #adminmenu li.menu-top:hover,
+body.upa #adminmenu li.opensub,
+body.upa #adminmenu li.wp-has-current-submenu,
+body.upa #adminmenu li.current {
+	background: transparent !important;
+	box-shadow: none !important;
+}
+
+body.upa #adminmenu li.menu-top:after,
+body.upa #adminmenu li.menu-top:before,
+body.upa #adminmenu li.opensub:after,
+body.upa #adminmenu li.wp-has-current-submenu:after,
+body.upa #adminmenu li.menu-top > a.menu-top:after,
+body.upa #adminmenu li.wp-has-current-submenu > a.menu-top:after,
+body.upa #adminmenu li.current > a.menu-top:after,
+body.upa #adminmenu li.opensub > a.menu-top:after,
+body.upa #adminmenu li.menu-top:hover > a.menu-top:after,
+body.upa #adminmenu .wp-menu-arrow,
+body.upa #adminmenu .wp-menu-arrow div {
+	display: none !important;
+}
+
+body.upa #adminmenu .wp-menu-image {
+	float: none;
+	width: 18px;
+	height: 18px;
+	flex: 0 0 18px;
+	display: grid;
+	place-items: center;
+	color: currentColor;
+	opacity: .85;
+}
+
+body.upa #adminmenu .wp-menu-image:before {
+	padding: 0;
+	font-size: 18px;
+	line-height: 1;
+	color: currentColor;
+	width: auto;
+	height: auto;
+}
+
+body.upa #adminmenu .wp-menu-image img {
+	width: 18px;
+	height: 18px;
+	padding: 0;
+	opacity: .85;
+	filter: none;
+}
+
+body.upa #adminmenu li.wp-has-current-submenu .wp-menu-image,
+body.upa #adminmenu li.current .wp-menu-image {
+	opacity: 1;
+}
+
+body.upa #adminmenu .wp-menu-image.svg {
+	background-size: 18px auto !important;
+	background-position: center !important;
+	opacity: .8;
+}
+
+html[data-upa-mode="dark"] body.upa #adminmenu .wp-menu-image.svg,
+html[data-upa-mode="dark"] body.upa #adminmenu .wp-menu-image img {
+	filter: invert(1) brightness(1.6);
+}
+
+@media (prefers-color-scheme: dark) {
+	html[data-upa-mode="system"] body.upa #adminmenu .wp-menu-image.svg,
+	html[data-upa-mode="system"] body.upa #adminmenu .wp-menu-image img {
+		filter: invert(1) brightness(1.6);
+	}
+}
+
+body.upa #adminmenu .wp-menu-name {
+	flex: 1 1 auto;
+	padding: 0;
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* Count badges (updates, comments, plugins) */
+body.upa #adminmenu .awaiting-mod,
+body.upa #adminmenu .update-plugins,
+body.upa #adminmenu .menu-counter {
+	margin-left: auto;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 6px;
+	border-radius: 999px;
+	background: var(--upa-accent-soft);
+	color: var(--upa-accent);
+	font-size: 10.5px;
+	font-weight: 700;
+	line-height: 18px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	vertical-align: middle;
+}
+
+body.upa #adminmenu .awaiting-mod.count-0,
+body.upa #adminmenu .update-plugins.count-0 {
+	display: none;
+}
+
+body.upa #adminmenu .wp-menu-name .awaiting-mod,
+body.upa #adminmenu .wp-menu-name .update-plugins {
+	margin-left: auto;
+}
+
+body.upa #adminmenu li.wp-has-current-submenu .awaiting-mod,
+body.upa #adminmenu li.wp-has-current-submenu .update-plugins,
+body.upa #adminmenu li.current .awaiting-mod {
+	background: var(--upa-accent);
+	color: var(--upa-accent-fg);
+}
+
+/* Submenus: inline under the current item, floating card elsewhere */
+body.upa #adminmenu .wp-submenu,
+body.upa #adminmenu li.wp-has-current-submenu .wp-submenu,
+body.upa #adminmenu li.opensub .wp-submenu,
+body.upa #adminmenu li.wp-menu-open .wp-submenu,
+body.upa #adminmenu .wp-submenu li,
+body.upa #adminmenu .wp-submenu li:hover {
+	background: transparent !important;
+}
+
+body.upa #adminmenu .wp-submenu {
+	width: auto;
+	margin: 0;
+	padding: 4px 0 6px 0;
+	background: transparent;
+	box-shadow: none;
+	border: 0;
+}
+
+body.upa #adminmenu .wp-submenu-head {
+	display: none;
+}
+
+body.upa #adminmenu .wp-submenu a {
+	display: block;
+	padding: 5px 10px 5px 38px;
+	margin: 1px 0;
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text2);
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+body.upa #adminmenu .wp-submenu a:hover,
+body.upa #adminmenu .wp-submenu a:focus {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+	box-shadow: none;
+}
+
+body.upa #adminmenu .wp-submenu li.current a,
+body.upa #adminmenu .wp-submenu a.current,
+body.upa #adminmenu .wp-submenu li.current a:hover {
+	color: var(--upa-accent);
+	font-weight: 600;
+	background: transparent;
+}
+
+body.upa #adminmenu .wp-submenu li.current a:before {
+	content: "";
+	position: absolute;
+	left: 20px;
+	top: 50%;
+	width: 5px;
+	height: 5px;
+	margin-top: -2.5px;
+	border-radius: 50%;
+	background: var(--upa-accent);
+}
+
+body.upa #adminmenu .wp-submenu li {
+	position: relative;
+}
+
+/* Submenus of items that are not the current section are not shown in
+ * place: the sidebar scrolls internally, which would clip core's flyout, so
+ * the script mirrors them into a floating .upa-flyout card on hover / focus.
+ * Folded, core's own flyout is used (the rail does not scroll). */
+body.upa:not(.folded) #adminmenu .wp-not-current-submenu .wp-submenu {
+	display: none !important;
+}
+
+body.upa.folded #adminmenuwrap,
+body.upa.folded #adminmenu {
+	overflow: visible;
+}
+
+body.upa.folded #adminmenu .wp-submenu {
+	left: calc(100% + 6px);
+	width: 220px;
+	padding: 6px;
+	margin: 0;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: var(--upa-shadow);
+	z-index: 9999;
+}
+
+body.upa.folded #adminmenu .wp-submenu a {
+	padding-left: 10px;
+}
+
+body.upa.folded #adminmenu .wp-submenu li.current a:before {
+	display: none;
+}
+
+body.upa.folded #adminmenu .wp-submenu .wp-submenu-head {
+	display: block;
+	padding: 6px 10px 8px;
+	font-size: 11px;
+	font-weight: 650;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color: var(--upa-text3);
+	background: transparent;
+}
+
+/* Collapse menu */
+body.upa #adminmenu #collapse-menu {
+	margin-top: 8px;
+	padding-top: 8px;
+	border-top: 1px solid var(--upa-border);
+}
+
+body.upa #adminmenu #collapse-button {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 7px 10px;
+	border-radius: var(--upa-radius, 9px);
+	color: var(--upa-text3);
+	font-size: 13px;
+	width: 100%;
+	height: auto;
+	background: transparent;
+	border: 0;
+}
+
+body.upa #adminmenu #collapse-button:hover {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+body.upa #adminmenu #collapse-button .collapse-button-icon {
+	position: static;
+	width: 18px;
+	height: 18px;
+	margin: 0;
+	display: grid;
+	place-items: center;
+}
+
+body.upa #adminmenu #collapse-button .collapse-button-icon:after {
+	font-size: 18px;
+	line-height: 1;
+	width: auto;
+	height: auto;
+	color: currentColor;
+	padding: 0;
+	position: static;
+}
+
+body.upa #adminmenu #collapse-button .collapse-button-label {
+	position: static;
+	padding: 0;
+	margin: 0;
+	line-height: 1.3;
+	white-space: nowrap;
+}
+
+/* User block at the bottom (injected) */
+.upa-user {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 12px 16px;
+	border-top: 1px solid var(--upa-border);
+	background: var(--upa-bg2);
+}
+
+.upa-user img {
+	width: 32px;
+	height: 32px;
+	border-radius: 50%;
+	flex: 0 0 auto;
+	background: var(--upa-panel2);
+}
+
+.upa-user-meta {
+	flex: 1 1 auto;
+	min-width: 0;
+	line-height: 1.25;
+}
+
+.upa-user-name {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--upa-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-decoration: none;
+}
+
+.upa-user-role {
+	font-size: 11.5px;
+	color: var(--upa-text3);
+}
+
+.upa-user-actions {
+	display: flex;
+	gap: 2px;
+}
+
+.upa-icon-btn {
+	display: inline-grid;
+	place-items: center;
+	width: 30px;
+	height: 30px;
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text3);
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	text-decoration: none;
+	padding: 0;
+	font: inherit;
+}
+
+.upa-icon-btn:hover,
+.upa-icon-btn:focus {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+.upa-icon-btn svg {
+	width: 17px;
+	height: 17px;
+}
+
+/* Folded sidebar */
+body.upa.folded #adminmenuback,
+body.upa.folded #adminmenuwrap,
+body.upa.folded #adminmenu {
+	width: 64px;
+}
+
+body.upa.folded #wpcontent,
+body.upa.folded #wpfooter {
+	margin-left: 64px;
+}
+
+body.upa.folded #adminmenu {
+	padding: 6px 10px 12px;
+}
+
+body.upa.folded #adminmenu li.menu-top {
+	width: auto;
+	margin: 2px 0;
+}
+
+body.upa.folded .upa-brand-name,
+body.upa.folded .upa-brand-visit,
+body.upa.folded .upa-search,
+body.upa.folded .upa-search-empty,
+body.upa.folded .upa-user-meta,
+body.upa.folded .upa-user-actions,
+body.upa.folded #adminmenu li.upa-group-label,
+body.upa.folded #adminmenu .wp-menu-name,
+body.upa.folded #collapse-button .collapse-button-label {
+	display: none !important;
+}
+
+body.upa.folded .upa-brand {
+	justify-content: center;
+	padding-left: 0;
+	padding-right: 0;
+}
+
+body.upa.folded .upa-user {
+	justify-content: center;
+	padding-left: 0;
+	padding-right: 0;
+}
+
+body.upa.folded #adminmenu li.menu-top > a,
+body.upa.folded #adminmenu a.menu-top {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 44px;
+	height: 40px;
+	min-height: 40px;
+	padding: 0 !important;
+	margin: 0;
+}
+
+body.upa.folded #adminmenu .wp-menu-image {
+	position: static;
+	float: none;
+	margin: 0;
+	width: 20px;
+	height: 20px;
+	flex: 0 0 20px;
+}
+
+body.upa.folded #adminmenu .wp-menu-image:before {
+	font-size: 20px;
+}
+
+body.upa.folded #adminmenu .wp-menu-image.svg {
+	background-size: 20px auto !important;
+}
+
+body.upa.folded #adminmenu .wp-menu-name .awaiting-mod,
+body.upa.folded #adminmenu .wp-menu-name .update-plugins {
+	display: none;
+}
+
+body.upa.folded #adminmenu #collapse-menu {
+	margin: 8px 0 0;
+}
+
+body.upa.folded #adminmenu #collapse-button {
+	width: 44px;
+	height: 40px;
+	padding: 0;
+	justify-content: center;
+}
+
+/* ---------------------------------------------------------------------------
+ * Top bar (#wpadminbar)
+ * ------------------------------------------------------------------------ */
+
+body.upa #wpadminbar {
+	height: var(--upa-bar-h, 52px);
+	background: var(--upa-bg2);
+	border-bottom: 1px solid var(--upa-border);
+	color: var(--upa-text2);
+	font-family: var(--upa-font-ui);
+	padding-left: var(--upa-sidebar-w, 248px);
+	box-sizing: border-box;
+	transition: padding-left .1s ease;
+}
+
+body.upa.folded #wpadminbar {
+	padding-left: 64px;
+}
+
+body.upa #wpadminbar .quicklinks {
+	padding: 0 12px 0 16px;
+	height: 100%;
+	display: flex;
+	align-items: center;
+}
+
+body.upa #wpadminbar #wp-admin-bar-root-default,
+body.upa #wpadminbar #wp-admin-bar-top-secondary {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	height: 100%;
+	float: none;
+}
+
+body.upa #wpadminbar #wp-admin-bar-root-default {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+body.upa #wpadminbar #wp-admin-bar-top-secondary {
+	margin-left: auto;
+}
+
+body.upa #wpadminbar .ab-top-menu > li {
+	float: none;
+	height: auto;
+}
+
+body.upa #wpadminbar .ab-top-menu > li > .ab-item,
+body.upa #wpadminbar .ab-top-menu > li > .ab-item:focus {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	height: 34px;
+	line-height: 34px;
+	padding: 0 10px;
+	margin: 0;
+	border-radius: var(--upa-radius, 9px);
+	color: var(--upa-text2);
+	font-size: 13px;
+	font-weight: 500;
+	background: transparent;
+	transition: background-color .12s ease, color .12s ease;
+}
+
+body.upa #wpadminbar .ab-top-menu > li:hover > .ab-item,
+body.upa #wpadminbar .ab-top-menu > li.hover > .ab-item,
+body.upa #wpadminbar .ab-top-menu > li > .ab-item:focus {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+body.upa #wpadminbar .ab-icon,
+body.upa #wpadminbar .ab-item:before,
+body.upa #wpadminbar .ab-icon:before,
+body.upa #wpadminbar .ab-label {
+	color: currentColor !important;
+}
+
+body.upa #wpadminbar .ab-icon,
+body.upa #wpadminbar .ab-icon:before,
+body.upa #wpadminbar .ab-item:before {
+	font-size: 17px;
+	line-height: 1;
+	top: 0;
+	width: auto;
+	height: auto;
+	margin: 0;
+	padding: 0;
+	position: static;
+}
+
+body.upa #wpadminbar .ab-label {
+	font-size: 12.5px;
+	line-height: 1;
+	margin: 0;
+	display: inline-flex;
+	align-items: center;
+	align-self: center;
+	vertical-align: middle;
+	height: auto;
+}
+
+body.upa #wpadminbar .ab-top-menu > li > .ab-item > * {
+	align-self: center;
+}
+
+/* Hidden by default: the WordPress logo menu and the site-name item (the
+ * sidebar brand carries the site name). */
+body.upa #wpadminbar #wp-admin-bar-wp-logo,
+body.upa #wpadminbar #wp-admin-bar-site-name {
+	display: none;
+}
+
+body.upa.upa-wp-logo #wpadminbar #wp-admin-bar-wp-logo {
+	display: block;
+}
+
+/* Page title (injected) */
+body.upa #wpadminbar #wp-admin-bar-upa-title > .ab-item,
+body.upa #wpadminbar #wp-admin-bar-upa-title:hover > .ab-item {
+	background: transparent;
+	color: var(--upa-text);
+	font-weight: 650;
+	font-size: 15px;
+	padding-left: 0;
+	cursor: default;
+	max-width: 40vw;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+body.upa #wpadminbar #wp-admin-bar-upa-title .upa-chip {
+	font-size: 11.5px;
+	font-weight: 500;
+	color: var(--upa-text3);
+	border: 1px solid var(--upa-border);
+	border-radius: 999px;
+	padding: 0 8px;
+	height: 22px;
+	line-height: 20px;
+	margin-left: 8px;
+	display: inline-block;
+	vertical-align: middle;
+}
+
+/* Updates / comments counts as chips */
+body.upa #wpadminbar #wp-admin-bar-updates .ab-label,
+body.upa #wpadminbar #wp-admin-bar-comments .ab-label,
+body.upa #wpadminbar .ab-item .count,
+body.upa #wpadminbar .ab-item .pending-count {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	border-radius: 999px;
+	background: var(--upa-accent-soft);
+	color: var(--upa-accent) !important;
+	font-size: 10.5px;
+	font-weight: 700;
+	line-height: 18px;
+}
+
+/* "+ New" as the primary action */
+body.upa #wpadminbar #wp-admin-bar-new-content > .ab-item {
+	background: var(--upa-accent);
+	color: var(--upa-accent-fg);
+	font-weight: 600;
+	padding: 0 12px 0 10px;
+}
+
+body.upa #wpadminbar #wp-admin-bar-new-content:hover > .ab-item,
+body.upa #wpadminbar #wp-admin-bar-new-content.hover > .ab-item,
+body.upa #wpadminbar #wp-admin-bar-new-content > .ab-item:focus {
+	background: var(--upa-accent2);
+	color: var(--upa-accent-fg);
+}
+
+body.upa #wpadminbar #wp-admin-bar-new-content .ab-icon:before,
+body.upa #wpadminbar #wp-admin-bar-new-content .ab-label {
+	color: var(--upa-accent-fg) !important;
+}
+
+/* My account */
+body.upa #wpadminbar #wp-admin-bar-my-account > .ab-item {
+	padding: 0 8px 0 6px;
+	gap: 8px;
+}
+
+body.upa #wpadminbar #wp-admin-bar-my-account > .ab-item {
+	font-size: 0;
+}
+
+body.upa #wpadminbar #wp-admin-bar-my-account > .ab-item .display-name {
+	display: none;
+}
+
+body.upa #wpadminbar #wp-admin-bar-my-account .avatar {
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	margin: 0;
+	position: static;
+	border: 0;
+}
+
+body.upa #wpadminbar #wp-admin-bar-my-account.with-avatar > .ab-item {
+	padding-right: 8px;
+}
+
+/* Dropdowns from the bar */
+body.upa #wpadminbar .ab-sub-wrapper,
+body.upa #wpadminbar .ab-top-menu > li.menupop:hover > .ab-sub-wrapper,
+body.upa #wpadminbar .ab-top-menu > li.menupop.hover > .ab-sub-wrapper {
+	top: calc(var(--upa-bar-h, 52px) - 8px);
+	margin-top: 0;
+	min-width: 220px;
+	padding: 6px;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: var(--upa-shadow);
+	color: var(--upa-text);
+	box-sizing: border-box;
+}
+
+body.upa #wpadminbar .ab-top-secondary .ab-sub-wrapper {
+	right: 0;
+	left: auto;
+}
+
+body.upa #wpadminbar .ab-submenu,
+body.upa #wpadminbar .menupop .ab-sub-wrapper .ab-submenu {
+	background: transparent;
+	padding: 0;
+}
+
+body.upa #wpadminbar .ab-submenu > li,
+body.upa #wpadminbar .ab-submenu > li:hover {
+	background: transparent;
+}
+
+body.upa #wpadminbar .ab-submenu .ab-item,
+body.upa #wpadminbar .ab-submenu .ab-item:focus,
+body.upa #wpadminbar .quicklinks .ab-sub-wrapper .menupop.hover > a,
+body.upa #wpadminbar .quicklinks .ab-sub-wrapper a:focus {
+	display: block;
+	height: auto;
+	min-height: 0;
+	line-height: 1.4;
+	padding: 7px 10px;
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text2);
+	font-size: 13px;
+	white-space: nowrap;
+	background: transparent;
+}
+
+body.upa #wpadminbar .ab-submenu .ab-item:hover,
+body.upa #wpadminbar .ab-submenu li:hover > .ab-item,
+body.upa #wpadminbar .quicklinks .ab-sub-wrapper .menupop.hover > a {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+body.upa #wpadminbar .ab-submenu .ab-item:before {
+	display: none;
+}
+
+body.upa #wpadminbar .ab-sub-secondary {
+	background: transparent;
+	border-top: 1px solid var(--upa-border);
+	margin-top: 6px;
+	padding-top: 6px;
+}
+
+body.upa #wpadminbar #wp-admin-bar-user-info .avatar {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	margin: 0 12px 0 0;
+}
+
+body.upa #wpadminbar #wp-admin-bar-user-info .ab-item,
+body.upa #wpadminbar #wp-admin-bar-user-info .ab-item:hover {
+	height: auto;
+	display: flex;
+	align-items: center;
+	background: transparent;
+	padding: 8px 10px 12px;
+}
+
+body.upa #wpadminbar #wp-admin-bar-user-info .display-name {
+	color: var(--upa-text);
+	font-weight: 600;
+	display: block;
+	height: auto;
+	line-height: 1.3;
+}
+
+body.upa #wpadminbar #wp-admin-bar-user-info .username {
+	color: var(--upa-text3);
+	font-size: 12px;
+	display: block;
+	line-height: 1.3;
+}
+
+/* Theme / appearance popover (injected) */
+.upa-appearance {
+	position: fixed;
+	top: calc(var(--upa-bar-h, 52px) + 2px);
+	right: 12px;
+	width: 260px;
+	padding: 14px;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius-lg, 14px);
+	box-shadow: var(--upa-shadow);
+	z-index: 100000;
+	color: var(--upa-text);
+	font-size: 13px;
+	display: none;
+}
+
+.upa-appearance.is-open {
+	display: block;
+}
+
+.upa-appearance h4 {
+	margin: 0 0 8px;
+	font-size: 11px;
+	font-weight: 650;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color: var(--upa-text3);
+}
+
+.upa-appearance h4 + h4 {
+	margin-top: 14px;
+}
+
+.upa-seg {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 3px;
+	padding: 3px;
+	background: var(--upa-panel2);
+	border-radius: var(--upa-radius, 9px);
+}
+
+.upa-seg button {
+	appearance: none;
+	border: 0;
+	background: transparent;
+	border-radius: var(--upa-radius-sm, 6px);
+	padding: 6px 4px;
+	font: inherit;
+	font-size: 12.5px;
+	font-weight: 500;
+	color: var(--upa-text2);
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+}
+
+.upa-seg button svg {
+	width: 14px;
+	height: 14px;
+}
+
+.upa-seg button.is-active {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+	box-shadow: var(--upa-shadow-sm);
+}
+
+.upa-swatches {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 7px;
+	margin-top: 12px;
+}
+
+.upa-swatch {
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	border: 2px solid transparent;
+	cursor: pointer;
+	padding: 0;
+	box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .08);
+}
+
+.upa-swatch.is-active {
+	border-color: var(--upa-text);
+}
+
+.upa-swatch.upa-swatch-reset {
+	background: var(--upa-panel2);
+	color: var(--upa-text3);
+	display: grid;
+	place-items: center;
+	font-size: 12px;
+}
+
+.upa-swatch.upa-swatch-custom {
+	position: relative;
+	overflow: hidden;
+	background: conic-gradient(#f87171, #fbbf24, #4ade80, #60a5fa, #c084fc, #f87171);
+}
+
+.upa-swatch.upa-swatch-custom input[type="color"] {
+	position: absolute;
+	inset: -8px;
+	width: 200%;
+	height: 200%;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.upa-appearance-foot {
+	margin-top: 14px;
+	padding-top: 10px;
+	border-top: 1px solid var(--upa-border);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	font-size: 12px;
+	color: var(--upa-text3);
+}
+
+.upa-appearance-foot a {
+	color: var(--upa-text3);
+	text-decoration: none;
+}
+
+.upa-appearance-foot a:hover {
+	color: var(--upa-text);
+}
+
+/* ---------------------------------------------------------------------------
+ * Canvas (#wpcontent)
+ * ------------------------------------------------------------------------ */
+
+body.upa #wpcontent {
+	padding-left: 0;
+	background: var(--upa-bg);
+	min-height: calc(100vh - var(--upa-bar-h, 52px));
+}
+
+body.upa #wpbody-content {
+	padding: 0 28px 64px;
+	box-sizing: border-box;
+	max-width: none;
+	margin: 0;
+	float: none;
+}
+
+body.upa #wpbody-content > .wrap,
+body.upa #wpbody-content .wrap {
+	margin: 0;
+}
+
+body.upa #wpbody-content > .wrap:first-child,
+body.upa #wpbody-content > .notice + .wrap,
+body.upa #wpbody-content > .upa-notices + .wrap {
+	margin-top: 28px;
+}
+
+body.upa #wpbody-content .wrap {
+	padding-top: 28px;
+}
+
+body.upa #wpfooter {
+	position: static;
+	padding: 12px 28px;
+	color: var(--upa-text3);
+	font-size: 12px;
+	background: transparent;
+}
+
+body.upa #wpfooter a {
+	color: var(--upa-text3);
+}
+
+body.upa #wpfooter #footer-upgrade {
+	color: var(--upa-text3);
+}
+
+/* Screen Options / Help: two quiet text buttons at the top right */
+body.upa #screen-meta-links {
+	position: absolute;
+	right: 28px;
+	top: 14px;
+	margin: 0;
+	z-index: 2;
+	float: none;
+	display: flex;
+	gap: 2px;
+}
+
+body.upa #screen-meta-links .screen-meta-toggle {
+	float: none;
+	margin: 0;
+}
+
+body.upa #screen-meta-links .show-settings,
+body.upa #screen-meta-links .show-settings:hover,
+body.upa #screen-meta-links .show-settings:focus {
+	background: transparent;
+	border: 0;
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text3);
+	font-size: 12px;
+	font-weight: 500;
+	box-shadow: none;
+	padding: 5px 22px 5px 8px;
+	line-height: 1.4;
+	height: auto;
+}
+
+body.upa #screen-meta-links .show-settings:hover,
+body.upa #screen-meta-links .show-settings:focus,
+body.upa #screen-meta-links .show-settings.screen-meta-active {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+body.upa #screen-meta-links .show-settings:after {
+	color: currentColor;
+	right: 4px;
+	top: 3px;
+	font-size: 14px;
+}
+
+body.upa #screen-meta {
+	margin: 28px 0 20px;
+	padding: 6px 8px;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius-lg, 14px);
+	color: var(--upa-text);
+	box-shadow: var(--upa-shadow-sm);
+}
+
+body.upa #screen-meta .screen-options-tab,
+body.upa #screen-meta .contextual-help-tabs-wrap {
+	color: var(--upa-text);
+}
+
+body.upa #screen-meta .metabox-prefs label,
+body.upa #screen-meta legend,
+body.upa #screen-meta h5,
+body.upa #contextual-help-columns h3,
+body.upa #contextual-help-columns p,
+body.upa #contextual-help-columns li {
+	color: var(--upa-text2);
+}
+
+body.upa .contextual-help-tabs .active {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+}
+
+body.upa .contextual-help-tabs .active a,
+body.upa .contextual-help-tabs a {
+	color: var(--upa-text);
+	border-color: var(--upa-border);
+}
+
+body.upa .contextual-help-tabs-wrap,
+body.upa .contextual-help-sidebar {
+	border-color: var(--upa-border);
+}
+
+/* ---------------------------------------------------------------------------
+ * Block editor chrome — keep it below the bar and beside the sidebar
+ * ------------------------------------------------------------------------ */
+
+body.upa .interface-interface-skeleton,
+body.upa .edit-post-layout .interface-interface-skeleton {
+	top: var(--upa-bar-h, 52px);
+	left: var(--upa-sidebar-w, 248px);
+}
+
+body.upa.folded .interface-interface-skeleton {
+	left: 64px;
+}
+
+body.upa.is-fullscreen-mode .interface-interface-skeleton {
+	top: 0;
+	left: 0;
+}
+
+body.upa.is-fullscreen-mode #adminmenuwrap,
+body.upa.is-fullscreen-mode #adminmenuback {
+	display: none;
+}
+
+/* ---------------------------------------------------------------------------
+ * Responsive: keep core's off-canvas behaviour, restyle it
+ * ------------------------------------------------------------------------ */
+
+@media screen and (max-width: 960px) {
+	body.upa.auto-fold #adminmenuback,
+	body.upa.auto-fold #adminmenuwrap,
+	body.upa.auto-fold #adminmenu,
+	body.upa.auto-fold #adminmenu li.menu-top {
+		width: 64px;
+	}
+
+	body.upa.auto-fold #wpcontent,
+	body.upa.auto-fold #wpfooter {
+		margin-left: 64px;
+	}
+
+	body.upa.auto-fold #wpadminbar {
+		padding-left: 64px;
+	}
+
+	body.upa.auto-fold #adminmenu {
+		padding: 6px 10px 12px;
+	}
+
+	body.upa.auto-fold .upa-brand-name,
+	body.upa.auto-fold .upa-search,
+	body.upa.auto-fold .upa-user-meta,
+	body.upa.auto-fold .upa-user-actions,
+	body.upa.auto-fold #adminmenu li.upa-group-label,
+	body.upa.auto-fold #adminmenu .wp-menu-name,
+	body.upa.auto-fold #collapse-button .collapse-button-label {
+		display: none;
+	}
+
+	body.upa.auto-fold .upa-brand,
+	body.upa.auto-fold .upa-user {
+		justify-content: center;
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	body.upa.auto-fold #adminmenu li.menu-top > a {
+		justify-content: center;
+		padding: 9px 0;
+	}
+
+	body.upa.auto-fold #adminmenuwrap,
+	body.upa.auto-fold #adminmenu {
+		overflow: visible;
+	}
+
+	body.upa.auto-fold #adminmenu .wp-not-current-submenu .wp-submenu {
+		display: revert !important;
+	}
+
+	body.upa.auto-fold #adminmenu .wp-has-current-submenu .wp-submenu,
+	body.upa.auto-fold #adminmenu .wp-not-current-submenu .wp-submenu {
+		position: absolute;
+		left: calc(100% + 6px);
+		width: 220px;
+		padding: 6px;
+		background: var(--upa-panel);
+		border: 1px solid var(--upa-border);
+		border-radius: var(--upa-radius, 9px);
+		box-shadow: var(--upa-shadow);
+	}
+
+	body.upa.auto-fold #adminmenu .wp-submenu a {
+		padding-left: 10px;
+	}
+
+	body.upa.auto-fold .interface-interface-skeleton {
+		left: 64px;
+	}
+}
+
+@media screen and (max-width: 782px) {
+	html.wp-toolbar {
+		padding-top: var(--upa-bar-h, 52px) !important;
+	}
+
+	body.upa #wpadminbar {
+		padding-left: 0;
+		height: var(--upa-bar-h, 52px);
+	}
+
+	body.upa #wpadminbar .quicklinks {
+		padding: 0 8px;
+	}
+
+	body.upa #wpadminbar #wp-admin-bar-menu-toggle {
+		display: block;
+	}
+
+	body.upa #wpadminbar #wp-admin-bar-menu-toggle .ab-item {
+		height: 34px;
+		width: 34px;
+		padding: 0;
+		justify-content: center;
+	}
+
+	body.upa #wpadminbar #wp-admin-bar-upa-title > .ab-item {
+		font-size: 14px;
+		max-width: 50vw;
+	}
+
+	body.upa.auto-fold #adminmenuback,
+	body.upa.auto-fold #adminmenuwrap,
+	body.upa.auto-fold #adminmenu {
+		width: var(--upa-sidebar-w, 248px);
+	}
+
+	body.upa.auto-fold #adminmenuwrap {
+		transform: translateX(-100%);
+		transition: transform .15s ease;
+		top: var(--upa-bar-h, 52px) !important;
+		z-index: 9990;
+	}
+
+	body.upa.auto-fold .upa-brand {
+		display: none;
+	}
+
+	body.upa.auto-fold.wp-responsive-open #adminmenuwrap {
+		transform: none;
+	}
+
+	body.upa.auto-fold #adminmenuback {
+		display: none;
+	}
+
+	body.upa.auto-fold #wpcontent,
+	body.upa.auto-fold #wpfooter {
+		margin-left: 0;
+	}
+
+	body.upa.auto-fold #adminmenu {
+		padding: 6px 12px 12px;
+	}
+
+	body.upa.auto-fold .upa-brand-name,
+	body.upa.auto-fold .upa-search,
+	body.upa.auto-fold .upa-user-meta,
+	body.upa.auto-fold .upa-user-actions,
+	body.upa.auto-fold #adminmenu li.upa-group-label,
+	body.upa.auto-fold #adminmenu .wp-menu-name {
+		display: revert;
+	}
+
+	body.upa.auto-fold .upa-brand,
+	body.upa.auto-fold .upa-user {
+		justify-content: flex-start;
+		padding-left: 16px;
+		padding-right: 16px;
+	}
+
+	body.upa.auto-fold #adminmenu li.menu-top > a {
+		justify-content: flex-start;
+		padding: 9px 10px;
+	}
+
+	body.upa.auto-fold #adminmenu .wp-has-current-submenu .wp-submenu,
+	body.upa.auto-fold #adminmenu .wp-not-current-submenu .wp-submenu {
+		position: static;
+		width: auto;
+		padding: 4px 0 6px;
+		background: transparent;
+		border: 0;
+		box-shadow: none;
+	}
+
+	body.upa.auto-fold #adminmenu .wp-submenu a {
+		padding-left: 38px;
+	}
+
+	body.upa #wpbody-content {
+		padding: 0 16px 48px;
+	}
+
+	body.upa #screen-meta-links {
+		right: 16px;
+	}
+
+	body.upa .interface-interface-skeleton,
+	body.upa.auto-fold .interface-interface-skeleton {
+		left: 0;
+	}
+}
+
+/* Bar dropdown items: core's .quicklinks .menupop ul li a selectors outrank
+ * the generic .ab-submenu rules above, so restate the colours at their level. */
+body.upa #wpadminbar .quicklinks .menupop ul li a,
+body.upa #wpadminbar .quicklinks .menupop ul li a strong,
+body.upa #wpadminbar .quicklinks .menupop.hover ul li a,
+body.upa #wpadminbar .quicklinks .ab-sub-wrapper .ab-item,
+body.upa #wpadminbar .quicklinks .menupop ul li .ab-item {
+	color: var(--upa-text2) !important;
+	background: transparent;
+}
+
+body.upa #wpadminbar .quicklinks .menupop ul li a:hover,
+body.upa #wpadminbar .quicklinks .menupop ul li a:focus,
+body.upa #wpadminbar .quicklinks .menupop.hover ul li a:hover,
+body.upa #wpadminbar .quicklinks .menupop ul li:hover > a,
+body.upa #wpadminbar .quicklinks .menupop ul li.hover > a,
+body.upa #wpadminbar .quicklinks .menupop ul li a:hover strong {
+	color: var(--upa-text) !important;
+	background: var(--upa-hover);
+}
+
+body.upa #wpadminbar .quicklinks .menupop ul li a:before {
+	display: none;
+}
+
+body.upa #wpadminbar #wp-admin-bar-new-content .ab-sub-wrapper .ab-item,
+body.upa #wpadminbar #wp-admin-bar-new-content ul li a {
+	color: var(--upa-text2) !important;
+}
+
+body.upa #wpadminbar #wp-admin-bar-new-content ul li a:hover,
+body.upa #wpadminbar #wp-admin-bar-new-content ul li:hover > a {
+	color: var(--upa-text) !important;
+}
+
+/* Account dropdown: avatar beside a two-line name / "Edit Profile" stack */
+body.upa #wpadminbar #wp-admin-bar-user-info .ab-item,
+body.upa #wpadminbar #wp-admin-bar-user-info .ab-item:hover {
+	display: grid;
+	grid-template-columns: 48px 1fr;
+	grid-template-rows: auto auto;
+	column-gap: 12px;
+	row-gap: 2px;
+	align-items: center;
+	padding: 8px 10px 12px;
+	background: transparent;
+	height: auto;
+	white-space: normal;
+}
+
+body.upa #wpadminbar #wp-admin-bar-user-info .avatar {
+	grid-row: 1 / span 2;
+	width: 48px;
+	height: 48px;
+	margin: 0;
+	border-radius: 50%;
+}
+
+body.upa #wpadminbar #wp-admin-bar-user-info .display-name {
+	display: block;
+	color: var(--upa-text);
+	font-weight: 600;
+	line-height: 1.3;
+	height: auto;
+}
+
+body.upa #wpadminbar #wp-admin-bar-user-info .display-name.edit-profile,
+body.upa #wpadminbar #wp-admin-bar-user-info .username {
+	color: var(--upa-text3);
+	font-size: 12px;
+	font-weight: 400;
+}
+
+body.upa #wpadminbar #wp-admin-bar-user-info .ab-item:hover .display-name.edit-profile {
+	color: var(--upa-accent);
+}
+
+body.upa #wpadminbar #wp-admin-bar-logout {
+	border-top: 1px solid var(--upa-border);
+	margin-top: 4px;
+	padding-top: 4px;
+}
+
+/* Contextual Help panel: tabs column + content + sidebar, all one surface */
+body.upa #contextual-help-wrap,
+body.upa #contextual-help-back,
+body.upa #contextual-help-columns,
+body.upa .contextual-help-tabs-wrap,
+body.upa .help-tab-content,
+body.upa .contextual-help-sidebar,
+body.upa .contextual-help-tabs {
+	background: var(--upa-panel) !important;
+	border: 0 !important;
+	color: var(--upa-text2);
+}
+
+body.upa #contextual-help-back {
+	display: none;
+}
+
+body.upa #contextual-help-columns {
+	padding: 8px 0 12px;
+	position: relative;
+}
+
+body.upa .contextual-help-tabs {
+	width: 200px;
+	padding: 0 8px 0 0;
+	margin: 0;
+}
+
+body.upa .contextual-help-tabs ul {
+	margin: 0;
+}
+
+body.upa .contextual-help-tabs li {
+	margin: 0 0 2px;
+	border: 0;
+}
+
+body.upa .contextual-help-tabs a,
+body.upa .contextual-help-tabs .active a {
+	display: block;
+	padding: 7px 12px;
+	border: 0 !important;
+	border-radius: var(--upa-radius, 9px);
+	background: transparent;
+	color: var(--upa-text2);
+	font-size: 13px;
+	font-weight: 500;
+	text-decoration: none;
+	box-shadow: none;
+}
+
+body.upa .contextual-help-tabs a:hover {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+body.upa .contextual-help-tabs .active,
+body.upa .contextual-help-tabs .active a {
+	background: var(--upa-accent-soft) !important;
+	color: var(--upa-accent);
+	font-weight: 600;
+	margin: 0;
+	border: 0 !important;
+}
+
+body.upa .contextual-help-tabs-wrap {
+	padding: 4px 24px 0 24px;
+	border-left: 1px solid var(--upa-border) !important;
+}
+
+body.upa .help-tab-content {
+	padding: 0;
+	color: var(--upa-text2);
+}
+
+body.upa .help-tab-content p,
+body.upa .help-tab-content li {
+	color: var(--upa-text2);
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+body.upa .help-tab-content code {
+	background: var(--upa-panel2);
+	color: var(--upa-text);
+	border-radius: 4px;
+	padding: 1px 6px;
+	font-size: 12px;
+}
+
+body.upa .contextual-help-sidebar {
+	padding: 40px 0 0 24px;
+	border-left: 1px solid var(--upa-border) !important;
+	color: var(--upa-text2);
+	font-size: 13px;
+}
+
+body.upa .contextual-help-sidebar p,
+body.upa .contextual-help-sidebar strong {
+	color: var(--upa-text);
+}
+
+body.upa .contextual-help-sidebar a {
+	color: var(--upa-accent);
+}
+
+/* The toggle that core marks active while its panel is open: drop the
+ * toggle row into the open card so it reads as the card's own close button */
+body.upa #screen-meta-links:has(.screen-meta-active) {
+	top: 10px;
+	right: 40px;
+}
+
+body.upa #screen-meta-links .show-settings.screen-meta-active {
+	background: var(--upa-panel2);
+	color: var(--upa-text);
+}
+
+/* Core indents the account menu 88px for its floating avatar; ours is inline */
+body.upa #wpadminbar #wp-admin-bar-my-account.with-avatar #wp-admin-bar-user-actions > li,
+body.upa #wpadminbar #wp-admin-bar-my-account #wp-admin-bar-user-actions > li,
+body.upa #wpadminbar #wp-admin-bar-user-actions > li {
+	margin-left: 0 !important;
+	margin-right: 0;
+}
+
+body.upa #wpadminbar #wp-admin-bar-my-account.with-avatar > .ab-sub-wrapper,
+body.upa #wpadminbar #wp-admin-bar-my-account > .ab-sub-wrapper {
+	min-width: 220px;
+	padding: 6px;
+}
+
+body.upa #wpadminbar #wp-admin-bar-my-account.with-avatar #wp-admin-bar-user-info .avatar {
+	position: static;
+	left: auto;
+	top: auto;
+}
+
+body.upa #wpadminbar #wp-admin-bar-user-info .ab-item,
+body.upa #wpadminbar #wp-admin-bar-user-info .ab-item:hover {
+	padding: 8px 10px 10px;
+}
+
+body.upa #wpadminbar #wp-admin-bar-logout {
+	margin-top: 4px;
+	padding-top: 4px;
+}
+
+body.upa #wpadminbar #wp-admin-bar-logout .ab-item {
+	padding: 7px 10px;
+}
+
+
+/* Floating submenu card (built by the script for hover / focus) */
+.upa-flyout {
+	position: fixed;
+	z-index: 100001;
+	min-width: 200px;
+	max-width: 280px;
+	padding: 6px;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: var(--upa-shadow);
+	font-family: var(--upa-font-ui);
+}
+
+.upa-flyout-head {
+	padding: 6px 10px 8px;
+	font-size: 11px;
+	font-weight: 650;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	color: var(--upa-text3);
+}
+
+.upa-flyout-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.upa-flyout-list li {
+	margin: 0;
+}
+
+.upa-flyout-list a {
+	display: block;
+	padding: 6px 10px;
+	margin: 1px 0;
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text2);
+	font-size: 13px;
+	line-height: 1.4;
+	text-decoration: none;
+}
+
+.upa-flyout-list a:hover,
+.upa-flyout-list a:focus {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+	outline: none;
+}
+
+.upa-flyout-list .awaiting-mod,
+.upa-flyout-list .update-plugins,
+.upa-flyout-list .menu-counter {
+	margin-left: 6px;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 6px;
+	border-radius: 999px;
+	background: var(--upa-accent-soft);
+	color: var(--upa-accent);
+	font-size: 10.5px;
+	font-weight: 700;
+	line-height: 18px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	vertical-align: middle;
+}
+
+/* Icons follow the item text on hover / open / focus (core paints them
+ * its own light blue), and the accent on the current item */
+body.upa #adminmenu li.menu-top:hover .wp-menu-image:before,
+body.upa #adminmenu li.upa-open > a.menu-top .wp-menu-image:before,
+body.upa #adminmenu li.upa-open > a.menu-top div.wp-menu-image:before,
+body.upa #adminmenu li.opensub > a.menu-top .wp-menu-image:before,
+body.upa #adminmenu li > a.menu-top:focus .wp-menu-image:before,
+body.upa #adminmenu li.menu-top:hover div.wp-menu-image:before,
+body.upa #adminmenu li.opensub > a.menu-top div.wp-menu-image:before,
+body.upa #adminmenu li > a.menu-top:focus div.wp-menu-image:before {
+	color: var(--upa-text) !important;
+}
+
+body.upa #adminmenu li.wp-has-current-submenu .wp-menu-image:before,
+body.upa #adminmenu li.current .wp-menu-image:before,
+body.upa #adminmenu li.wp-has-current-submenu:hover .wp-menu-image:before,
+body.upa #adminmenu li.current:hover .wp-menu-image:before,
+body.upa #adminmenu li.wp-has-current-submenu div.wp-menu-image:before,
+body.upa #adminmenu li.current div.wp-menu-image:before {
+	color: var(--upa-accent) !important;
+}
+
+body.upa #adminmenu li.menu-top:hover .wp-menu-image,
+body.upa #adminmenu li.upa-open > a.menu-top .wp-menu-image,
+body.upa #adminmenu li.opensub > a.menu-top .wp-menu-image {
+	opacity: 1;
+}
+
+/* Appearance toggle in the bar: size its SVG and match the other buttons */
+body.upa #wpadminbar #wp-admin-bar-upa-appearance > .ab-item {
+	width: 34px;
+	padding: 0;
+	justify-content: center;
+	color: var(--upa-text2);
+	background: transparent;
+}
+
+body.upa #wpadminbar #wp-admin-bar-upa-appearance > .ab-item svg {
+	width: 18px;
+	height: 18px;
+	display: block;
+	flex: 0 0 auto;
+	color: inherit;
+}
+
+body.upa #wpadminbar #wp-admin-bar-upa-appearance:hover > .ab-item,
+body.upa #wpadminbar #wp-admin-bar-upa-appearance > .ab-item:focus,
+body.upa #wpadminbar #wp-admin-bar-upa-appearance > .ab-item[aria-expanded="true"] {
+	background: var(--upa-hover) !important;
+	color: var(--upa-text) !important;
+}
+
+body.upa #wpadminbar #wp-admin-bar-upa-appearance > .ab-item:before {
+	display: none;
+}
+
+/* Folded rail uses core's own flyout, which must keep a surface: the
+ * transparent rule above is for the in-place submenu in the open sidebar. */
+body.upa.folded #adminmenu .wp-submenu,
+body.upa.folded #adminmenu li.wp-has-current-submenu .wp-submenu,
+body.upa.folded #adminmenu li.opensub .wp-submenu,
+body.upa.folded #adminmenu li.wp-menu-open .wp-submenu,
+body.upa.auto-fold #adminmenu .wp-not-current-submenu .wp-submenu,
+body.upa.auto-fold #adminmenu li.opensub .wp-submenu {
+	background: var(--upa-panel) !important;
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: var(--upa-shadow);
+}
+
+@media screen and (max-width: 782px) {
+	/* Back to the in-place list in the off-canvas sidebar */
+	body.upa.auto-fold #adminmenu .wp-submenu,
+	body.upa.auto-fold #adminmenu li.opensub .wp-submenu {
+		background: transparent !important;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+}

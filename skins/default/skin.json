@@ -1,0 +1,39 @@
+{
+  "slug": "default",
+  "title": "Default",
+  "version": "1.0.0",
+  "author": "UnysonPlus",
+  "description": "The modern UnysonPlus admin: a quiet neutral canvas, one accent, generous radii and two bundled typefaces.",
+  "fonts": {
+    "ui": "'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+    "mono": "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+    "files": [
+      { "family": "Hanken Grotesk", "src": "fonts/hanken-grotesk.woff2", "weight": "300 800", "style": "normal" },
+      { "family": "JetBrains Mono", "src": "fonts/jetbrains-mono.woff2", "weight": "300 800", "style": "normal" }
+    ]
+  },
+  "shape": { "radius-sm": "6px", "radius": "9px", "radius-lg": "14px", "radius-pill": "999px" },
+  "density": { "font-size": "14px", "line-height": "1.5", "control-h": "36px", "row-h": "52px", "sidebar-w": "248px", "bar-h": "52px", "tracking": "-0.01em" },
+  "tokens": {
+    "light": {
+      "bg": "#f5f5f7", "bg2": "#ffffff", "panel": "#ffffff", "panel2": "#f4f4f6", "hover": "#ededf1",
+      "border": "#e6e6ea", "border2": "#d9d9de",
+      "text": "#18181c", "text2": "#5c5c67", "text3": "#7a7a85",
+      "accent": "#5b4fe6", "accent2": "#7a70f2", "accent-fg": "#ffffff",
+      "green": "#1f9d61", "amber": "#b9770e", "red": "#d2413f", "blue": "#2f74e0", "pink": "#c0509f",
+      "shadow": "0 12px 36px rgba(20,20,30,0.10)", "shadow-sm": "0 2px 10px rgba(20,20,30,0.06)"
+    },
+    "dark": {
+      "bg": "#0c0c0f", "bg2": "#111114", "panel": "#161619", "panel2": "#1c1c21", "hover": "#212128",
+      "border": "#26262c", "border2": "#33333b",
+      "text": "#ececee", "text2": "#a0a0aa", "text3": "#84848f",
+      "accent": "#6e63f5", "accent2": "#928afa", "accent-fg": "#ffffff",
+      "green": "#4cc088", "amber": "#e3aa5a", "red": "#e86e6c", "blue": "#61a0e6", "pink": "#d47cc5",
+      "shadow": "0 14px 44px rgba(0,0,0,0.55)", "shadow-sm": "0 4px 16px rgba(0,0,0,0.35)"
+    }
+  },
+  "wp_color_scheme": {
+    "light": ["#f5f5f7", "#ffffff", "#5b4fe6", "#7a70f2"],
+    "dark": ["#0c0c0f", "#161619", "#6e63f5", "#928afa"]
+  }
+}

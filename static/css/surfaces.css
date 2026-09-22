@@ -1,0 +1,1152 @@
+/**
+ * UnysonPlus Admin Skin — UnysonPlus surfaces.
+ *
+ * The framework's own admin (Theme Settings, extension settings, the
+ * Extensions manager, option types) is already built on a --u-* token set in
+ * framework/static/css/backend-options-skin.css. This layer remaps those
+ * tokens onto the skin's --upa-* tokens so every UnysonPlus screen follows
+ * the active skin and mode without touching the framework CSS.
+ */
+
+body.upa,
+body.upa .fw-skin-dark,
+body.upa .fw-skin-auto,
+body.upa .fw-skin-light {
+	--u-surface: var(--upa-panel);
+	--u-raised: var(--upa-panel2);
+	--u-sunken: var(--upa-bg);
+
+	/* Option-row hover: a whisper over the panel, not the panel2 fill —
+	   it fires on every row the pointer crosses. */
+	--u-row-hover: color-mix(in srgb, var(--upa-text) 2%, var(--upa-panel));
+
+	--u-ink: var(--upa-text);
+	--u-ink-soft: var(--upa-text2);
+	--u-muted: var(--upa-text3);
+
+	--u-border: var(--upa-border);
+	--u-border-soft: var(--upa-border);
+	--u-border-input: var(--upa-border2);
+	--u-border-hover: var(--upa-text3);
+
+	--u-accent: var(--upa-accent);
+	--u-accent-hover: var(--upa-accent2);
+	--u-accent-fg: var(--upa-accent);
+	--u-on-accent: var(--upa-accent-fg);
+	--u-accent-soft: var(--upa-accent-soft);
+	--u-accent-ring: var(--upa-accent-ring);
+
+	--u-danger: var(--upa-red);
+
+	--u-r-sm: var(--upa-radius-sm, 6px);
+	--u-r: var(--upa-radius, 9px);
+	--u-shadow-sm: var(--upa-shadow-sm);
+	--u-shadow: var(--upa-shadow);
+	--u-control-h: var(--upa-control-h, 36px);
+
+	/* The framework's OLDER token set. Option types written before the --u-*
+	   ramp (button-set among them) still read --fw-*, whose defaults are
+	   literal light values — so a control on that set stays white on a dark
+	   canvas no matter how much of the --u-* set is remapped. Mapping both
+	   here fixes every one of them in one place, rather than restating each
+	   control's colours further down this file. */
+	--fw-surface:          var(--upa-panel);
+	--fw-surface-alt:      var(--upa-panel2);
+	--fw-text:             var(--upa-text);
+	--fw-text-muted:       var(--upa-text3);
+	--fw-border:           var(--upa-border);
+	--fw-border-strong:    var(--upa-border2);
+	--fw-border-faint:     var(--upa-border);
+	--fw-accent:           var(--upa-accent);
+	--fw-accent-hover:     var(--upa-accent2);
+	--fw-accent-contrast:  var(--upa-accent-fg);
+	--fw-radius:           var(--upa-radius-sm, 6px);
+	--fw-radius-sm:        var(--upa-radius-sm, 6px);
+	--fw-focus-ring:       0 0 0 2px var(--upa-accent-ring);
+}
+/* Theme Settings header: the framework only colours it for the two core
+ * schemes it knows; ours is a third. */
+body.upa .fw-settings-form-header,
+body.upa .fw-backend-side-tabs .fw-settings-form-header {
+	background-color: var(--upa-accent);
+	/* No radius: the form behind it is square and white, so rounding the
+	 * header only exposes white wedges in its top corners. */
+	border-radius: 0;
+}
+
+/* The skin's page-heading margins would inflate this bar and push the title
+ * off centre; inside the header the heading is just a label. */
+/* Specificity must beat `.wrap form h2` from the primitives layer, which
+ * otherwise adds a 28px top margin and pushes the title off centre. */
+body.upa .wrap .fw-settings-form-header h1,
+body.upa .wrap .fw-settings-form-header h2,
+body.upa .wrap .fw-settings-form-header h3,
+body.upa .fw-settings-form-header h1,
+body.upa .fw-settings-form-header h2,
+body.upa .fw-settings-form-header h3 {
+	margin: 0 !important;
+	line-height: 1;
+}
+
+/* Theme Settings supplies its own top chrome, so the canvas padding that
+ * every other screen needs would show as a gap above the header. */
+body.upa #wpbody-content .wrap:has(.fw-settings-form),
+body.upa #wpbody-content .wrap:has(.fw-settings-form-header) {
+	padding-top: 0;
+}
+body.upa .fw-settings-form-header .button-primary {
+	background: var(--upa-accent-fg);
+	border-color: var(--upa-accent-fg);
+	color: var(--upa-accent);
+}
+body.upa .fw-settings-form-header h2,
+body.upa .fw-settings-form-header .fw-settings-form-header-title,
+body.upa .fw-settings-form-header a,
+body.upa .fw-settings-form-header span {
+	color: var(--upa-accent-fg);
+}
+/* Postbox chrome the framework draws itself */
+body.upa .fw-backend-side-tabs,
+body.upa .fw-options-tabs-wrapper,
+body.upa .fw-backend-options-content,
+body.upa .fw-settings-form .postbox {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	color: var(--upa-text);
+}
+/* The extension-settings wrapper spans the whole page and is NOT a card —
+ * the boxes inside it are. Painting it panel-white put a white sheet behind
+ * the page (visible around the Save row). */
+body.upa #fw-extension-settings,
+body.upa #fw-extension-tab-content {
+	background: transparent;
+	color: var(--upa-text);
+}
+body.upa #fw-extension-settings .fw_form_fw_extension_settings > p.submit,
+body.upa #fw-extension-settings form > p:last-child {
+	padding-top: 4px;
+}
+body.upa .fw-backend-side-tabs > .fw-options-tabs-list,
+body.upa .fw-backend-side-tabs .fw-options-tabs-list {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+}
+body.upa .fw-backend-side-tabs .fw-options-tabs-list li a {
+	color: var(--upa-text2);
+	border-radius: var(--upa-radius, 9px);
+}
+body.upa .fw-backend-side-tabs .fw-options-tabs-list li.ui-tabs-active a,
+body.upa .fw-backend-side-tabs .fw-options-tabs-list li a:hover {
+	color: var(--upa-text);
+	background: var(--upa-panel);
+}
+body.upa .fw-backend-side-tabs .fw-options-tabs-list li.ui-tabs-active a {
+	color: var(--upa-accent);
+	font-weight: 600;
+}
+/* Box titles: left-aligned like every other card on the page */
+body.upa .fw-backend-postboxes .postbox .hndle,
+body.upa .fw-settings-form .postbox .hndle,
+body.upa #fw-extension-settings .postbox .hndle,
+body.upa .fw-options-tab .postbox .hndle {
+	text-align: left;
+	justify-content: flex-start;
+}
+/* Inner nav tabs the framework renders inside a box */
+body.upa .fw-options-tabs-wrapper > .fw-options-tabs-list {
+	background: transparent;
+	border-bottom: 1px solid var(--upa-border);
+}
+body.upa .fw-options-tabs-wrapper > .fw-options-tabs-list li a {
+	color: var(--upa-text2);
+	background: transparent;
+	border: 0;
+	border-bottom: 2px solid transparent;
+}
+body.upa .fw-options-tabs-wrapper > .fw-options-tabs-list li.ui-tabs-active a {
+	color: var(--upa-accent);
+	border-bottom-color: var(--upa-accent);
+	background: transparent;
+}
+/* Switch option type */
+body.upa .fw-option-type-switch .fw-switch {
+	background: var(--upa-border2);
+}
+body.upa .fw-option-type-switch .fw-switch.fw-switch-on,
+body.upa .fw-option-type-switch input:checked + .fw-switch,
+body.upa .fw-option-type-switch .fw-switch-on {
+	background: var(--upa-accent);
+}
+/* Extensions manager cards */
+body.upa .fw-extensions-list .fw-extensions-list-item > .inner {
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius-lg, 14px);
+	box-shadow: var(--upa-shadow-sm);
+	color: var(--upa-text2);
+}
+body.upa .fw-extensions-list .fw-extensions-list-item .fw-extensions-list-item-title,
+body.upa .fw-extensions-list .fw-extensions-list-item h3,
+body.upa .fw-extensions-list .fw-extensions-list-item h4,
+body.upa .fw-extensions-list .fw-extensions-list-item .fw-extensions-list-item-title a {
+	color: var(--upa-text);
+}
+body.upa .fw-extensions-list .fw-extensions-list-item p,
+body.upa .fw-extensions-list .fw-extensions-list-item .fw-extensions-list-item-meta,
+body.upa .fw-extensions-list .fw-extensions-list-item .fw-extensions-list-item-version,
+body.upa .fw-extensions-list .fw-extensions-list-item .fw-text-muted {
+	color: var(--upa-text2);
+}
+body.upa .fw-extensions-list .fw-extensions-list-item .fw-extensions-list-item-thumbnail-wrapper img,
+body.upa .fw-extensions-list .fw-extensions-list-item .fw-extensions-list-item-thumbnail-wrapper span {
+	border-radius: var(--upa-radius, 9px);
+}
+body.upa .fw-extensions-list .fw-extensions-list-item .fw-extension-disabled {
+	background: color-mix(in srgb, var(--upa-panel) 60%, transparent);
+	border-color: var(--upa-border);
+	border-radius: var(--upa-radius-lg, 14px);
+}
+body.upa .fw-extensions-list .fw-extensions-list-item .fw-extension-disabled .fw-extension-disabled-panel {
+	background: var(--upa-panel);
+	color: var(--upa-text2);
+	border-radius: 0 0 var(--upa-radius-lg, 14px) var(--upa-radius-lg, 14px);
+}
+body.upa .fw-extensions-title,
+body.upa .fw-extensions-no-active,
+body.upa h2.fw-extensions-title {
+	color: var(--upa-text);
+}
+/* Search box on Theme Settings */
+body.upa .fw-options-search input[type="search"],
+body.upa .fw-options-search input[type="text"] {
+	background: var(--upa-panel);
+	border-color: var(--upa-border2);
+	color: var(--upa-text);
+}
+/* Footer action bar */
+body.upa .fw-settings-form-footer,
+body.upa .fw-backend-side-tabs .fw-settings-form-footer {
+	background: var(--upa-panel);
+	border-top: 1px solid var(--upa-border);
+}
+/* Page builder (metabox) shell */
+body.upa .fw-option-type-page-builder .builder-root,
+body.upa .fw-option-type-builder .builder-root,
+body.upa .builder-items-types,
+body.upa .fw-builder-root {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	color: var(--upa-text);
+}
+body.upa .fw-option-type-builder .builder-items-types .builder-item-type,
+body.upa .builder-item-type {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+	color: var(--upa-text2);
+	border-radius: var(--upa-radius-sm, 6px);
+}
+/* Box bottom: the framework draws a hairline under every options group and
+ * the tab panel paints a square-cornered white; both land on the card's
+ * rounded bottom edge. Round the panel and drop the last group's rule. */
+body.upa .fw-options-tabs-contents,
+body.upa .fw-options-tab:last-child,
+body.upa .fw-backend-options-content {
+	border-bottom-left-radius: calc(var(--upa-radius-lg, 14px) - 1px);
+	border-bottom-right-radius: calc(var(--upa-radius-lg, 14px) - 1px);
+}
+body.upa .postbox .inside > .fw-backend-options-group:last-child,
+body.upa .fw-options-tab > .fw-backend-options-group:last-child,
+body.upa .fw-inner > .fw-backend-options-group:last-child,
+body.upa .fw-options-tabs-contents .fw-backend-options-group:last-child {
+	border-bottom: 0 !important;
+}
+body.upa .postbox .inside > .fw-backend-option-design-default:last-child,
+body.upa .fw-backend-options-group:last-child > .fw-backend-option-design-default:last-child {
+	border-bottom: 0;
+}
+/* The framework hides the last option row's hairline with a white 1px line
+ * pinned 5px above the box bottom (.fw-backend-options-last-border-hider).
+ * On a rounded card that white line cuts across the corners, and the 5px
+ * bottom padding leaves it hard against the edge. The last group's border is
+ * already removed above, so the hider has nothing to do: drop its line and
+ * give the box a real 12px of bottom padding. */
+body.upa .fw-postbox > .inside > .fw-backend-options-last-border-hider,
+body.upa .postbox-with-fw-options > .inside > .fw-backend-options-last-border-hider {
+	border-bottom: 0;
+}
+body.upa .fw-postbox > .inside,
+body.upa .postbox-with-fw-options > .inside {
+	padding: 0 0 12px !important;
+}
+/* …and the row that hairline belonged to is the last one in the box, so it
+ * has nothing to separate from. */
+body.upa .fw-backend-option-design-default.upa-last-row,
+body.upa .fw-backend-options-group.upa-last-group {
+	border-bottom: 0 !important;
+}
+/* Page builder: item-type tiles read as a palette, not a grey grid. The
+ * framework draws their edge with an OUTLINE, not a border — adding a border
+ * here would double the line, so re-colour the outline instead. */
+body.upa .builder-item-type,
+body.upa .fw-option-type-builder .builder-items-types .builder-item-type {
+	background: var(--upa-panel);
+	border: 0;
+	outline: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text2);
+	box-shadow: none;
+	transition: outline-color .12s ease, background-color .12s ease, color .12s ease;
+}
+body.upa .builder-item-type:hover,
+body.upa .fw-option-type-builder .builder-items-types .builder-item-type:hover {
+	background: var(--upa-panel);
+	outline-color: var(--upa-accent);
+	color: var(--upa-text);
+}
+body.upa .builder-items-types {
+	background: transparent;
+	border: 0;
+}
+/* NOTE: the framework's jQuery UI tab strips (Theme Settings inner tabs,
+ * Page Settings, the page-builder element palette) are deliberately NOT
+ * restyled — the framework's own tabs read better than a re-skin of them. */
+
+/* Page builder: item-type tiles read as a palette, not a grey grid. The
+ * framework draws their edge with an OUTLINE, not a border — adding a border
+ * here would double the line, so re-colour the outline instead. */
+body.upa .builder-item-type,
+body.upa .fw-option-type-builder .builder-items-types .builder-item-type {
+	background: var(--upa-panel);
+	border: 0;
+	outline: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text2);
+	box-shadow: none;
+	transition: outline-color .12s ease, background-color .12s ease, color .12s ease;
+}
+body.upa .builder-item-type:hover,
+body.upa .fw-option-type-builder .builder-items-types .builder-item-type:hover {
+	background: var(--upa-panel);
+	outline-color: var(--upa-accent);
+	color: var(--upa-text);
+}
+/* Page-builder full screen.
+ *
+ * The builder pins its backdrop below core's 32px admin bar (z 99997) and
+ * itself at top:82px (z 99998). The skin's bar is --upa-bar-h tall and its
+ * sidebar sits at z 100000 to own the top-left corner, so without this the
+ * sidebar draws OVER the overlay and the builder starts 50px too high. */
+body.upa .fw-option-type-builder-fullscreen-backdrop,
+body.upa.admin-bar .fw-option-type-builder-fullscreen-backdrop {
+	top: var(--upa-bar-h, 52px);
+	background-color: var(--upa-bg);
+}
+/* On screens where the builder renders no backdrop sibling, the page behind
+ * stays visible through the overlay. Draw the canvas ourselves, under it. */
+body.upa:has(.builder-fullscreen)::before {
+	content: "";
+	position: fixed;
+	inset: var(--upa-bar-h, 52px) 0 0 0;
+	background: var(--upa-bg);
+	z-index: 99997;
+}
+body.upa .fw-option-type-builder.builder-fullscreen {
+	top: calc(var(--upa-bar-h, 52px) + 50px);
+	bottom: 20px;
+	display: flex;
+	flex-direction: column;
+	background-color: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius-lg, 14px);
+	overflow: hidden;
+	padding-top: 0;
+}
+body.upa .fw-option-type-builder.builder-fullscreen > .builder-items-types {
+	flex: 0 0 auto;
+	padding-top: 10px;
+}
+/* The builder caps this from the document height, which is wrong once the
+ * panel is a fixed-height flex column. */
+body.upa .fw-option-type-builder.builder-fullscreen > .builder-root-items {
+	flex: 1 1 auto;
+	max-height: none !important;
+	overflow: auto;
+	overflow-x: hidden;
+}
+/* While the overlay is up the sidebar must sit under it. */
+body.upa:has(.builder-fullscreen) #adminmenuwrap,
+body.upa:has(.builder-fullscreen) #adminmenuback {
+	z-index: 99990;
+}
+body.upa .fw-option-type-builder-fullscreen-backdrop .buttons-wrapper {
+	margin: 9px 24px;
+}
+/* Preset rows (Color Presets, Box Presets, …) are postboxes whose TITLE also
+ * carries the duplicate / delete controls. Keep the name at regular weight
+ * and push the controls to the right edge, before the collapse arrow. */
+body.upa .fw-option-box .fw-postbox > .postbox-header .hndle,
+body.upa .fw-option-box .fw-postbox > .postbox-header h2.hndle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 400;
+	font-size: 13.5px;
+	width: 100%;
+}
+body.upa .fw-option-box .fw-postbox > .postbox-header .hndle .fw-html-after-title,
+body.upa .fw-option-box .fw-postbox > .postbox-header .hndle .fw-option-box-controls {
+	margin-left: auto;
+	font-weight: 400;
+}
+body.upa .fw-option-box .fw-postbox > .postbox-header .hndle .fw-option-box-controls {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	opacity: 0;
+	transition: opacity .12s ease;
+}
+body.upa .fw-option-box .fw-postbox:hover > .postbox-header .hndle .fw-option-box-controls,
+body.upa .fw-option-box .fw-postbox > .postbox-header:focus-within .hndle .fw-option-box-controls {
+	opacity: 1;
+}
+
+/* Dark mode: framework surfaces that are hardcoded white -------------------
+ * These are painted by the framework's own CSS (or by an option type's), so
+ * they stay light unless the skin claims them. */
+body.upa .fw-settings-form,
+body.upa .fw-settings-form.fw-backend-side-tabs,
+body.upa .fw-options-tabs-contents,
+body.upa .fw-options-tabs-contents.metabox-holder {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+}
+
+body.upa .fw-inner,
+body.upa .fw-backend-options-group .fw-inner {
+	border-color: var(--upa-border);
+}
+
+/* Option types with their own chrome */
+body.upa .fw-option-type-background-pro,
+body.upa .fw-option-type-background-pro .bg-pro__panel {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	color: var(--upa-text);
+}
+
+body.upa .bg-pro__tabs {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+}
+
+body.upa .bg-pro__tab {
+	color: var(--upa-text2);
+	border-color: var(--upa-border);
+}
+
+body.upa .bg-pro__tab.is-active {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+}
+
+body.upa .tooltiptext,
+body.upa .tooltip .tooltiptext {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+	border: 1px solid var(--upa-border);
+	box-shadow: var(--upa-shadow-sm);
+}
+
+/* The save button in the sticky footer bar is accent-on-accent otherwise */
+body.upa .fw-settings-form-footer .button-primary,
+body.upa .form-footer-buttons .button-primary {
+	background: var(--upa-accent);
+	border-color: var(--upa-accent);
+	color: var(--upa-accent-fg);
+}
+
+/* Remaining option-type chrome that paints itself white */
+body.upa .fw-mp-pop-trigger,
+body.upa .pccpc__trigger,
+body.upa .fw-option-type-multi-picker .fw-mp-pop-trigger,
+body.upa .fw-option-type-predefined-colors-color-picker .pccpc__trigger {
+	background: var(--upa-panel);
+	border-color: var(--upa-border2);
+	color: var(--upa-text);
+}
+
+body.upa .fw-mp-pop-trigger:hover,
+body.upa .pccpc__trigger:hover {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+/* The settings header's Save button is white-on-accent by design; the one in
+ * the FOOTER bar sits on the panel, so it must not inherit that. */
+body.upa .fw-settings-form-footer .submit-button-save,
+body.upa .form-footer-buttons .submit-button-save,
+body.upa .fw-settings-form > .form-footer-buttons .button-primary {
+	background: var(--upa-accent);
+	border-color: var(--upa-accent);
+	color: var(--upa-accent-fg);
+}
+
+/* The framework scopes this divider through its tab wrapper, so match that
+ * depth or the light border wins in dark mode. */
+body.upa .fw-options-tabs-contents .fw-inner,
+body.upa .fw-options-tabs-contents.metabox-holder .fw-inner,
+body.upa .fw-options-tab .fw-inner,
+body.upa .fw-inner {
+	border-color: var(--upa-border);
+}
+
+
+/* The framework's jQuery UI tab strips keep their OWN geometry (they read
+ * better than a re-skin), but their colours are hardcoded light, so in dark
+ * mode only the surface/ink/border are claimed here — no layout, no borders
+ * added or removed. */
+/* The framework scopes these through several ancestors, so colour-only
+ * overrides need !important to land. Geometry is still 100% the framework's
+ * — nothing here changes size, spacing or border widths.
+ *
+ * Inactive tabs are TRANSPARENT (as they are in light mode); giving every
+ * tab a fill turned the strip into a row of boxes. */
+html[data-upa-mode="dark"] body.upa .ui-tabs-nav {
+	background-color: transparent !important;
+	border-color: var(--upa-border) !important;
+	outline-color: var(--upa-border) !important;
+}
+
+html[data-upa-mode="dark"] body.upa .ui-tabs-nav .ui-tabs-anchor,
+html[data-upa-mode="dark"] body.upa .ui-tabs-nav .nav-tab {
+	background-color: transparent !important;
+	color: var(--upa-text2) !important;
+	border-color: transparent !important;
+	outline-color: transparent !important;
+}
+
+html[data-upa-mode="dark"] body.upa .ui-tabs-nav .ui-tabs-anchor:hover,
+html[data-upa-mode="dark"] body.upa .ui-tabs-nav .nav-tab:hover {
+	color: var(--upa-text) !important;
+}
+
+html[data-upa-mode="dark"] body.upa .ui-tabs-nav .ui-tabs-active .ui-tabs-anchor,
+html[data-upa-mode="dark"] body.upa .ui-tabs-nav .ui-state-active .nav-tab,
+html[data-upa-mode="dark"] body.upa .ui-tabs-nav .nav-tab-active {
+	background-color: var(--upa-panel) !important;
+	color: var(--upa-text) !important;
+	border-color: var(--upa-border) !important;
+	outline-color: var(--upa-border) !important;
+	/* Open at the bottom, exactly as in light mode: the active tab's own
+	 * bottom edge is painted in the panel colour so it merges with the
+	 * content instead of drawing a line under the label. */
+	border-bottom-color: var(--upa-panel) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+	html[data-upa-mode="system"] body.upa .ui-tabs-nav {
+		background-color: transparent !important;
+		border-color: var(--upa-border) !important;
+		outline-color: var(--upa-border) !important;
+	}
+
+	html[data-upa-mode="system"] body.upa .ui-tabs-nav .ui-tabs-anchor,
+	html[data-upa-mode="system"] body.upa .ui-tabs-nav .nav-tab {
+		background-color: transparent !important;
+		color: var(--upa-text2) !important;
+		border-color: transparent !important;
+		outline-color: transparent !important;
+	}
+
+	html[data-upa-mode="system"] body.upa .ui-tabs-nav .ui-tabs-active .ui-tabs-anchor,
+	html[data-upa-mode="system"] body.upa .ui-tabs-nav .ui-state-active .nav-tab,
+	html[data-upa-mode="system"] body.upa .ui-tabs-nav .nav-tab-active {
+		background-color: var(--upa-panel) !important;
+		color: var(--upa-text) !important;
+		border-color: var(--upa-border) !important;
+		outline-color: var(--upa-border) !important;
+		border-bottom-color: var(--upa-panel) !important;
+	}
+}
+
+/* An OPEN preset box (addable-box item): the framework paints its body white
+ * on top of the card, and the colour-picker's hex field with it. */
+body.upa .fw-option-box .fw-postbox > .inside,
+body.upa .fw-option-box .postbox-with-fw-options > .inside,
+body.upa .fw-option-box .fw-postbox .inside {
+	background: var(--upa-panel);
+	color: var(--upa-text2);
+	border-color: var(--upa-border);
+}
+
+body.upa .fw-option-type-color-picker input.fw-option,
+body.upa .fw-option-type-color-picker input[type="text"],
+body.upa .fw-option-type-rgba-color-picker input[type="text"],
+body.upa .wp-picker-container input[type="text"].wp-color-picker {
+	background: var(--upa-panel2);
+	color: var(--upa-text);
+	border-color: var(--upa-border2);
+}
+
+body.upa .wp-picker-container .wp-color-result.button,
+body.upa .wp-picker-container .wp-picker-open + .wp-picker-input-wrap {
+	background: var(--upa-panel);
+	border-color: var(--upa-border2);
+}
+
+body.upa .wp-picker-holder,
+body.upa .iris-picker,
+body.upa .iris-picker .iris-square-inner,
+body.upa .wp-picker-container .iris-picker {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+}
+
+/* ---------------------------------------------------------------------------
+ * Option-type components that hardcode a light surface.
+ *
+ * These are the framework's own bespoke controls (icon-pack cards, the
+ * typography preview, preset loaders, the border/box preset editor, the
+ * predefined-colour dropdown, unit inputs). They paint themselves white, so
+ * dark mode has to claim each one. Colours only — no geometry.
+ * ------------------------------------------------------------------------ */
+
+/* Icon packs (Icons tab: Library / Browse / Upload) */
+body.upa .upw-ipk__card,
+body.upa .upw-ipk__upload,
+body.upa .upw-ipk__panel {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	color: var(--upa-text2);
+}
+
+body.upa .upw-ipk__card h4,
+body.upa .upw-ipk__card strong,
+body.upa .upw-ipk__title {
+	color: var(--upa-text);
+}
+
+body.upa .upw-ipk__card .upw-ipk__count,
+body.upa .upw-ipk__meta {
+	color: var(--upa-text3);
+}
+
+/* Typography: preset loader + live preview */
+body.upa .fw-preset-loader-details,
+body.upa .fw-preset-card,
+body.upa .fw-preset-card--custom {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	color: var(--upa-text);
+}
+
+body.upa .fw-preset-card:hover {
+	border-color: var(--upa-accent);
+}
+
+body.upa .upw-typo-prev,
+body.upa .upw-typo-prev__body,
+body.upa .upw-typo-prev__canvas,
+body.upa .upw-typo-prev__row {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	color: var(--upa-text);
+}
+
+body.upa .upw-typo-prev__head,
+body.upa .upw-typo-prev__devices {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+	color: var(--upa-text2);
+}
+
+body.upa .upw-typo-prev__tag,
+body.upa .upw-typo-prev__size {
+	color: var(--upa-text3);
+}
+
+/* Border / Box preset editor */
+body.upa .fw-option-type-border-presets-item,
+body.upa .fw-option-type-border-presets-item.is-collapsed,
+body.upa .fw-option-type-border-presets-item-header,
+body.upa .fw-option-type-border-presets-item-body {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	color: var(--upa-text);
+}
+
+body.upa .fw-option-type-border-presets-item-header {
+	background: var(--upa-panel2);
+}
+
+/* Preset action buttons + the options search field */
+body.upa .fw-preset-upload-label,
+body.upa .fw-preset-export,
+body.upa .fw-preset-browse,
+body.upa .fw-option-boxes-add-button,
+body.upa .fw-options-search__input,
+body.upa .fw-unit-input-row,
+body.upa .fw-select {
+	background: var(--upa-panel);
+	border-color: var(--upa-border2);
+	color: var(--upa-text);
+}
+
+body.upa .fw-preset-upload-label:hover,
+body.upa .fw-preset-export:hover,
+body.upa .fw-preset-browse:hover,
+body.upa .fw-option-boxes-add-button:hover {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+/* Predefined-colour dropdown (the select-a-colour menu) */
+body.upa .pccpc__menu,
+body.upa .pccpc__list,
+body.upa .pccpc__panel {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	box-shadow: var(--upa-shadow);
+	color: var(--upa-text);
+}
+
+body.upa .pccpc__option,
+body.upa .pccpc__item {
+	color: var(--upa-text2);
+}
+
+body.upa .pccpc__option:hover,
+body.upa .pccpc__item:hover,
+body.upa .pccpc__option.is-active,
+body.upa .pccpc__item.is-active {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+/* Help / info callouts the framework renders above an options group */
+body.upa .fw-option-type-html-full .fw-inner > div[style*="background"],
+body.upa .fw-backend-option-type-html-full .fw-inner,
+body.upa .fw-html-callout,
+body.upa .upw-note,
+body.upa .upw-callout {
+	background: var(--upa-panel2) !important;
+	border-color: var(--upa-border) !important;
+	color: var(--upa-text2) !important;
+}
+
+/* jQuery UI tab strips (page-builder element tabs, Page Settings, Theme
+ * Settings inner tabs). Their structure is left alone on purpose, but jQuery
+ * UI hardcodes #222 on the anchor, which is all but invisible on a dark
+ * canvas — so the label colours, and only those, come from the skin. */
+body.upa .ui-tabs-nav .ui-tabs-anchor,
+body.upa .ui-tabs-nav .ui-state-default .ui-tabs-anchor {
+	color: var(--upa-text2);
+}
+
+body.upa .ui-tabs-nav .ui-tabs-anchor:hover {
+	color: var(--upa-text);
+}
+
+body.upa .ui-tabs-nav .ui-tabs-active .ui-tabs-anchor,
+body.upa .ui-tabs-nav .ui-state-active .ui-tabs-anchor {
+	color: var(--upa-accent);
+}
+
+/* Builder footer: the desktop/tablet/mobile preview toggle. Core-ui paints
+ * the inactive buttons white, which floats as a bright chip on a dark bar. */
+body.upa .fw-device-preview .fw-device-btn {
+	background: var(--upa-panel2);
+	color: var(--upa-text2);
+	border-color: var(--upa-border);
+}
+
+body.upa .fw-device-preview .fw-device-btn:hover {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+}
+
+body.upa .fw-device-preview .fw-device-btn.active,
+body.upa .fw-device-preview .fw-device-btn.active:hover {
+	background: var(--upa-accent);
+	color: var(--upa-accent-fg);
+	border-color: var(--upa-accent);
+}
+
+/* Box Style picker (border-style-picker option type) -----------------------
+ *
+ * Only the dropdown's CHROME follows the skin. The swatch inside each row
+ * stays white on purpose: it previews a Box Preset as it will render on the
+ * front end, which is a light surface — recolouring it would show a border
+ * and shadow that do not match what the visitor gets. Same reasoning as the
+ * editor canvas: a preview has to look like the thing it previews. */
+body.upa .fw-option-type-border-style-picker .bsp__trigger {
+	background: var(--upa-panel);
+	border-color: var(--upa-border2);
+	color: var(--upa-text);
+	border-radius: var(--upa-radius-sm, 6px);
+}
+
+body.upa .fw-option-type-border-style-picker .bsp__trigger-placeholder,
+body.upa .fw-option-type-border-style-picker .bsp__caret,
+body.upa .fw-option-type-border-style-picker .bsp__option--empty .bsp__option-label {
+	color: var(--upa-text3);
+}
+
+body.upa .fw-option-type-border-style-picker .bsp__panel {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: var(--upa-shadow);
+}
+
+body.upa .fw-option-type-border-style-picker .bsp__option-label {
+	color: var(--upa-text);
+}
+
+body.upa .fw-option-type-border-style-picker .bsp__option:hover,
+body.upa .fw-option-type-border-style-picker .bsp__option:focus {
+	background: var(--upa-panel);
+}
+
+body.upa .fw-option-type-border-style-picker .bsp__option.is-selected {
+	background: var(--upa-accent-soft);
+}
+
+body.upa .fw-option-type-border-style-picker .bsp__badge {
+	background: var(--upa-panel);
+	color: var(--upa-text2);
+}
+
+/* Animations tab organizer (animation-stack) -------------------------------
+ *
+ * The empty-state callout, the inserter catalog, its search field, the filter
+ * pills and the effect tiles all ship literal light values. */
+body.upa .upw-anim-empty {
+	background: var(--upa-accent-soft);
+	border-color: var(--upa-border2);
+	color: var(--upa-text2);
+}
+
+body.upa .upw-anim-empty-ico,
+body.upa .upw-anim-tile-ico {
+	color: var(--upa-accent);
+}
+
+body.upa .upw-anim-card {
+	border-bottom-color: var(--upa-border);
+}
+
+body.upa .upw-anim-card-remove {
+	color: var(--upa-text3);
+}
+
+body.upa .upw-anim-card-remove:hover {
+	background: var(--upa-red-soft);
+	color: var(--upa-red-text);
+	border-color: transparent;
+}
+
+body.upa .upw-anim-add {
+	background: var(--upa-accent);
+	border-color: var(--upa-accent);
+	color: var(--upa-accent-fg);
+	border-radius: var(--upa-radius-sm, 6px);
+}
+
+body.upa .upw-anim-add:hover {
+	background: var(--upa-accent2);
+	box-shadow: none;
+}
+
+body.upa .upw-anim-catalog {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: none;
+}
+
+body.upa .upw-anim-search {
+	background: var(--upa-panel) !important;
+	border-color: var(--upa-border2) !important;
+	color: var(--upa-text) !important;
+	border-radius: var(--upa-radius-sm, 6px) !important;
+}
+
+body.upa .upw-anim-cat-desc,
+body.upa .upw-anim-tile-cat,
+body.upa .upw-anim-tiles-empty {
+	color: var(--upa-text3);
+}
+
+body.upa .upw-anim-tab {
+	background: var(--upa-panel);
+	border-color: var(--upa-border2);
+	color: var(--upa-text2);
+}
+
+body.upa .upw-anim-tab:hover {
+	border-color: var(--upa-text3);
+	color: var(--upa-text);
+}
+
+body.upa .upw-anim-tab.is-on {
+	background: var(--upa-accent-soft);
+	border-color: var(--upa-accent);
+	color: var(--upa-accent);
+}
+
+body.upa .upw-anim-tile {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	color: var(--upa-text);
+}
+
+body.upa .upw-anim-tile:hover {
+	border-color: var(--upa-accent);
+	box-shadow: none;
+}
+
+body.upa .upw-anim-tile-lbl {
+	color: var(--upa-text);
+}
+
+body.upa .upw-anim-card-extra {
+	border-top-color: var(--upa-border);
+}
+
+/* Preset-picker dropdowns: Box Style (bsp), Table Style (tsp) and Border
+ * Hover Animation (bha). Three option types with an identical class shape, so
+ * one block covers all of them.
+ *
+ * Their __preview is deliberately left alone. Each one renders the preset as
+ * it will appear on the FRONT END — a light surface — so recolouring it would
+ * show a border, shadow or table rule that does not match what a visitor
+ * gets. Same reasoning as the dark editor canvas: a preview has to look like
+ * the thing it previews, not like the admin around it. */
+body.upa .bsp__trigger,
+body.upa .tsp__trigger,
+body.upa .bha__trigger {
+	background: var(--upa-panel);
+	border-color: var(--upa-border2);
+	color: var(--upa-text);
+	border-radius: var(--upa-radius-sm, 6px);
+}
+
+body.upa .bsp__panel,
+body.upa .tsp__panel,
+body.upa .bha__panel {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: var(--upa-shadow);
+}
+
+body.upa .bsp__option-label,
+body.upa .tsp__option-label,
+body.upa .bha__option {
+	color: var(--upa-text);
+}
+
+body.upa .bsp__caret,
+body.upa .tsp__caret,
+body.upa .bha__caret,
+body.upa .bsp__trigger-placeholder,
+body.upa .tsp__trigger-placeholder,
+body.upa .tsp__trigger-label,
+body.upa .bha__trigger-label,
+body.upa .bsp__option--empty .bsp__option-label,
+body.upa .tsp__option--empty .tsp__option-label,
+body.upa .bha__none {
+	color: var(--upa-text3);
+}
+
+body.upa .bsp__option:hover,
+body.upa .bsp__option:focus,
+body.upa .tsp__option:hover,
+body.upa .tsp__option:focus,
+body.upa .bha__option:hover,
+body.upa .bha__option:focus {
+	background: var(--upa-panel);
+}
+
+body.upa .bsp__option.is-selected,
+body.upa .tsp__option.is-selected,
+body.upa .bha__option.is-selected {
+	background: var(--upa-accent-soft);
+}
+
+body.upa .bsp__badge {
+	background: var(--upa-panel);
+	color: var(--upa-text2);
+}
+
+/* Popover option type (and its tabbed variant) ---------------------------- */
+body.upa .fw-option-type-popover .fw-popover-trigger {
+	background-color: var(--upa-panel);
+	border-color: var(--upa-border2);
+	color: var(--upa-text);
+	border-radius: var(--upa-radius-sm, 6px);
+}
+
+body.upa .fw-option-type-popover .fw-popover-summary,
+body.upa .fw-option-type-popover .fw-popover-caret {
+	color: var(--upa-text3);
+}
+
+body.upa .fw-option-type-popover .fw-popover-panel {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+}
+
+body.upa .fw-option-type-popover .fw-popover-tabs {
+	background: var(--upa-panel2);
+	border-bottom-color: var(--upa-border);
+}
+
+body.upa .fw-option-type-popover .fw-popover-tab {
+	color: var(--upa-text2);
+	border-right-color: var(--upa-border);
+}
+
+body.upa .fw-option-type-popover .fw-popover-tab:hover {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+}
+
+body.upa .fw-option-type-popover .fw-popover-tab.is-active {
+	background: var(--upa-panel);
+	color: var(--upa-accent);
+}
+
+/* Tabs option type -------------------------------------------------------- */
+body.upa .fw-option-type-tabs {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+}
+
+body.upa .fw-option-type-tabs .fw-tabs__tabs {
+	background: var(--upa-panel2);
+	border-bottom-color: var(--upa-border);
+}
+
+body.upa .fw-option-type-tabs .fw-tabs__tab {
+	color: var(--upa-text2);
+	border-right-color: var(--upa-border);
+}
+
+body.upa .fw-option-type-tabs .fw-tabs__tab:hover {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+}
+
+body.upa .fw-option-type-tabs .fw-tabs__tab.is-active {
+	background: var(--upa-panel);
+	color: var(--upa-accent);
+}
+
+/* Addable rows + a builder nested inside an option ------------------------- */
+body.upa .fw-backend-options-virtual-context.item,
+body.upa .fw-option-type-nested-builder,
+body.upa .fw-option-type-nested-builder .builder-items {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+	border-color: var(--upa-border);
+}
+
+body.upa .fw-option-type-nested-builder .builder-items-types {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+}
+
+/* Box Shadow option: the CHROME follows the skin; the .bsh-preview swatch
+ * stays white for the same reason the preset previews do — it is showing the
+ * shadow as it will land on a page, and a shadow is unreadable on a dark
+ * surface. */
+body.upa .fw-option-type-box-shadow {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+}
+
+/* The spacing / colour-stop strips. */
+body.upa .fw-ss-track,
+body.upa .fw-cs-track {
+	background: var(--upa-panel2);
+}
+
+body.upa .fw-ss-pane,
+body.upa .fw-cs-pane,
+body.upa .fw-cs-pane-left,
+body.upa .fw-cs-pane-right {
+	background: var(--upa-panel);
+	color: var(--upa-text2);
+}
+
+body.upa .fw-option-type-builder .builder-items,
+body.upa .fw-option-type-nested-builder .builder-items.fw-row {
+	background: var(--upa-panel);
+}
+
+/* TinyMCE's menu buttons in an options-embedded editor. */
+body.upa .mce-widget.mce-btn.mce-menubtn,
+body.upa .mce-widget.mce-btn.mce-menubtn button {
+	background: var(--upa-panel2);
+	color: var(--upa-text2);
+	border-color: var(--upa-border);
+}
+
+/* Column Split: the two panes are tinted DIFFERENTLY on purpose — that is how
+ * you tell left from right while dragging the divider. Keep that cue, just
+ * express it as two shades over the panel instead of two pastels. */
+body.upa .fw-option-type-column-split .fw-cs-track {
+	background: var(--upa-panel2);
+}
+
+body.upa .fw-option-type-column-split .fw-cs-pane-left {
+	background: color-mix(in srgb, var(--upa-accent) 14%, var(--upa-panel));
+}
+
+body.upa .fw-option-type-column-split .fw-cs-pane-right {
+	background: color-mix(in srgb, var(--upa-text) 7%, var(--upa-panel));
+}
+
+body.upa .fw-option-type-column-split .fw-cs-pane,
+body.upa .fw-option-type-column-split .fw-cs-pane-label,
+body.upa .fw-option-type-column-split .fw-cs-pane-frac,
+body.upa .fw-option-type-column-split .fw-cs-pane-icon.dashicons {
+	color: var(--upa-text2);
+}
+
+/* Element modal tab strip (Content / Styling / Animations / Advanced) --------
+ *
+ * These anchors carry core's .nav-tab class, so they inherit wp-admin's folder
+ * look: a white active tab plus a strip underline that the active tab notches
+ * into. On a dark modal that reads as a white box with a bright line running
+ * off to the right. Scoped to .fw-modal so the Theme Settings tabs, which stay
+ * as the framework draws them, are untouched. */
+body.upa .fw-modal .fw-options-tabs-list,
+body.upa .fw-modal .fw-options-tabs-wrapper > .fw-options-tabs-list {
+	border-bottom: 0;
+}
+
+body.upa .fw-modal .ui-tabs-nav .ui-tabs-anchor,
+body.upa .fw-modal .ui-tabs-nav .ui-state-default .ui-tabs-anchor {
+	background: transparent;
+	border-color: transparent;
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text2);
+}
+
+body.upa .fw-modal .ui-tabs-nav .ui-tabs-anchor:hover {
+	background: var(--upa-panel2);
+	color: var(--upa-text);
+}
+
+body.upa .fw-modal .ui-tabs-nav .ui-tabs-active .ui-tabs-anchor,
+body.upa .fw-modal .ui-tabs-nav .ui-state-active .ui-tabs-anchor {
+	background: var(--upa-panel2);
+	border-color: transparent;
+	color: var(--upa-text);
+	font-weight: 600;
+}

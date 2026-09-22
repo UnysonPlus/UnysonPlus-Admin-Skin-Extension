@@ -1,0 +1,22 @@
+/**
+ * UnysonPlus Admin Skin — the wp-admin colour scheme sheet.
+ *
+ * Registered with wp_admin_css_color() and loaded by core in place of the
+ * user's scheme while the skin applies. Core's scheme sheets are 800 lines of
+ * menu/bar colours; ours only has to publish the handful of variables the
+ * block editor and core components read, because the structure and
+ * primitives layers style the chrome from the skin tokens directly.
+ */
+:root {
+	--wp-admin-theme-color: var(--upa-accent, #5b4fe6);
+	--wp-admin-theme-color--rgb: 91, 79, 230;
+	--wp-admin-theme-color-darker-10: var(--upa-accent, #5b4fe6);
+	--wp-admin-theme-color-darker-10--rgb: 91, 79, 230;
+	--wp-admin-theme-color-darker-20: var(--upa-accent, #5b4fe6);
+	--wp-admin-theme-color-darker-20--rgb: 91, 79, 230;
+	--wp-admin-border-width-focus: 2px;
+}
+
+body {
+	background: var(--upa-bg, #f5f5f7);
+}

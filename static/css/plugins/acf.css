@@ -1,0 +1,142 @@
+/**
+ * UnysonPlus Admin Skin — ACF partial.
+ * Loaded only when ACF is active: the field-group editor chrome and the
+ * toolbar ACF draws above its own screens.
+ */
+body.upa .acf-admin-toolbar {
+	background: var(--upa-panel);
+	border-bottom: 1px solid var(--upa-border);
+	color: var(--upa-text);
+	margin: 0 -32px 20px;
+	padding: 0 32px;
+}
+
+body.upa .acf-admin-toolbar .acf-tab,
+body.upa .acf-admin-toolbar a {
+	color: var(--upa-text2);
+}
+
+body.upa .acf-admin-toolbar .acf-tab.is-active {
+	color: var(--upa-text);
+	border-bottom-color: var(--upa-accent);
+}
+
+body.upa .acf-headerbar,
+body.upa .acf-headerbar-field-editor,
+body.upa .acf-field-list-wrap,
+body.upa .acf-field-object,
+body.upa .acf-field-settings,
+body.upa .acf-postbox .inside,
+body.upa .acf-box,
+body.upa .acf-fields > .acf-field {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+	border-color: var(--upa-border);
+}
+
+body.upa .acf-headerbar {
+	margin: 0 -32px 20px;
+	padding: 0 32px;
+	border-bottom: 1px solid var(--upa-border);
+	box-shadow: none;
+}
+
+body.upa .acf-field-object .handle {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+}
+
+body.upa .acf-field-object.open > .handle {
+	background: var(--upa-panel2);
+}
+
+body.upa .acf-field-object .handle .li-field-label a,
+body.upa .acf-field-object .handle .row-options a,
+body.upa .acf-field-list .li-field-label,
+body.upa .acf-field .acf-label label {
+	color: var(--upa-text);
+}
+
+body.upa .acf-field-object .handle .li-field-name,
+body.upa .acf-field-object .handle .li-field-type,
+body.upa .acf-field .acf-label .description,
+body.upa .acf-field-list .li-field-name {
+	color: var(--upa-text3);
+}
+
+body.upa .acf-thead,
+body.upa .acf-tfoot {
+	background: var(--upa-panel2);
+	color: var(--upa-text3);
+	border-color: var(--upa-border);
+}
+
+body.upa .acf-field-settings-main,
+body.upa .acf-field-settings .acf-tab-wrap,
+body.upa .acf-field-settings .acf-tab-group,
+body.upa .acf-tab-wrap .acf-tab-group,
+body.upa .acf-tab-wrap .acf-tab-group li a {
+	background: var(--upa-panel2);
+	color: var(--upa-text2);
+	border-color: var(--upa-border);
+}
+
+body.upa .acf-tab-wrap .acf-tab-group li.active a {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+}
+
+body.upa .acf-button,
+body.upa .acf-btn {
+	background: var(--upa-accent);
+	color: var(--upa-accent-fg);
+	border-radius: var(--upa-radius, 9px);
+	border: 0;
+}
+
+body.upa .acf-btn.acf-btn-secondary {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+	border: 1px solid var(--upa-border2);
+}
+
+body.upa .acf-input .acf-input-wrap input,
+body.upa .acf-field input[type="text"],
+body.upa .acf-field textarea,
+body.upa .acf-field select,
+body.upa .acf-input .select2-container .select2-selection {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+	border-color: var(--upa-border2);
+	border-radius: var(--upa-radius, 9px);
+}
+
+body.upa .acf-switch {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border2);
+	color: var(--upa-text2);
+}
+
+body.upa .acf-switch.-on {
+	background: var(--upa-accent);
+	border-color: var(--upa-accent);
+	color: var(--upa-accent-fg);
+}
+
+body.upa .acf-switch .acf-switch-slider {
+	background: var(--upa-panel);
+	border-color: var(--upa-border2);
+}
+
+body.upa .acf-field-type-icon,
+body.upa .field-type-icon {
+	background: var(--upa-accent-soft);
+	color: var(--upa-accent);
+	border: 0;
+}
+
+body.upa .acf-pro-label,
+body.upa .acf-admin-page .acf-pro-label {
+	background: var(--upa-accent-soft);
+	color: var(--upa-accent);
+}
