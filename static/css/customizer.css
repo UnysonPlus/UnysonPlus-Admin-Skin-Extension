@@ -16,12 +16,19 @@
  * for them to act on.
  */
 
-/* ---- The pane itself ---------------------------------------------------- */
+/* ---- The pane itself ----------------------------------------------------
+ *
+ * One continuous surface, not a list of panels floating on a darker canvas.
+ * The section list only fills as far as its last row, so anything below it was
+ * bare --upa-bg: in light mode that reads as ordinary empty space, but in dark
+ * it is a near-black slab with a hard seam where the rows stop. Painting the
+ * whole column --upa-panel removes the seam and matches how core draws this
+ * pane (rows separated by hairlines on one background, not by a colour step). */
 body.wp-customizer #customize-controls,
 body.wp-customizer .wp-full-overlay-sidebar,
 body.wp-customizer #customize-theme-controls,
 body.wp-customizer .wp-full-overlay-sidebar-content {
-	background: var(--upa-bg);
+	background: var(--upa-panel);
 	color: var(--upa-text);
 }
 
@@ -391,4 +398,89 @@ body.wp-customizer.wp-core-ui .button-primary[disabled] {
 body.wp-customizer #customize-theme-controls .customize-pane-child.accordion-section-content.customize-widgets-layout__inspector {
 	background: var(--upa-panel);
 	color: var(--upa-text);
+}
+
+/* The section rows now sit on the same colour as the pane, so their hairline
+ * is what separates them — give the hover a step so rows still respond. */
+body.wp-customizer #customize-theme-controls .accordion-section-title:hover,
+body.wp-customizer #customize-theme-controls .accordion-section-title:focus,
+body.wp-customizer .accordion-section:hover > .accordion-section-title {
+	background: var(--upa-panel2);
+}
+
+/* The footer sat on the same panel as the column above it, so the only thing
+ * marking it off was a 1px line. Drop it a shade so the device toggle reads as
+ * a bar rather than as more of the list. */
+body.wp-customizer .wp-full-overlay-footer,
+body.wp-customizer #customize-footer-actions,
+body.wp-customizer #customize-footer-actions .devices {
+	background: var(--upa-panel2);
+}
+
+/* ---- Footer bar --------------------------------------------------------- */
+
+/* Core draws the collapse control as a light filled circle with a dashicon
+ * arrow inside. On a dark pane that is a glaring white dot in the corner —
+ * the brightest thing on the screen, attached to the least important control.
+ * Give it the pane's own tones so it reads as a button, not a beacon. */
+body.wp-customizer .collapse-sidebar-arrow {
+	background: var(--upa-panel);
+	color: var(--upa-text2);
+	border-radius: 50%;
+	box-shadow: none;
+}
+
+body.wp-customizer .collapse-sidebar:hover .collapse-sidebar-arrow,
+body.wp-customizer .collapse-sidebar:focus .collapse-sidebar-arrow {
+	background: var(--upa-panel2);
+	color: var(--upa-text);
+}
+
+body.wp-customizer .collapse-sidebar-label {
+	color: var(--upa-text2);
+}
+
+body.wp-customizer .collapse-sidebar:hover .collapse-sidebar-label {
+	color: var(--upa-text);
+}
+
+/* The device group painted its own panel, so the bar read as two blocks with
+ * a seam rather than one strip. Let the footer supply the surface. */
+body.wp-customizer #customize-footer-actions .devices,
+body.wp-customizer #customize-footer-actions .devices-wrapper {
+	background: transparent;
+	border-color: var(--upa-border);
+}
+
+/* The active device is marked with a top border; core's is the stock blue. */
+body.wp-customizer #customize-footer-actions .devices button.active {
+	border-top-color: var(--upa-accent);
+}
+
+/* The glyphs are dashicons on ::before, and core colours them for a LIGHT
+ * footer: the active device's icon is hardcoded #1d2327, which is invisible on
+ * a dark bar (its label stayed readable, so only the icon vanished), and the
+ * inactive ones are a dim #646970. Inheriting from the button makes each glyph
+ * follow the state colour already set above — accent when active, text2
+ * otherwise — instead of carrying its own. */
+body.wp-customizer #customize-footer-actions .devices button:before {
+	color: inherit;
+	background: transparent;
+}
+
+/* Core gives this pseudo-element a near-white fill, so styling only the
+ * parent left a bright block behind the arrow — the "white blur" in the
+ * bottom-left corner. */
+body.wp-customizer .collapse-sidebar-arrow:before {
+	background: transparent;
+	color: inherit;
+}
+
+/* Core casts a near-white shadow 20px to the LEFT of the device group
+ * (`box-shadow: #f0f0f1 -20px 0 10px -5px`) so the footer fades into it when
+ * the bar is too narrow for both. It is a MASK in the footer's own colour, not
+ * a shadow — which means on a dark bar it reads as a white smear beside the
+ * Desktop button. Re-tint it to our footer so it still masks and disappears. */
+body.wp-customizer #customize-footer-actions .devices {
+	box-shadow: var(--upa-panel2) -20px 0 10px -5px;
 }

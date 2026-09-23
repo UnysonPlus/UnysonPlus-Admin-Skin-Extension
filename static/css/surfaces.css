@@ -1132,23 +1132,81 @@ body.upa .fw-option-type-column-split .fw-cs-pane-icon.dashicons {
  *
  * Scoped to .fw-modal so the Theme Settings tabs, which stay exactly as the
  * framework draws them, are untouched. */
+/* Keep core's FOLDER-TAB shape, only re-colour it — the same look the page
+ * builder's element tabs have. An earlier pass turned these into flat pills,
+ * which lost the connection between the active tab and the panel under it.
+ *
+ * Inactive: a raised, greyed tab with a top/left/right edge.
+ * Active: the PANEL's own colour, so the tab and the content below it read as
+ * one surface, with its bottom edge painted in that colour to erase the
+ * strip's line where the tab meets it. */
 body.upa .fw-modal .ui-tabs-nav .ui-tabs-anchor,
 body.upa .fw-modal .ui-tabs-nav .ui-state-default .ui-tabs-anchor {
-	background: transparent;
-	border-color: transparent;
-	border-radius: var(--upa-radius-sm, 6px);
-	color: var(--upa-text2);
+	position: relative;
+	margin-bottom: -1px;
+	background: var(--upa-panel2);
+	border: 1px solid var(--upa-border);
+	border-bottom: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius-sm, 6px) var(--upa-radius-sm, 6px) 0 0;
+	color: var(--upa-text3);
+	/* Weight is deliberately IDENTICAL in every state. Bolding the active tab
+	 * changes its label's width, which reflows the whole strip each time you
+	 * switch — the tabs visibly shift and grow. Active is signalled by fill
+	 * and text colour only, which costs no layout. */
+	font-weight: 500;
 }
 
 body.upa .fw-modal .ui-tabs-nav .ui-tabs-anchor:hover {
-	background: var(--upa-panel2);
-	color: var(--upa-text);
+	background: var(--upa-hover, var(--upa-panel));
+	color: var(--upa-text2);
 }
 
 body.upa .fw-modal .ui-tabs-nav .ui-tabs-active .ui-tabs-anchor,
 body.upa .fw-modal .ui-tabs-nav .ui-state-active .ui-tabs-anchor {
-	background: var(--upa-panel2);
-	border-color: transparent;
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	border-bottom-color: var(--upa-panel);
 	color: var(--upa-text);
-	font-weight: 600;
+}
+
+/* The global dark / system rules above force every inactive tab transparent
+ * with !important — correct for the Theme Settings strips, which keep the
+ * framework's own look. The element modal uses folder tabs, so its inactive
+ * tabs need the greyed fill back. Same weight in both states, as above. */
+html[data-upa-mode="dark"] body.upa .fw-modal .ui-tabs-nav .ui-tabs-anchor,
+html[data-upa-mode="dark"] body.upa .fw-modal .ui-tabs-nav .nav-tab {
+	background-color: var(--upa-panel2) !important;
+	border-color: var(--upa-border) !important;
+	color: var(--upa-text3) !important;
+}
+
+html[data-upa-mode="dark"] body.upa .fw-modal .ui-tabs-nav .ui-tabs-anchor:hover {
+	color: var(--upa-text2) !important;
+}
+
+html[data-upa-mode="dark"] body.upa .fw-modal .ui-tabs-nav .ui-tabs-active .ui-tabs-anchor,
+html[data-upa-mode="dark"] body.upa .fw-modal .ui-tabs-nav .ui-state-active .nav-tab,
+html[data-upa-mode="dark"] body.upa .fw-modal .ui-tabs-nav .nav-tab-active {
+	background-color: var(--upa-panel) !important;
+	color: var(--upa-text) !important;
+	border-color: var(--upa-border) !important;
+	border-bottom-color: var(--upa-panel) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+	html[data-upa-mode="system"] body.upa .fw-modal .ui-tabs-nav .ui-tabs-anchor,
+	html[data-upa-mode="system"] body.upa .fw-modal .ui-tabs-nav .nav-tab {
+		background-color: var(--upa-panel2) !important;
+		border-color: var(--upa-border) !important;
+		color: var(--upa-text3) !important;
+	}
+
+	html[data-upa-mode="system"] body.upa .fw-modal .ui-tabs-nav .ui-tabs-active .ui-tabs-anchor,
+	html[data-upa-mode="system"] body.upa .fw-modal .ui-tabs-nav .ui-state-active .nav-tab,
+	html[data-upa-mode="system"] body.upa .fw-modal .ui-tabs-nav .nav-tab-active {
+		background-color: var(--upa-panel) !important;
+		color: var(--upa-text) !important;
+		border-color: var(--upa-border) !important;
+		border-bottom-color: var(--upa-panel) !important;
+	}
 }

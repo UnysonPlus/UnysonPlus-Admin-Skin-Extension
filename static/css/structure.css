@@ -622,6 +622,97 @@ body.upa #adminmenu #collapse-button .collapse-button-label {
 	text-decoration: none;
 }
 
+/* The sidebar account block is a real menu: the trigger shows who you are,
+ * and its popup carries core's own account items (mirrored, so plugin-added
+ * entries come along) rather than a hand-written copy of two of them. */
+.upa-user {
+	position: relative;
+}
+
+.upa-user-trigger {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	border-radius: var(--upa-radius-sm, 6px);
+}
+
+.upa-user-trigger:hover,
+.upa-user-trigger:focus-visible,
+.upa-user.is-open .upa-user-trigger {
+	background: var(--upa-hover);
+	outline: none;
+}
+
+.upa-user-caret {
+	flex: 0 0 auto;
+	display: grid;
+	place-items: center;
+	color: var(--upa-text3);
+	transition: transform .15s ease;
+}
+
+.upa-user-caret svg {
+	width: 16px;
+	height: 16px;
+	display: block;
+}
+
+.upa-user.is-open .upa-user-caret {
+	transform: rotate(180deg);
+}
+
+/* Opens UPWARD: the block sits at the bottom of the sidebar, so a downward
+ * panel would be clipped by the viewport edge. */
+.upa-user-menu {
+	display: none;
+	position: absolute;
+	bottom: calc(100% + 6px);
+	left: 8px;
+	right: 8px;
+	z-index: 100001;
+	padding: 6px;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: var(--upa-shadow);
+}
+
+.upa-user.is-open .upa-user-menu {
+	display: block;
+}
+
+.upa-user-menu-item {
+	display: block;
+	padding: 7px 10px;
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text2);
+	font-size: 13px;
+	text-decoration: none;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.upa-user-menu-item:hover,
+.upa-user-menu-item:focus {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+/* When the sidebar owns the account, core's top-right node is hidden — but
+ * only AFTER its items have been mirrored into the popup above. */
+body.upa #wpadminbar #wp-admin-bar-my-account.upa-account-moved {
+	display: none;
+}
+
 .upa-user-role {
 	font-size: 11.5px;
 	color: var(--upa-text3);
@@ -697,10 +788,39 @@ body.upa.folded .upa-brand {
 	padding-right: 0;
 }
 
+/* .upa-brand-link is `flex: 1 1 auto`, so on the folded rail it stretches to
+ * the full width and its 30px mark sits at the left edge — centring the
+ * .upa-brand around it changes nothing. Centre the link's own content so the
+ * mark lands on the same axis as the menu icons below it (rail centre, 32px). */
+body.upa.folded .upa-brand-link {
+	flex: 0 0 auto;
+	justify-content: center;
+}
+
+/* Folded, the name, role and caret are hidden by the shared rule above and the
+ * avatar alone becomes the trigger — still a working account menu, which is
+ * why this is NOT hidden: with the sidebar placement it is the only way in. */
 body.upa.folded .upa-user {
 	justify-content: center;
 	padding-left: 0;
 	padding-right: 0;
+}
+
+body.upa.folded .upa-user-trigger {
+	justify-content: center;
+}
+
+body.upa.folded .upa-user-caret {
+	display: none;
+}
+
+/* The rail is 64px wide; the popup needs real width, so it escapes to the
+ * right of the rail instead of being squeezed inside it. */
+body.upa.folded .upa-user-menu {
+	left: calc(100% - 4px);
+	right: auto;
+	width: 200px;
+	bottom: 8px;
 }
 
 body.upa.folded #adminmenu li.menu-top > a,
@@ -936,9 +1056,14 @@ body.upa #wpadminbar #wp-admin-bar-new-content .ab-label {
 }
 
 /* My account */
+/* The trigger was `padding: 0 8px 0 6px`, so the 26px avatar sat 1px left of
+ * centre inside its hover box. A 34px square with no padding matches the
+ * appearance button beside it exactly and centres the avatar by construction. */
 body.upa #wpadminbar #wp-admin-bar-my-account > .ab-item {
-	padding: 0 8px 0 6px;
-	gap: 8px;
+	width: 34px;
+	padding: 0;
+	gap: 0;
+	justify-content: center;
 }
 
 body.upa #wpadminbar #wp-admin-bar-my-account > .ab-item {
@@ -959,7 +1084,7 @@ body.upa #wpadminbar #wp-admin-bar-my-account .avatar {
 }
 
 body.upa #wpadminbar #wp-admin-bar-my-account.with-avatar > .ab-item {
-	padding-right: 8px;
+	padding-right: 0;
 }
 
 /* Dropdowns from the bar */
@@ -1388,11 +1513,36 @@ body.upa.is-fullscreen-mode #adminmenuback {
 		display: none;
 	}
 
-	body.upa.auto-fold .upa-brand,
+	body.upa.auto-fold .upa-brand {
+		justify-content: center;
+		padding-left: 0;
+		padding-right: 0;
+	}
+
 	body.upa.auto-fold .upa-user {
 		justify-content: center;
 		padding-left: 0;
 		padding-right: 0;
+	}
+
+	body.upa.auto-fold .upa-user-trigger {
+		justify-content: center;
+	}
+
+	body.upa.auto-fold .upa-user-caret {
+		display: none;
+	}
+
+	body.upa.auto-fold .upa-user-menu {
+		left: calc(100% - 4px);
+		right: auto;
+		width: 200px;
+		bottom: 8px;
+	}
+
+	body.upa.auto-fold .upa-brand-link {
+		flex: 0 0 auto;
+		justify-content: center;
 	}
 
 	body.upa.auto-fold #adminmenu li.menu-top > a {
@@ -1578,23 +1728,31 @@ body.upa #wpadminbar #wp-admin-bar-new-content ul li:hover > a {
 	color: var(--upa-text) !important;
 }
 
-/* Account dropdown: avatar beside a two-line name / "Edit Profile" stack */
+/* Account dropdown: avatar beside the name / username / "Edit Profile" stack.
+ *
+ * Core prints THREE text nodes in here (.display-name, .username and
+ * .display-name.edit-profile), not two. With only two template rows the third
+ * fell into the 48px avatar column and wrapped "Edit Profile" onto two lines,
+ * leaving dead space to its right. Three rows, with the avatar spanning all of
+ * them, keeps every line in the text column. */
 body.upa #wpadminbar #wp-admin-bar-user-info .ab-item,
 body.upa #wpadminbar #wp-admin-bar-user-info .ab-item:hover {
 	display: grid;
-	grid-template-columns: 48px 1fr;
-	grid-template-rows: auto auto;
+	grid-template-columns: 48px auto;
+	grid-template-rows: repeat(3, auto);
 	column-gap: 12px;
-	row-gap: 2px;
+	row-gap: 1px;
 	align-items: center;
-	padding: 8px 10px 12px;
+	justify-content: start;
+	padding: 10px 12px;
 	background: transparent;
 	height: auto;
-	white-space: normal;
+	white-space: nowrap;
 }
 
 body.upa #wpadminbar #wp-admin-bar-user-info .avatar {
-	grid-row: 1 / span 2;
+	grid-row: 1 / -1;
+	grid-column: 1;
 	width: 48px;
 	height: 48px;
 	margin: 0;
@@ -1611,9 +1769,15 @@ body.upa #wpadminbar #wp-admin-bar-user-info .display-name {
 
 body.upa #wpadminbar #wp-admin-bar-user-info .display-name.edit-profile,
 body.upa #wpadminbar #wp-admin-bar-user-info .username {
+	grid-column: 2;
 	color: var(--upa-text3);
 	font-size: 12px;
 	font-weight: 400;
+	white-space: nowrap;
+}
+
+body.upa #wpadminbar #wp-admin-bar-user-info .display-name {
+	grid-column: 2;
 }
 
 body.upa #wpadminbar #wp-admin-bar-user-info .ab-item:hover .display-name.edit-profile {
@@ -1878,6 +2042,17 @@ body.upa #adminmenu li.opensub > a.menu-top .wp-menu-image {
 }
 
 /* Appearance toggle in the bar: size its SVG and match the other buttons */
+/* The two right-hand bar buttons sat 3.5px apart vertically: their <li>s are
+ * centred correctly, but one .ab-item was top-aligned in its li and the other
+ * bottom-aligned, because the avatar makes the account li a pixel taller.
+ * Centring the item inside its own li lines both up without hardcoding an
+ * offset that would drift the moment either box changes. */
+body.upa #wpadminbar #wp-admin-bar-upa-appearance,
+body.upa #wpadminbar #wp-admin-bar-my-account {
+	display: flex;
+	align-items: center;
+}
+
 body.upa #wpadminbar #wp-admin-bar-upa-appearance > .ab-item {
 	width: 34px;
 	padding: 0;

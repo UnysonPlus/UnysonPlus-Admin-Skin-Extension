@@ -1924,11 +1924,17 @@ body.upa .postbox .inside > .tagsdiv {
 	margin-top: 8px;
 }
 
-/* Classic editor: toolbar row on the canvas, one card for the editor itself */
+/* Classic editor: toolbar row on the canvas, one card for the editor itself.
+ *
+ * The top padding is core's own 20px, kept deliberately: it is what separates
+ * the media-buttons row from the permalink above it. Zeroing it (as this rule
+ * first did) pulled the row tight against the permalink and, worse, made the
+ * two editor states disagree — the page-builder switch button in the other
+ * state clears the same gap and has to match this number. */
 body.upa #wp-content-editor-tools,
 body.upa .wp-editor-tools {
 	background: transparent;
-	padding: 0 0 10px;
+	padding: 20px 0 10px;
 	display: flex;
 	align-items: flex-end;
 	justify-content: space-between;
@@ -2441,7 +2447,10 @@ body.upa .wp-editor-expand .wp-editor-tools {
 	/* Transparent while docked: core gives this row a height that laps over
 	 * the editor card's top border, and an opaque fill would hide it. */
 	background: transparent;
-	padding-top: 6px;
+	/* Core's own 20px, so the media-buttons row keeps the same distance from
+	 * the permalink that it has in the classic admin — and the same distance
+	 * the page-builder switch button uses in the other editor state. */
+	padding-top: 20px;
 }
 
 /* Pinned to the top of the viewport it must cover what scrolls under it. */
@@ -3033,17 +3042,6 @@ body.upa .postbox .inside > .tagsdiv {
 	margin-top: 8px;
 }
 
-/* Classic editor: toolbar row on the canvas, one card for the editor itself */
-body.upa #wp-content-editor-tools,
-body.upa .wp-editor-tools {
-	background: transparent;
-	padding: 0 0 10px;
-	display: flex;
-	align-items: flex-end;
-	justify-content: space-between;
-	flex-wrap: wrap;
-	gap: 8px;
-}
 
 body.upa #wp-content-editor-tools:after,
 body.upa .wp-editor-tools:after {
@@ -3550,7 +3548,7 @@ body.upa .wp-editor-expand .wp-editor-tools {
 	/* Transparent while docked: core gives this row a height that laps over
 	 * the editor card's top border, and an opaque fill would hide it. */
 	background: transparent;
-	padding-top: 6px;
+	padding-top: 20px;
 }
 
 /* Pinned to the top of the viewport it must cover what scrolls under it. */
@@ -4330,9 +4328,22 @@ body.upa .interface-complementary-area h3 {
  * picker bar, the accordion of "Add menu items", the menu-structure postbox
  * and its footer. Each one is named individually because there is no wrapper
  * to colour once. */
-body.upa .manage-menus,
+/* The editor itself is NOT a card. Core makes #menu-management one full-width
+ * white slab, but its content (the item rows) only fills the left ~45% — so it
+ * renders as a big empty panel with a column of rows floating in it. Dropping
+ * the slab and letting each group carry its own card is both tidier and how
+ * every other screen in this skin is built. */
 body.upa #menu-management,
+body.upa #menu-management-liquid,
 body.upa #menu-management .menu-edit,
+body.upa #nav-menus-frame .menu-edit {
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+	border-radius: 0;
+}
+
+body.upa .manage-menus,
 body.upa #nav-menu-header,
 body.upa #nav-menu-footer,
 body.upa #nav-menus-frame .menu-settings,
@@ -4350,13 +4361,87 @@ body.upa .nav-menus-php .tabs-panel {
 	border-color: var(--upa-border);
 }
 
-body.upa #menu-management,
-body.upa #menu-management .menu-edit {
+/* Each group becomes its own card, so the screen reads as a stack of panels
+ * instead of one slab with things loose inside it. */
+body.upa #nav-menu-header,
+body.upa #nav-menus-frame .menu-settings,
+body.upa #nav-menu-footer {
+	border: 1px solid var(--upa-border);
 	border-radius: var(--upa-radius, 9px);
+	box-shadow: none;
+	margin-bottom: 14px;
+	padding: 14px 16px;
 }
 
+body.upa #nav-menu-footer {
+	margin-bottom: 0;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+body.upa #nav-menu-footer .major-publishing-actions {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	width: 100%;
+	padding: 0;
+	border: 0;
+}
+
+/* A menu item is a row you drag: give it the skin's card edge and a hover that
+ * shows it is grabbable, rather than a flat rectangle with a hairline. */
 body.upa .menu-item-handle {
+	border: 1px solid var(--upa-border);
 	border-radius: var(--upa-radius-sm, 6px);
+	box-shadow: none;
+	transition: border-color .12s ease, background-color .12s ease;
+}
+
+body.upa .menu-item-handle:hover {
+	border-color: var(--upa-border2);
+	background: var(--upa-panel2);
+}
+
+body.upa .menu-item-settings {
+	border: 1px solid var(--upa-border);
+	border-top: 0;
+	border-radius: 0 0 var(--upa-radius-sm, 6px) var(--upa-radius-sm, 6px);
+}
+
+/* The left "Add menu items" accordion: one card per group, matching the
+ * postbox language used everywhere else. */
+body.upa #nav-menu-meta.accordion-container,
+body.upa #side-sortables.accordion-container {
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+}
+
+body.upa #nav-menu-meta .accordion-section,
+body.upa #side-sortables .accordion-section {
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	background: var(--upa-panel);
+	margin-bottom: 10px;
+	overflow: hidden;
+}
+
+body.upa #nav-menu-meta .accordion-section-title,
+body.upa #side-sortables .accordion-section-title {
+	border: 0;
+	border-bottom: 1px solid var(--upa-border);
+	background: transparent;
+}
+
+body.upa #nav-menu-meta .accordion-section:last-child,
+body.upa #side-sortables .accordion-section:last-child {
+	margin-bottom: 0;
+}
+
+/* Core draws this footer divider as a box-shadow in a literal grey. */
+body.upa #nav-menu-footer {
+	box-shadow: none;
 }
 
 body.upa .menu-item-handle .item-title,
@@ -4442,7 +4527,10 @@ body.upa .nav-menus-php li.tabs,
 body.upa .nav-menus-php li.tabs a,
 body.upa #nav-menu-meta .accordion-section-title,
 body.upa #nav-menu-meta .accordion-trigger,
-body.upa #post-body-content > div,
+/* Scoped to the Menus screen. Unscoped, `#post-body-content > div` also
+ * matched the POST EDITOR, where it painted #titlediv — that is the white
+ * block bleeding below the post title and under the permalink row. */
+body.upa .nav-menus-php #post-body-content > div,
 body.upa #menu-management > div {
 	background: var(--upa-panel);
 	color: var(--upa-text);
@@ -4481,4 +4569,28 @@ body.upa .menu-edit #post-body {
 body.upa .wp-block[data-type="core/widget-area"] .components-panel__body > .components-panel__body-title {
 	background: var(--upa-panel);
 	color: var(--upa-text);
+}
+
+/* Core pins a menu row to a fixed 382px, which inside the skin's wider editor
+ * column leaves the right half empty and makes the list look unfinished. Let
+ * the rows fill their column instead.
+ *
+ * Depth indentation is unaffected: core indents by margin-left (30px a level)
+ * and its drag logic reads that left offset, not the row's width. */
+body.upa #menu-to-edit .menu-item-bar .menu-item-handle,
+body.upa #menu-to-edit .menu-item-handle,
+body.upa #menu-to-edit .menu-item-settings {
+	width: auto;
+	max-width: none;
+}
+
+body.upa #menu-to-edit .menu-item {
+	max-width: 100%;
+}
+
+/* The loose instruction line + Bulk Select between two cards read as stray
+ * text; give them the same gutter as the cards so the column lines up. */
+body.upa #post-body-content .drag-instructions,
+body.upa .nav-menus-php .menu-edit .howto {
+	padding-left: 2px;
 }

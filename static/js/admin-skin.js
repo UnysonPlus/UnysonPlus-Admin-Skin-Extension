@@ -56,7 +56,8 @@
 		system: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
 		palette: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 0 0 0 18c1.1 0 2-.9 2-2v-1a2 2 0 0 1 2-2h1a4 4 0 0 0 4-4 9 9 0 0 0-9-9Z"/><circle cx="7.5" cy="11.5" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15.5" cy="7.5" r="1"/></svg>',
 		external: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9M18 13v6H4V5h6"/></svg>',
-		logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5v16h5M14 8l4 4-4 4M18 12H9"/></svg>'
+		logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 4H5v16h5M14 8l4 4-4 4M18 12H9"/></svg>',
+		chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>'
 	};
 
 	function svg( name ) {
@@ -306,18 +307,105 @@
 		if ( ! menuWrap || ! cfg.user ) {
 			return;
 		}
+
+		var placement = cfg.accountPlacement || 'sidebar';
+		var barNode   = doc.getElementById( 'wp-admin-bar-my-account' );
+
+		// 'bar' = leave WordPress's own top-right menu alone and add nothing.
+		if ( 'bar' === placement ) {
+			return;
+		}
+
+		// When the sidebar is the ONLY placement, core's top-right menu is
+		// hidden — but its contents are mirrored below first. That node is a
+		// documented extension point (WooCommerce, membership plugins and
+		// others add items under it), so hiding it without carrying those
+		// items across would quietly orphan them.
+		if ( 'sidebar' === placement && barNode ) {
+			barNode.classList.add( 'upa-account-moved' );
+		}
+
 		var u = cfg.user;
-		var block = el( 'div', { class: 'upa-user' }, [
+
+		var trigger = el( 'button', {
+			type: 'button',
+			class: 'upa-user-trigger',
+			'aria-haspopup': 'true',
+			'aria-expanded': 'false'
+		}, [
 			u.avatar ? el( 'img', { src: u.avatar, alt: '' } ) : null,
 			el( 'div', { class: 'upa-user-meta' }, [
-				el( 'a', { class: 'upa-user-name', href: u.profile || '#', text: u.name || '' } ),
+				el( 'div', { class: 'upa-user-name', text: u.name || '' } ),
 				el( 'div', { class: 'upa-user-role', text: u.role || '' } )
 			] ),
-			el( 'div', { class: 'upa-user-actions' }, [
-				el( 'a', { class: 'upa-icon-btn', href: cfg.siteUrl || '/', title: i18n.viewSite || 'View site', target: '_blank', rel: 'noopener' }, [ svg( 'external' ) ] ),
-				el( 'a', { class: 'upa-icon-btn', href: u.logout || '#', title: 'Log out' }, [ svg( 'logout' ) ] )
-			] )
+			el( 'span', { class: 'upa-user-caret' }, [ svg( 'chevron' ) ] )
 		] );
+
+		var menuEl = el( 'div', { class: 'upa-user-menu', role: 'menu' } );
+
+		// Core's own items first, mirrored in their original order. Anything a
+		// plugin added under my-account rides along with them.
+		var mirrored = 0;
+		if ( barNode ) {
+			var links = barNode.querySelectorAll( '.ab-sub-wrapper a.ab-item' );
+			Array.prototype.forEach.call( links, function ( a ) {
+				var label = ( a.textContent || '' ).replace( /\s+/g, ' ' ).trim();
+
+				// #wp-admin-bar-user-info is core's identity HEADER, not an
+				// item: its text runs the display name, username and link
+				// together ("up_adminadminEdit Profile"). The trigger already
+				// shows who you are, so keep only its destination.
+				if ( a.closest( '#wp-admin-bar-user-info' ) ) {
+					label = i18n.editProfile || 'Edit Profile';
+				}
+
+				if ( ! label || ! a.getAttribute( 'href' ) ) {
+					return;
+				}
+				menuEl.appendChild( el( 'a', {
+					class: 'upa-user-menu-item',
+					href: a.getAttribute( 'href' ),
+					text: label,
+					role: 'menuitem'
+				} ) );
+				mirrored++;
+			} );
+		}
+
+		// Nothing to mirror (the bar is off, or core changed its markup): fall
+		// back to the three destinations this block has always offered.
+		if ( ! mirrored ) {
+			menuEl.appendChild( el( 'a', { class: 'upa-user-menu-item', href: u.profile || '#', text: i18n.editProfile || 'Edit Profile', role: 'menuitem' } ) );
+			menuEl.appendChild( el( 'a', { class: 'upa-user-menu-item', href: cfg.siteUrl || '/', text: i18n.viewSite || 'Visit site', target: '_blank', rel: 'noopener', role: 'menuitem' } ) );
+			menuEl.appendChild( el( 'a', { class: 'upa-user-menu-item', href: u.logout || '#', text: i18n.logOut || 'Log Out', role: 'menuitem' } ) );
+		}
+
+		var block = el( 'div', { class: 'upa-user' }, [ trigger, menuEl ] );
+
+		function close() {
+			block.classList.remove( 'is-open' );
+			trigger.setAttribute( 'aria-expanded', 'false' );
+		}
+
+		trigger.addEventListener( 'click', function ( e ) {
+			e.preventDefault();
+			e.stopPropagation();
+			var open = block.classList.toggle( 'is-open' );
+			trigger.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+		} );
+
+		doc.addEventListener( 'click', function ( e ) {
+			if ( ! block.contains( e.target ) ) {
+				close();
+			}
+		} );
+
+		doc.addEventListener( 'keydown', function ( e ) {
+			if ( 'Escape' === e.key ) {
+				close();
+			}
+		} );
+
 		menuWrap.appendChild( block );
 	}
 

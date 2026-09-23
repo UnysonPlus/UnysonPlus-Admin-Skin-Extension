@@ -79,6 +79,17 @@ $options = [
 						'type'  => 'switch',
 						'value' => true,
 					],
+					'account_placement' => [
+						'label'   => __( 'Account menu', 'fw' ),
+						'desc'    => __( 'Where the account avatar and its menu (profile, visit site, log out) live. WordPress puts it top-right; app-style admins put it bottom-left. Whichever you pick, items other plugins add to the account menu come along &mdash; they are mirrored, not dropped.', 'fw' ),
+						'type'    => 'select',
+						'choices' => [
+							'sidebar' => __( 'Bottom left only (sidebar)', 'fw' ),
+							'bar'     => __( 'Top right only (WordPress default position)', 'fw' ),
+							'both'    => __( 'Both', 'fw' ),
+						],
+						'value'   => 'sidebar',
+					],
 					'skin_customizer' => [
 						'label' => __( 'Skin the Customizer', 'fw' ),
 						'desc'  => __( 'Apply the skin to the Customizer&rsquo;s left control pane. The preview beside it is never touched &mdash; it renders your front end, so it has to keep looking like the published page.', 'fw' ),
