@@ -79,6 +79,12 @@ $options = [
 						'type'  => 'switch',
 						'value' => true,
 					],
+					'skin_customizer' => [
+						'label' => __( 'Skin the Customizer', 'fw' ),
+						'desc'  => __( 'Apply the skin to the Customizer&rsquo;s left control pane. The preview beside it is never touched &mdash; it renders your front end, so it has to keep looking like the published page.', 'fw' ),
+						'type'  => 'switch',
+						'value' => true,
+					],
 					'dark_canvas'    => [
 						'label' => __( 'Dark editor canvas', 'fw' ),
 						'desc'  => __( 'In dark mode, tint the classic editor&rsquo;s writing area too. Off by default: that area is an iframe rendering your FRONT-END styles, so it previews how the post will really look &mdash; on a dark canvas the preview no longer matches the published page, and text colours picked there can turn out unreadable on the live site. Gutenberg and the front end are never touched.', 'fw' ),

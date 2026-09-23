@@ -44,6 +44,14 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 		add_filter( 'get_user_option_admin_color', [ $this, '_filter_admin_color' ], 20 );
 		add_action( 'admin_enqueue_scripts', [ $this, '_action_enqueue' ], 5 );
 		add_action( 'admin_head', [ $this, '_action_head_mode_script' ], 0 );
+
+		// The Customizer is skinned through its OWN path, not is_enabled().
+		// It gets the tokens plus one scoped stylesheet and never the structure
+		// layer: there is no #adminmenu or #wpadminbar in there to restyle, and
+		// the preview iframe beside the controls is front-end output, so it is
+		// left exactly as the visitor will see it.
+		add_action( 'customize_controls_enqueue_scripts', [ $this, '_action_enqueue_customizer' ] );
+		add_action( 'customize_controls_print_scripts', [ $this, '_action_customizer_mode_script' ], 0 );
 		add_filter( 'admin_body_class', [ $this, '_filter_body_class' ] );
 		add_action( 'wp_ajax_fw_admin_skin_prefs', [ $this, '_ajax_save_prefs' ] );
 
@@ -279,6 +287,7 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 			'sidebar_search'   => true,
 			'show_wp_logo'     => false,
 			'apply_to_editor'  => true,
+			'skin_customizer'  => true,
 			'dark_canvas'      => false,
 			'hide_design'      => 'auto',
 			'hide_fonts'       => 'auto',
@@ -405,7 +414,18 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 	 * is untouched in the database and returns the moment the skin is off.
 	 */
 	public function _filter_admin_color( $value ) {
-		return $this->is_enabled() ? self::COLOR_SCHEME : $value;
+		if ( $this->is_enabled() ) {
+			return self::COLOR_SCHEME;
+		}
+
+		// The Customizer runs its own path, but core's chrome in there is
+		// scheme-aware too, so without this its accent stays the stock blue
+		// while everything around it is the skin's.
+		if ( is_customize_preview() && $this->is_customizer_enabled() ) {
+			return self::COLOR_SCHEME;
+		}
+
+		return $value;
 	}
 
 	public function _filter_body_class( $classes ) {
@@ -734,6 +754,105 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 
 		update_user_meta( get_current_user_id(), 'fw_admin_skin_intro_dismissed', 1 );
 		wp_send_json_success();
+	}
+
+
+	/**
+	 * Does the skin apply to the Customizer's control pane?
+	 *
+	 * Deliberately separate from is_enabled(), which stays false on
+	 * customize.php. The full skin cannot run there: its structure layer
+	 * rebuilds #adminmenu and #wpadminbar into a sidebar and top bar, and the
+	 * Customizer has neither, so loading it would restyle nothing and risk
+	 * breaking the pane's fixed layout. This path loads the tokens plus one
+	 * scoped stylesheet instead.
+	 *
+	 * The per-user "off" switch still wins, so a user on the classic admin
+	 * gets the classic Customizer too.
+	 */
+	public function is_customizer_enabled() {
+		if ( ! is_user_logged_in() ) {
+			return false;
+		}
+
+		$settings = $this->get_settings();
+
+		if ( empty( $settings['skin_customizer'] ) ) {
+			return false;
+		}
+
+		if ( $settings['allow_user_prefs'] ) {
+			$prefs = $this->get_user_prefs();
+			if ( ! empty( $prefs['off'] ) ) {
+				return false;
+			}
+		}
+
+		/** Filters whether the skin applies to the Customizer's control pane. */
+		return (bool) apply_filters( 'fw_ext_admin_skin_customizer_enabled', true );
+	}
+
+	/**
+	 * Tokens + the scoped Customizer stylesheet, on the CONTROLS frame only.
+	 *
+	 * `customize_controls_enqueue_scripts` fires for the controls document and
+	 * not for the preview iframe, which is what keeps the front-end preview
+	 * untouched. There is deliberately no `customize_preview_init` counterpart.
+	 *
+	 * @internal
+	 */
+	public function _action_enqueue_customizer() {
+		if ( ! $this->is_customizer_enabled() ) {
+			return;
+		}
+
+		$settings = $this->get_settings();
+		$skin     = $this->registry->resolve( $settings['skin'] );
+		$version  = $this->manifest->get_version();
+
+		if ( ! $skin ) {
+			return;
+		}
+
+		wp_register_style( 'fw-admin-skin-customizer-tokens', false, [], $version );
+		wp_enqueue_style( 'fw-admin-skin-customizer-tokens' );
+		wp_add_inline_style( 'fw-admin-skin-customizer-tokens', $this->registry->css( $skin, $this->get_accent() ) );
+
+		wp_enqueue_style(
+			'fw-admin-skin-customizer',
+			fw_min_uri( $this->get_declared_URI( '/static/css/customizer.css' ) ),
+			[ 'fw-admin-skin-customizer-tokens' ],
+			$version
+		);
+	}
+
+	/**
+	 * Set html[data-upa-mode] and the body class on the controls frame before
+	 * it paints. The body class is `upa-customizer`, NOT `upa`: every rule in
+	 * structure.css / primitives.css is scoped to `body.upa`, so this keeps
+	 * the admin layers from reaching a screen they were not written for.
+	 *
+	 * @internal
+	 */
+	public function _action_customizer_mode_script() {
+		if ( ! $this->is_customizer_enabled() ) {
+			return;
+		}
+
+		$settings = $this->get_settings();
+
+		// This hook prints in <head>, where document.body does not exist yet, so
+		// the class is deferred while the MODE attribute is set immediately —
+		// the CSS keys off the attribute plus core's own body.wp-customizer, so
+		// it is fully styled on first paint. The class is for extenders only.
+		printf(
+			'<script>(function(d){d.documentElement.setAttribute("data-upa-mode",%s);' .
+			'var f=function(){d.body.classList.add("upa-customizer","upa-skin-%s");};' .
+			'if(d.body){f();}else{d.addEventListener("DOMContentLoaded",f);}})(document);</script>' . "
+",
+			wp_json_encode( $this->get_mode() ),
+			esc_js( sanitize_html_class( $settings['skin'] ) )
+		);
 	}
 
 }

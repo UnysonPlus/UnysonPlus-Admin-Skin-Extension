@@ -1,0 +1,394 @@
+/**
+ * UnysonPlus Admin Skin — Customizer control pane.
+ *
+ * Scoped to `body.wp-customizer` — core's own class on the CONTROLS frame.
+ * The stylesheet is only ENQUEUED when the skin applies, so its presence is
+ * the condition; it needs no class of its own, and scoping to one core writes
+ * server-side means there is no unstyled flash.
+ *
+ * The PREVIEW iframe beside it is never touched: it renders the front end, so
+ * it has to keep looking like the published page. Same rule as the classic
+ * editor canvas and the Box Preset swatches — skin the chrome around a
+ * preview, never the preview itself.
+ *
+ * The skin's structure / primitives layers are scoped to `body.upa` and are
+ * deliberately NOT loaded here: this screen has no #adminmenu or #wpadminbar
+ * for them to act on.
+ */
+
+/* ---- The pane itself ---------------------------------------------------- */
+body.wp-customizer #customize-controls,
+body.wp-customizer .wp-full-overlay-sidebar,
+body.wp-customizer #customize-theme-controls,
+body.wp-customizer .wp-full-overlay-sidebar-content {
+	background: var(--upa-bg);
+	color: var(--upa-text);
+}
+
+body.wp-customizer .wp-full-overlay-sidebar {
+	border-right: 1px solid var(--upa-border);
+}
+
+/* Header (Published / Save) and footer (device toggle) bars. */
+body.wp-customizer #customize-header-actions,
+body.wp-customizer #customize-footer-actions {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	box-shadow: none;
+}
+
+body.wp-customizer #customize-header-actions .customize-controls-preview-toggle,
+body.wp-customizer #customize-footer-actions .devices button {
+	color: var(--upa-text2);
+}
+
+body.wp-customizer #customize-footer-actions .devices button:hover,
+body.wp-customizer #customize-footer-actions .devices button:focus {
+	color: var(--upa-text);
+}
+
+body.wp-customizer #customize-footer-actions .devices button.active {
+	color: var(--upa-accent);
+	border-bottom-color: var(--upa-accent);
+	box-shadow: none;
+}
+
+body.wp-customizer .collapse-sidebar {
+	background: transparent;
+	color: var(--upa-text3);
+}
+
+body.wp-customizer .collapse-sidebar:hover,
+body.wp-customizer .collapse-sidebar:focus {
+	color: var(--upa-text);
+}
+
+/* ---- The "You are customizing" info block ------------------------------- */
+body.wp-customizer #customize-info,
+body.wp-customizer #customize-info .accordion-section-title,
+body.wp-customizer #customize-info .customize-panel-description,
+body.wp-customizer .customize-section-description-container,
+body.wp-customizer .customize-info .customize-panel-description {
+	background: var(--upa-panel);
+	color: var(--upa-text2);
+	border-color: var(--upa-border);
+}
+
+body.wp-customizer #customize-info .preview-notice {
+	color: var(--upa-text3);
+}
+
+body.wp-customizer #customize-info .panel-title,
+body.wp-customizer #customize-info .theme-name {
+	color: var(--upa-text);
+}
+
+/* ---- Sections / panels -------------------------------------------------- */
+body.wp-customizer .accordion-section,
+body.wp-customizer .control-section,
+body.wp-customizer .accordion-section-title,
+body.wp-customizer .control-panel-content,
+body.wp-customizer .customize-pane-child,
+body.wp-customizer .customize-pane-parent {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+	border-color: var(--upa-border);
+}
+
+body.wp-customizer .accordion-section-title {
+	border-bottom: 1px solid var(--upa-border);
+}
+
+body.wp-customizer .accordion-section-title:after,
+body.wp-customizer .accordion-section-title:before {
+	color: var(--upa-text3);
+}
+
+body.wp-customizer .accordion-section:hover > .accordion-section-title,
+body.wp-customizer .accordion-section-title:hover,
+body.wp-customizer .accordion-section-title:focus {
+	background: var(--upa-panel2);
+	color: var(--upa-text);
+	border-left-color: var(--upa-accent);
+}
+
+/* The back links at the top of an opened panel / section. */
+body.wp-customizer .customize-panel-back,
+body.wp-customizer .customize-section-back {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+	color: var(--upa-text2);
+}
+
+body.wp-customizer .customize-panel-back:hover,
+body.wp-customizer .customize-panel-back:focus,
+body.wp-customizer .customize-section-back:hover,
+body.wp-customizer .customize-section-back:focus {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+	border-left-color: var(--upa-accent);
+}
+
+/* ---- Controls ----------------------------------------------------------- */
+body.wp-customizer .customize-control,
+body.wp-customizer .customize-control-title,
+body.wp-customizer .customize-control label {
+	color: var(--upa-text);
+}
+
+body.wp-customizer .customize-control span.description,
+body.wp-customizer .customize-control-description,
+body.wp-customizer .description {
+	color: var(--upa-text3);
+}
+
+body.wp-customizer .customize-control input[type="text"],
+body.wp-customizer .customize-control input[type="email"],
+body.wp-customizer .customize-control input[type="url"],
+body.wp-customizer .customize-control input[type="number"],
+body.wp-customizer .customize-control input[type="search"],
+body.wp-customizer .customize-control input[type="password"],
+body.wp-customizer .customize-control textarea,
+body.wp-customizer .customize-control select,
+body.wp-customizer #customize-controls input[type="text"],
+body.wp-customizer #customize-controls select {
+	background: var(--upa-panel2);
+	border: 1px solid var(--upa-border2);
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text);
+	box-shadow: none;
+}
+
+body.wp-customizer .customize-control input:focus,
+body.wp-customizer .customize-control textarea:focus,
+body.wp-customizer .customize-control select:focus {
+	border-color: var(--upa-accent);
+	box-shadow: 0 0 0 2px var(--upa-accent-ring);
+	outline: 2px solid transparent;
+}
+
+body.wp-customizer .customize-control select option {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+}
+
+/* Buttons. The primary Save / Publish keeps the accent; everything else
+ * reads as a quiet panel control. */
+body.wp-customizer #customize-controls .button,
+body.wp-customizer #customize-controls .button-secondary {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border2);
+	color: var(--upa-text);
+	border-radius: var(--upa-radius-sm, 6px);
+	text-shadow: none;
+	box-shadow: none;
+}
+
+body.wp-customizer #customize-controls .button:hover,
+body.wp-customizer #customize-controls .button:focus {
+	background: var(--upa-panel);
+	border-color: var(--upa-text3);
+	color: var(--upa-text);
+}
+
+body.wp-customizer #customize-controls .button-primary,
+body.wp-customizer #customize-save {
+	background: var(--upa-accent);
+	border-color: var(--upa-accent);
+	color: var(--upa-accent-fg);
+}
+
+body.wp-customizer #customize-controls .button-primary:hover,
+body.wp-customizer #customize-save:hover {
+	background: var(--upa-accent2);
+	border-color: var(--upa-accent2);
+}
+
+body.wp-customizer #customize-save[disabled],
+body.wp-customizer #customize-controls .button-primary[disabled] {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+	color: var(--upa-text3);
+}
+
+/* ---- Widgets / menus inside the Customizer ------------------------------ */
+body.wp-customizer .customize-control-widget_form .widget-top,
+body.wp-customizer .widget .widget-top,
+body.wp-customizer .customize-control-nav_menu_item .menu-item-bar,
+body.wp-customizer .menu-item-handle {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+	color: var(--upa-text);
+}
+
+body.wp-customizer .widget-inside,
+body.wp-customizer .menu-item-settings {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	color: var(--upa-text);
+}
+
+body.wp-customizer .customize-control-nav_menu .menu-item-handle:hover,
+body.wp-customizer .widget-top:hover {
+	background: var(--upa-panel);
+}
+
+/* ---- Theme switcher + notifications ------------------------------------- */
+body.wp-customizer .customize-themes-panel,
+body.wp-customizer .customize-themes-full-container,
+body.wp-customizer .theme-browser .theme,
+body.wp-customizer .customize-control-theme .theme {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	color: var(--upa-text);
+}
+
+body.wp-customizer .notice,
+body.wp-customizer .customize-control-notifications-container li {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+	color: var(--upa-text);
+}
+
+/* ---- Search ------------------------------------------------------------- */
+body.wp-customizer #customize-search-box input,
+body.wp-customizer .customize-search input {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border2);
+	color: var(--upa-text);
+}
+
+body.wp-customizer .customize-control-code_editor textarea {
+	font-family: var(--upa-font-mono, monospace);
+}
+
+/* ---- Straggler surfaces the sweep turned up ----------------------------- */
+
+/* The overlay chrome core paints #f0f0f1: the top bar that holds Publish, the
+ * X, and the footer that holds the device toggle. */
+body.wp-customizer .wp-full-overlay-header,
+body.wp-customizer .wp-full-overlay-footer,
+body.wp-customizer #customize-footer-actions .devices,
+body.wp-customizer .customize-controls-close {
+	background: var(--upa-panel);
+	border-color: var(--upa-border);
+	color: var(--upa-text2);
+}
+
+body.wp-customizer .customize-controls-close:hover,
+body.wp-customizer .customize-controls-close:focus {
+	background: var(--upa-panel2);
+	color: var(--upa-text);
+}
+
+/* Section / panel heading rows and the theme-switcher rows. */
+body.wp-customizer .customize-section-title,
+body.wp-customizer h3.accordion-section-title,
+body.wp-customizer div.accordion-section-title,
+body.wp-customizer .customize-themes-section-title,
+body.wp-customizer .customize-pane-child.accordion-section-content,
+body.wp-customizer ul.customize-pane-child {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+	border-color: var(--upa-border);
+}
+
+body.wp-customizer .customize-themes-section-title:hover,
+body.wp-customizer .customize-themes-section-title:focus {
+	background: var(--upa-panel2);
+	color: var(--upa-text);
+}
+
+body.wp-customizer .customize-themes-section-title.selected,
+body.wp-customizer .customize-themes-section-title[aria-selected="true"] {
+	color: var(--upa-accent);
+	border-left-color: var(--upa-accent);
+}
+
+/* The "Published" pill is a disabled primary button, which core leaves grey. */
+body.wp-customizer #customize-header-actions .button-primary[disabled],
+body.wp-customizer #customize-header-actions input.button-primary.button-compact {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+	color: var(--upa-text3);
+	text-shadow: none;
+}
+
+/* Any remaining field core styles by element rather than by control class. */
+body.wp-customizer #customize-controls input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]):not([type="button"]):not(.button):not(.button-primary),
+body.wp-customizer #customize-controls textarea,
+body.wp-customizer #customize-controls textarea.code,
+body.wp-customizer #customize-controls .menu-name-field {
+	background: var(--upa-panel2);
+	border: 1px solid var(--upa-border2);
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text);
+	box-shadow: none;
+}
+
+/* Inline notices inside a section (e.g. "no widget areas rendered"). */
+body.wp-customizer .no-widget-areas-rendered-notice,
+body.wp-customizer .customize-control-notifications-container .notice {
+	background: var(--upa-panel2);
+	border-color: var(--upa-border);
+	color: var(--upa-text2);
+}
+
+/* The site-icon control mocks up a browser tab and an app icon. That is a
+ * PREVIEW of how the icon will look to a visitor, so the swatch itself keeps
+ * its own colours — only the surrounding control follows the skin. */
+body.wp-customizer .site-icon-preview .browser-preview,
+body.wp-customizer .site-icon-preview .app-icon-preview {
+	/* left as core draws them, deliberately */
+}
+
+/* ---- Rules core scopes by ID, restated at that weight ------------------- */
+
+/* Core: `#customize-theme-controls .accordion-section-title { #fff }`. */
+body.wp-customizer #customize-theme-controls .accordion-section-title,
+body.wp-customizer #customize-outer-theme-controls .accordion-section-title,
+body.wp-customizer #customize-theme-controls .control-panel-themes > .accordion-section-title,
+body.wp-customizer #customize-theme-controls .accordion-section-content,
+body.wp-customizer #customize-outer-theme-controls .accordion-section-content,
+body.wp-customizer #customize-sidebar-outer-content {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+	border-color: var(--upa-border);
+}
+
+body.wp-customizer #customize-theme-controls .accordion-section-title:hover,
+body.wp-customizer #customize-theme-controls .accordion-section-title:focus {
+	background: var(--upa-panel2);
+	color: var(--upa-text);
+}
+
+/* Core: `#customize-controls .customize-info .customize-panel-description`
+ * and friends, which also catch this inline notice. */
+body.wp-customizer #customize-controls .no-widget-areas-rendered-notice,
+body.wp-customizer #customize-controls .customize-info .customize-panel-description,
+body.wp-customizer #customize-controls .customize-info .customize-section-description {
+	background: var(--upa-panel2);
+	color: var(--upa-text2);
+	border-color: var(--upa-border);
+}
+
+/* The "Published" pill. Core marks a disabled primary button with
+ * `rgb(226,226,226) !important`, so this has to match that weight — it is the
+ * one place in this file where !important is the correct answer rather than a
+ * shortcut. */
+body.wp-customizer.wp-core-ui .button-primary-disabled,
+body.wp-customizer.wp-core-ui .button-primary.disabled,
+body.wp-customizer.wp-core-ui .button-primary:disabled,
+body.wp-customizer.wp-core-ui .button-primary[disabled] {
+	background: var(--upa-panel2) !important;
+	border-color: var(--upa-border) !important;
+	color: var(--upa-text3) !important;
+	text-shadow: none !important;
+}
+
+/* The widget inspector pane carries a third class that core uses to out-weigh
+ * the generic pane rule, so this has to name it too. */
+body.wp-customizer #customize-theme-controls .customize-pane-child.accordion-section-content.customize-widgets-layout__inspector {
+	background: var(--upa-panel);
+	color: var(--upa-text);
+}

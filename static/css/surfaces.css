@@ -1121,15 +1121,17 @@ body.upa .fw-option-type-column-split .fw-cs-pane-icon.dashicons {
 /* Element modal tab strip (Content / Styling / Animations / Advanced) --------
  *
  * These anchors carry core's .nav-tab class, so they inherit wp-admin's folder
- * look: a white active tab plus a strip underline that the active tab notches
- * into. On a dark modal that reads as a white box with a bright line running
- * off to the right. Scoped to .fw-modal so the Theme Settings tabs, which stay
- * as the framework draws them, are untouched. */
-body.upa .fw-modal .fw-options-tabs-list,
-body.upa .fw-modal .fw-options-tabs-wrapper > .fw-options-tabs-list {
-	border-bottom: 0;
-}
-
+ * look: an opaque white active tab that notches into the strip's underline. On
+ * a dark modal that reads as a white box with a bright line beside it, so the
+ * ANCHORS are restyled below.
+ *
+ * The strip's own underline is deliberately left alone: the framework already
+ * draws it with var(--fw-border-strong), which this file remaps to the skin,
+ * so it was never the wrong colour. Zeroing it here (as an earlier pass did)
+ * only removed the separator between the tabs and the panel in BOTH modes.
+ *
+ * Scoped to .fw-modal so the Theme Settings tabs, which stay exactly as the
+ * framework draws them, are untouched. */
 body.upa .fw-modal .ui-tabs-nav .ui-tabs-anchor,
 body.upa .fw-modal .ui-tabs-nav .ui-state-default .ui-tabs-anchor {
 	background: transparent;
