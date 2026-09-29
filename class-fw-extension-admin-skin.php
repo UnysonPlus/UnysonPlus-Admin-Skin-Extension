@@ -18,6 +18,9 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 	/** User-meta key for per-user preferences (mode, accent, off). */
 	const USER_META = 'fw_admin_skin_prefs';
 
+	/** How many muted-notice keys one user may accumulate. */
+	const MUTED_MAX = 200;
+
 	/** Colour-scheme id registered with wp_admin_css_color(). */
 	const COLOR_SCHEME = 'unysonplus';
 
@@ -27,14 +30,34 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 	/** @var bool|null memoised "does the skin apply to this request". */
 	private $enabled = null;
 
+	/** @var FW_Admin_Skin_Menu_Layout */
+	public $menu_layout;
+
+	/** @var FW_Admin_Skin_Settings_Page */
+	public $settings_page;
+
 	/**
 	 * @internal
 	 */
 	public function _init() {
 		require_once $this->get_declared_path( '/includes/class-fw-admin-skin-registry.php' );
 		require_once $this->get_declared_path( '/includes/menu-groups.php' );
+		require_once $this->get_declared_path( '/includes/class-fw-admin-skin-menu-layout.php' );
+		require_once $this->get_declared_path( '/includes/class-fw-admin-skin-settings-page.php' );
 
 		$this->registry = new FW_Admin_Skin_Registry( $this );
+		$this->menu_layout = new FW_Admin_Skin_Menu_Layout( $this );
+		$this->settings_page = new FW_Admin_Skin_Settings_Page( $this );
+
+		// wp-login.php is NOT is_admin(), so these are registered before the
+		// guard below. The screen also runs through its own gate rather than
+		// is_enabled(), which requires a logged-in user -- and the whole point
+		// of this one is that nobody is logged in yet.
+		add_action( 'login_enqueue_scripts', [ $this, '_action_enqueue_login' ] );
+		add_action( 'login_head', [ $this, '_action_login_mode_script' ], 0 );
+		add_filter( 'login_body_class', [ $this, '_filter_login_body_class' ] );
+		add_filter( 'login_headerurl', [ $this, '_filter_login_headerurl' ] );
+		add_filter( 'login_headertext', [ $this, '_filter_login_headertext' ] );
 
 		if ( ! is_admin() ) {
 			return;
@@ -280,14 +303,16 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 		$defaults = [
 			'skin'             => 'default',
 			'default_mode'     => 'light',
+			'density'          => 'comfortable',
 			'accent'           => '',
 			'allow_user_prefs' => true,
 			'group_menu'       => true,
 			'notice_tray'      => true,
 			'sidebar_search'   => true,
-			'show_wp_logo'     => false,
+			'show_wp_logo'     => true,
 			'apply_to_editor'  => true,
 			'skin_customizer'  => true,
+			'skin_login'       => true,
 			'account_placement' => 'sidebar',
 			'dark_canvas'      => false,
 			'hide_design'      => 'auto',
@@ -392,6 +417,42 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 	}
 
 	/**
+	 * The notice keys this viewer has muted.
+	 *
+	 * Per user, never site-wide: one person deciding they never want to see a
+	 * particular nag again is not a decision to make on everyone's behalf.
+	 */
+	public function get_muted_notices() {
+		$prefs = $this->get_user_prefs();
+		$list  = isset( $prefs['muted'] ) && is_array( $prefs['muted'] ) ? $prefs['muted'] : [];
+		return array_values( array_filter( $list, function ( $k ) {
+			return is_string( $k ) && preg_match( '/^n[a-z0-9]{1,12}$/', $k );
+		} ) );
+	}
+
+	/**
+	 * Comfortable or compact.
+	 *
+	 * Same shape as get_mode() / get_accent(): the site setting, overridden by
+	 * the viewer's own when per-user preferences are on. What "compact" means
+	 * in pixels is the skin's business, not this method's -- the registry
+	 * derives it from whatever density the skin declares.
+	 */
+	public function get_density() {
+		$settings = $this->get_settings();
+		$density  = $settings['density'];
+
+		if ( $settings['allow_user_prefs'] ) {
+			$prefs = $this->get_user_prefs();
+			if ( ! empty( $prefs['density'] ) ) {
+				$density = $prefs['density'];
+			}
+		}
+
+		return in_array( $density, [ 'comfortable', 'compact' ], true ) ? $density : 'comfortable';
+	}
+
+	/**
 	 * Register one wp-admin colour scheme so core's scheme-aware chrome
 	 * (admin bar, menu, Gutenberg's --wp-admin-theme-color) follows the skin.
 	 * The scheme stylesheet is ours and reads the tokens, so it is tiny.
@@ -451,8 +512,10 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 			return;
 		}
 		printf(
-			'<script>document.documentElement.setAttribute("data-upa-mode",%s);</script>' . "\n",
-			wp_json_encode( $this->get_mode() )
+			'<script>var d=document.documentElement;d.setAttribute("data-upa-mode",%s);'
+				. 'd.setAttribute("data-upa-density",%s);</script>' . "\n",
+			wp_json_encode( $this->get_mode() ),
+			wp_json_encode( $this->get_density() )
 		);
 	}
 
@@ -533,6 +596,8 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 			'nonce'     => wp_create_nonce( 'fw_admin_skin_prefs' ),
 			'mode'      => $this->get_mode(),
 			'accent'    => $this->get_accent(),
+			'density'   => $this->get_density(),
+			'mutedNotices' => $this->get_muted_notices(),
 			'skin'      => $settings['skin'],
 			'skinTitle' => isset( $skin['title'] ) ? $skin['title'] : $settings['skin'],
 			'userPrefs' => $settings['allow_user_prefs'],
@@ -565,12 +630,90 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 				'appearance'  => __( 'Appearance', 'fw' ),
 				'accent'      => __( 'Accent', 'fw' ),
 				'reset'       => __( 'Skin default', 'fw' ),
+				'density'     => __( 'Density', 'fw' ),
+				'mute'        => __( 'Mute this notice', 'fw' ),
+				'unmute'      => __( 'Show this notice again', 'fw' ),
+				/* translators: %d: number of muted notices. */
+				'mutedCount'  => __( '%d muted', 'fw' ),
+				'comfortable' => __( 'Comfortable', 'fw' ),
+				'compact'     => __( 'Compact', 'fw' ),
 				'classic'     => __( 'Use classic wp-admin', 'fw' ),
 				'viewSite'    => __( 'Visit site', 'fw' ),
 				'editProfile' => __( 'Edit Profile', 'fw' ),
 				'logOut'      => __( 'Log Out', 'fw' ),
 				'collapse'    => __( 'Collapse sidebar', 'fw' ),
 				'noMatch'     => __( 'No menu item matches', 'fw' ),
+			],
+		] );
+
+		$this->enqueue_commands( $version );
+	}
+
+	/**
+	 * UnysonPlus entries for WordPress's own Command Palette.
+	 *
+	 * Core ships the palette (6.3+) and the skin already styles it; what it
+	 * cannot know is anything about this plugin, so the one shortcut that
+	 * reaches every screen could not reach the ones UnysonPlus adds. The list
+	 * is built HERE rather than in JS so the capability checks stay on the
+	 * server: a screen the viewer cannot open is never sent, so it can never
+	 * be offered and then refused.
+	 */
+	private function enqueue_commands( $version ) {
+		if ( ! wp_script_is( 'wp-commands', 'registered' ) ) {
+			return; // Pre-6.3: no palette to add to.
+		}
+
+		$commands = [];
+
+		if ( current_user_can( 'edit_theme_options' ) ) {
+			$slug = function_exists( 'fw' ) ? fw()->backend->_get_settings_page_slug() : 'fw-settings';
+			$commands[] = [
+				'name'  => 'unysonplus/theme-settings',
+				'label' => __( 'Theme Settings', 'fw' ),
+				'url'   => admin_url( 'themes.php?page=' . $slug ),
+			];
+		}
+
+		if ( current_user_can( 'manage_options' ) ) {
+			$commands[] = [
+				'name'  => 'unysonplus/extensions',
+				'label' => __( 'Unyson+ Extensions', 'fw' ),
+				'url'   => admin_url( 'admin.php?page=fw-extensions' ),
+			];
+			$commands[] = [
+				'name'  => 'unysonplus/admin-skin-settings',
+				'label' => __( 'Admin Skin settings', 'fw' ),
+				'url'   => FW_Admin_Skin_Settings_Page::url(),
+			];
+		}
+
+		/**
+		 * Filters the UnysonPlus commands added to the Command Palette.
+		 *
+		 * Each entry is [ 'name' => …, 'label' => …, 'url' => …, 'searchLabel' => … ].
+		 * Anything added here is offered as-is, so check capabilities first.
+		 */
+		$commands = apply_filters( 'fw_ext_admin_skin_commands', $commands );
+
+		wp_enqueue_script(
+			'fw-admin-skin-commands',
+			fw_min_uri( $this->get_declared_URI( '/static/js/commands.js' ) ),
+			[ 'wp-commands', 'wp-data' ],
+			$version,
+			true
+		);
+
+		$settings = $this->get_settings();
+
+		wp_localize_script( 'fw-admin-skin-commands', 'fwAdminSkinCommands', [
+			'commands'  => array_values( (array) $commands ),
+			'ajaxUrl'   => admin_url( 'admin-ajax.php' ),
+			'nonce'     => wp_create_nonce( 'fw_admin_skin_prefs' ),
+			'userPrefs' => (bool) $settings['allow_user_prefs'],
+			'i18n'      => [
+				'toggleMode'    => __( 'Toggle light / dark mode', 'fw' ),
+				'toggleDensity' => __( 'Toggle comfortable / compact density', 'fw' ),
 			],
 		] );
 	}
@@ -664,6 +807,36 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 				$prefs['accent'] = $accent;
 			} else {
 				unset( $prefs['accent'] );
+			}
+		}
+
+		// Muted notices. Stored as opaque keys the browser computes from a
+		// notice's own text -- the server never needs to know what they mean,
+		// only that they are short and safe to store. The cap is what stops a
+		// noisy install growing user meta without bound.
+		foreach ( [ 'mute', 'unmute' ] as $action ) {
+			if ( ! isset( $_POST[ $action ] ) ) {
+				continue;
+			}
+			$key = sanitize_key( wp_unslash( $_POST[ $action ] ) );
+			if ( ! preg_match( '/^n[a-z0-9]{1,12}$/', $key ) ) {
+				continue;
+			}
+			$list = isset( $prefs['muted'] ) && is_array( $prefs['muted'] ) ? $prefs['muted'] : [];
+			$list = array_values( array_diff( $list, [ $key ] ) );
+			if ( 'mute' === $action ) {
+				$list[] = $key;
+				if ( count( $list ) > self::MUTED_MAX ) {
+					$list = array_slice( $list, -self::MUTED_MAX );
+				}
+			}
+			$prefs['muted'] = $list;
+		}
+
+		if ( isset( $_POST['density'] ) ) {
+			$density = sanitize_key( wp_unslash( $_POST['density'] ) );
+			if ( in_array( $density, [ 'comfortable', 'compact' ], true ) ) {
+				$prefs['density'] = $density;
 			}
 		}
 
@@ -851,12 +1024,139 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 		// it is fully styled on first paint. The class is for extenders only.
 		printf(
 			'<script>(function(d){d.documentElement.setAttribute("data-upa-mode",%s);' .
+			'd.documentElement.setAttribute("data-upa-density",' . wp_json_encode( $this->get_density() ) . ');' .
 			'var f=function(){d.body.classList.add("upa-customizer","upa-skin-%s");};' .
 			'if(d.body){f();}else{d.addEventListener("DOMContentLoaded",f);}})(document);</script>' . "
 ",
 			wp_json_encode( $this->get_mode() ),
 			esc_js( sanitize_html_class( $settings['skin'] ) )
 		);
+	}
+
+	/**
+	 * Does the skin apply to wp-login.php?
+	 *
+	 * Deliberately separate from is_enabled(), which requires a logged-in
+	 * user. There is no viewer to have preferences here either, so the site's
+	 * own default mode and accent are what the screen uses.
+	 */
+	public function is_login_enabled() {
+		$settings = $this->get_settings();
+
+		if ( empty( $settings['skin_login'] ) ) {
+			return false;
+		}
+
+		/** Filters whether the skin applies to wp-login.php. */
+		return (bool) apply_filters( 'fw_ext_admin_skin_login_enabled', true );
+	}
+
+	/**
+	 * Tokens + the login stylesheet.
+	 *
+	 * Only those two layers: structure.css and primitives.css are written
+	 * against #adminmenu / #wpadminbar / .postbox, none of which exist here,
+	 * and loading them would restyle shared classes (.button, .notice) for a
+	 * layout they were never measured against.
+	 *
+	 * @internal
+	 */
+	public function _action_enqueue_login() {
+		if ( ! $this->is_login_enabled() ) {
+			return;
+		}
+
+		$settings = $this->get_settings();
+		$skin     = $this->registry->resolve( $settings['skin'] );
+		$version  = $this->manifest->get_version();
+
+		if ( ! $skin ) {
+			return;
+		}
+
+		wp_register_style( 'fw-admin-skin-login-tokens', false, [], $version );
+		wp_enqueue_style( 'fw-admin-skin-login-tokens' );
+
+		$css = $this->registry->css( $skin, $this->get_accent() );
+
+		// The site icon, when there is one, is passed as a token rather than a
+		// second inline <style>: the stylesheet decides how to draw it, this
+		// only says what it is.
+		if ( has_site_icon() ) {
+			$css .= sprintf(
+				":root{--upa-login-icon:url('%s')}
+",
+				esc_url( get_site_icon_url( 128 ) )
+			);
+		}
+
+		wp_add_inline_style( 'fw-admin-skin-login-tokens', $css );
+
+		wp_enqueue_style(
+			'fw-admin-skin-login',
+			fw_min_uri( $this->get_declared_URI( '/static/css/login.css' ) ),
+			[ 'fw-admin-skin-login-tokens', 'login' ],
+			$version
+		);
+	}
+
+	/**
+	 * html[data-upa-mode] before first paint, as in the admin.
+	 *
+	 * @internal
+	 */
+	public function _action_login_mode_script() {
+		if ( ! $this->is_login_enabled() ) {
+			return;
+		}
+		printf(
+			'<script>var d=document.documentElement;d.setAttribute("data-upa-mode",%s);'
+				. 'd.setAttribute("data-upa-density",%s);</script>' . "\n",
+			wp_json_encode( $this->get_mode() ),
+			wp_json_encode( $this->get_density() )
+		);
+	}
+
+	/**
+	 * @internal
+	 */
+	public function _filter_login_body_class( $classes ) {
+		if ( ! $this->is_login_enabled() ) {
+			return $classes;
+		}
+
+		$settings  = $this->get_settings();
+		$classes[] = 'upa';
+		$classes[] = 'upa-skin-' . sanitize_html_class( $settings['skin'] );
+
+		if ( has_site_icon() ) {
+			$classes[] = 'upa-login-icon';
+		}
+
+		return $classes;
+	}
+
+	/**
+	 * The mark above the form links to wordpress.org by default, and reads
+	 * "Powered by WordPress". On a skinned login that is the one element
+	 * belonging to somebody else's brand, and the one link a visitor is most
+	 * likely to click by mistake -- it leaves the site. Point it home.
+	 *
+	 * @internal
+	 */
+	public function _filter_login_headerurl( $url ) {
+		return $this->is_login_enabled() ? home_url( '/' ) : $url;
+	}
+
+	/**
+	 * @internal
+	 */
+	public function _filter_login_headertext( $text ) {
+		if ( ! $this->is_login_enabled() ) {
+			return $text;
+		}
+		$name = get_bloginfo( 'name', 'display' );
+		return $name ? $name : $text;
 	}
 
 }

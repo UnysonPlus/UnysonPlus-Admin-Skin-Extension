@@ -317,7 +317,13 @@ body.upa .wp-list-table tbody td,
 body.upa .wp-list-table tbody th,
 body.upa table.widefat tbody td,
 body.upa table.widefat tbody th {
-	padding: 12px 12px;
+	/* The vertical padding is what --upa-row-h actually controls. Every skin
+	 * declared that token and nothing consumed it, so compact density changed
+	 * the sidebar and the bar but left list tables exactly as they were --
+	 * which is the one place the setting is worth having. 28px is the line box
+	 * a 13px/1.45 cell needs; the rest of the row height is padding, split.
+	 * At the default 52px this is 12px, the value it replaces. */
+	padding: calc((var(--upa-row-h, 52px) - 28px) / 2) 12px;
 	border-top: 1px solid var(--upa-border);
 	color: var(--upa-text2);
 	font-size: 13px;
@@ -546,6 +552,10 @@ body.upa .stuffbox .postbox-header {
 	padding: 0 8px 0 18px;
 }
 
+/* The header's own 18px is the single source of the box's left edge, so the
+ * title sits on the same line as the content in .inside (also 18px). Core
+ * keeps these two in step; leaving a horizontal padding on the .hndle as well
+ * pushed the title 12px further in than everything under it. */
 body.upa .postbox .hndle,
 body.upa .postbox .postbox-header .hndle,
 body.upa .stuffbox .hndle,
@@ -556,6 +566,8 @@ body.upa .stuffbox h2 {
 	font-weight: 650;
 	color: var(--upa-text);
 	padding: 12px 0;
+	padding-left: 0;
+	padding-right: 0;
 	border: 0;
 	line-height: 1.4;
 	letter-spacing: -0.005em;
@@ -606,8 +618,14 @@ body.upa .postbox .inside .main {
 	padding: 0;
 }
 
-body.upa #poststuff #post-body.columns-2 #side-sortables {
-	width: 300px;
+/* Desktop only. Core drops the two-column post layout below 851px and lets the
+ * side container run full width; this rule carried no media query, so at phone
+ * width every metabox was pinned to 300px inside a 358px column -- a ragged
+ * right edge down the whole screen. */
+@media screen and (min-width: 851px) {
+	body.upa #poststuff #post-body.columns-2 #side-sortables {
+		width: 300px;
+	}
 }
 
 body.upa .meta-box-sortables .postbox {
@@ -1281,8 +1299,27 @@ body.upa div.error p {
 	color: var(--upa-text2);
 }
 
-body.upa .notice a {
+/* Links inside a notice take the accent — but a BUTTON in a notice is not a
+ * link for this purpose. The theme's onboarding notice ends with
+ * `<a class="button button-primary">Get started</a>`, and accent text on the
+ * accent fill made the label vanish entirely. Excluding buttons here fixes
+ * every variant at once rather than restating a colour per button class. */
+body.upa .notice a:not(.button):not(.button-primary):not(.button-secondary):not(.button-link) {
 	color: var(--upa-accent);
+}
+
+/* Restated so a button in a notice keeps the contrast its own fill needs,
+ * whatever inherited it. */
+body.upa .notice a.button-primary {
+	color: var(--upa-accent-fg);
+}
+
+/* :not(.button-primary) matters — core writes `class="button button-primary"`,
+ * so a plain `.button` rule declared after the primary one would win on
+ * source order and drag the label back to body text on an accent fill. */
+body.upa .notice a.button:not(.button-primary),
+body.upa .notice a.button-secondary {
+	color: var(--upa-text);
 }
 
 body.upa .notice-success,
@@ -1330,8 +1367,129 @@ body.upa .update-nag {
 }
 
 /* Tray (injected) */
+/* The tray used to sit in normal flow directly under the page title, so its
+ * pill was followed immediately by the screen's description text and the two
+ * collided. The TOGGLE is now lifted out of flow to the top right of the
+ * content area, level with the heading, where it reads as page chrome rather
+ * than as the first line of content.
+ *
+ * The tray itself keeps zero height while collapsed, so it adds no gap; the
+ * expanded LIST still flows full width in its original place. */
 .upa-notices {
-	margin: 20px 0 0;
+	margin: 0;
+	position: static;
+}
+
+body.upa .upa-notices-list {
+	margin-top: 16px;
+}
+
+/* ---- Muted notices ------------------------------------------------------
+ *
+ * A muted notice is hidden, not deleted: it stays in the list so the footer
+ * can offer it back. Deleting it would make "mute" unrecoverable from the one
+ * screen that knows the notice exists. */
+body.upa .upa-notices:not(.show-muted) .upa-notice-muted {
+	display: none !important;
+}
+
+body.upa .upa-notices.show-muted .upa-notice-muted {
+	opacity: .6;
+}
+
+body.upa .upa-notices-foot {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 10px;
+	color: var(--upa-text3);
+	font-size: 12.5px;
+}
+
+body.upa .upa-muted-toggle {
+	appearance: none;
+	padding: 0;
+	background: none;
+	border: 0;
+	color: var(--upa-accent);
+	font: inherit;
+	cursor: pointer;
+	text-decoration: underline;
+}
+
+/* The per-notice mute button. Absolutely placed so it cannot disturb a
+ * notice's own layout -- these are other people's markup, and some of them
+ * are very particular about it. Core's dismiss button sits at right: 1px, so
+ * this one clears it. */
+body.upa .upa-notices-list > * {
+	position: relative;
+	padding-right: 64px;
+}
+
+body.upa .upa-mute {
+	position: absolute;
+	top: 50%;
+	right: 34px;
+	transform: translateY(-50%);
+	display: grid;
+	place-items: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	background: none;
+	border: 0;
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text3);
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity .12s linear, color .12s linear, background-color .12s linear;
+}
+
+body.upa .upa-notices-list > *:hover .upa-mute,
+body.upa .upa-mute:focus-visible,
+body.upa .upa-mute[aria-pressed="true"] {
+	opacity: 1;
+}
+
+body.upa .upa-mute:hover {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+body.upa .upa-mute svg {
+	width: 15px;
+	height: 15px;
+}
+
+/* The toggle now sits in the top bar (see buildTray), so it is styled as a bar
+ * control rather than a page element: no absolute positioning against .wrap,
+ * which is what kept colliding with whatever each screen puts top-right. */
+body.upa #wpadminbar #wp-admin-bar-upa-notices {
+	display: flex;
+	align-items: center;
+}
+
+body.upa #wpadminbar .upa-notices-toggle {
+	height: 34px;
+	padding: 0 10px;
+	border-radius: var(--upa-radius-sm, 6px);
+	border: 0;
+	background: transparent;
+	color: var(--upa-text2);
+	box-shadow: none;
+	line-height: 1;
+}
+
+body.upa #wpadminbar .upa-notices-toggle:hover,
+body.upa #wpadminbar .upa-notices-toggle[aria-expanded="true"] {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+/* "Show" / "Hide" is redundant next to a dot and a count in a bar that has no
+ * room to spare — the button's own state carries it. */
+body.upa #wpadminbar .upa-notices-toggle .upa-notices-action {
+	display: none;
 }
 
 .upa-notices-toggle {
@@ -2200,13 +2358,32 @@ body.upa .commands-command-menu__container {
 	padding: 0;
 }
 
+/* No separator under the search field while the palette is EMPTY — stock
+ * wp-admin shows a clean floating field, and an always-on rule drew a line
+ * across the bottom of it with nothing beneath. The line only earns its place
+ * once there are results to separate from, which `[cmdk-item]` marks: the
+ * palette renders zero of them on an empty query and one per result
+ * otherwise. */
 body.upa .commands-command-menu__header {
 	display: flex;
 	align-items: center;
 	gap: 8px;
 	padding: 6px 12px;
-	border-bottom: 1px solid var(--upa-border);
+	border-bottom: 0;
 	background: transparent;
+}
+
+body.upa .commands-command-menu__container:has([cmdk-item]) .commands-command-menu__header {
+	border-bottom: 1px solid var(--upa-border);
+}
+
+/* On an empty query the results area still occupies 12px under the field, so
+ * the panel is taller than its only visible content and the text reads as
+ * sitting high — measured as the field's centre 6px above the panel's. Stock
+ * wp-admin has no such strip (panel 48, field 48). Collapse it until there is
+ * something to show; the same [cmdk-item] test as above. */
+body.upa .commands-command-menu__container:not(:has([cmdk-item])) .commands-command-menu__header + * {
+	display: none;
 }
 
 body.upa .commands-command-menu__header svg {
@@ -2224,8 +2401,15 @@ body.upa .commands-command-menu__header input:focus {
 	box-shadow: none !important;
 	outline: none;
 	background: transparent;
-	min-height: 44px;
-	padding: 0 4px;
+	/* Sized by PADDING, the way core does it (12px top and bottom against a
+	 * 24px line box), rather than by a fixed min-height with zero padding.
+	 * The fixed height left the text sitting ~1.5px below the middle of the
+	 * field, because the line box no longer filled the box it was centred in.
+	 * Letting the padding set the height puts the text on the centre line by
+	 * construction. */
+	min-height: 0;
+	padding: 12px 4px;
+	line-height: 24px;
 	margin: 0;
 	font-size: 15px;
 	color: var(--upa-text);
@@ -2450,1104 +2634,6 @@ body.upa .wp-editor-expand .wp-editor-tools {
 	/* Core's own 20px, so the media-buttons row keeps the same distance from
 	 * the permalink that it has in the classic admin — and the same distance
 	 * the page-builder switch button uses in the other editor state. */
-	padding-top: 20px;
-}
-
-/* Pinned to the top of the viewport it must cover what scrolls under it. */
-body.upa .wp-editor-expand #wp-content-editor-tools[style*="fixed"],
-body.upa .wp-editor-expand .wp-editor-tools[style*="fixed"] {
-	background: var(--upa-bg);
-}
-
-body.upa .wp-editor-expand #wp-content-editor-container,
-body.upa .wp-editor-expand .wp-editor-container {
-	border: 1px solid var(--upa-border);
-	border-radius: var(--upa-radius-lg, 14px);
-}
-
-body.upa .wp-editor-expand #post-status-info {
-	border: 0;
-	background: transparent;
-}
-
-/* In expand mode core pins the toolbar itself: absolute inside the card while
- * the card is in view, then position:fixed with an INLINE left/top/width once
- * it sticks to the top of the viewport. So never set left/right/width here —
- * that made the stuck toolbar span the whole window. Corners only. */
-body.upa .wp-editor-expand .quicktags-toolbar,
-body.upa .wp-editor-expand div.mce-toolbar-grp,
-body.upa .wp-editor-expand .mce-toolbar-grp {
-	box-sizing: border-box;
-	border-radius: calc(var(--upa-radius-lg, 14px) - 1px) calc(var(--upa-radius-lg, 14px) - 1px) 0 0;
-}
-
-/* Docked (core's inline position:absolute): core measures the width itself
- * and lands ~18px short of the card's inner edge, so take the full width.
- * Keyed on the inline position so the pinned state below is unaffected —
- * there, 100% would resolve against the viewport, not the card. */
-body.upa .wp-editor-expand .quicktags-toolbar[style*="absolute"],
-body.upa .wp-editor-expand div.mce-toolbar-grp[style*="absolute"] {
-	left: 0 !important;
-	width: 100% !important;
-}
-
-/* Stuck to the top of the viewport it is a floating bar, so square it off,
- * give it the card's border and clear the top bar. */
-body.upa .wp-editor-expand .quicktags-toolbar[style*="fixed"],
-body.upa .wp-editor-expand div.mce-toolbar-grp[style*="fixed"] {
-	border-radius: 0;
-	border: 1px solid var(--upa-border);
-	border-top: 0;
-	box-shadow: var(--upa-shadow-sm);
-}
-
-body.upa .wp-editor-expand .wp-editor-area,
-body.upa .wp-editor-expand textarea.wp-editor-area {
-	border-radius: 0 0 calc(var(--upa-radius-lg, 14px) - 1px) calc(var(--upa-radius-lg, 14px) - 1px);
-}
-
-
-/* Permalinks: the "Available tags" buttons are a chip row, and the ones
- * already used in the structure are marked by fill, not a stray ring. */
-body.upa .available-structure-tags ul,
-body.upa #available-structure-tags ul {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-	margin: 6px 0 0;
-}
-
-body.upa .available-structure-tags li,
-body.upa #available-structure-tags li {
-	margin: 0;
-}
-
-body.upa .available-structure-tags .button,
-body.upa #available-structure-tags .button {
-	min-height: 30px;
-	padding: 0 11px;
-	border-radius: 999px;
-	font-family: var(--upa-font-mono);
-	font-size: 12px;
-	font-weight: 500;
-	color: var(--upa-text2);
-	background: var(--upa-panel);
-	border-color: var(--upa-border2);
-	box-shadow: none;
-}
-
-body.upa .available-structure-tags .button:hover {
-	color: var(--upa-text);
-	background: var(--upa-hover);
-}
-
-body.upa .available-structure-tags .button[aria-pressed="true"],
-body.upa .available-structure-tags .button.active,
-body.upa #available-structure-tags .button[aria-pressed="true"] {
-	background: var(--upa-accent-soft);
-	border-color: transparent;
-	color: var(--upa-accent);
-	font-weight: 600;
-}
-
-body.upa .form-table code,
-body.upa .wrap code {
-	background: var(--upa-panel2);
-	color: var(--upa-text);
-	border-radius: 4px;
-	padding: 2px 6px;
-	font-size: 12px;
-}
-
-/* WP 7.x "boot-layout" screens (Settings → Connectors) ship their own app
- * shell and paint <body> near-black, which frames the page in a dark border
- * under the skin. Let the shell sit on the skin's canvas; its own inner
- * surfaces keep whatever they set. */
-body.upa:has(.boot-layout),
-body.upa .boot-layout,
-body.upa .boot-layout--single-page {
-	background: var(--upa-bg) !important;
-	color: var(--upa-text);
-}
-
-body.upa .boot-layout__surfaces {
-	background: transparent;
-}
-
-/* select2: while open, the trigger and the panel must read as ONE box, so
- * square the edges where they meet and match their borders exactly. */
-body.upa .select2-container--default .select2-selection--single,
-body.upa .select2-container--default .select2-selection--multiple {
-	transition: border-color .12s ease, box-shadow .12s ease;
-}
-
-body.upa .select2-container--open .select2-selection--single,
-body.upa .select2-container--open .select2-selection--multiple {
-	border-color: var(--upa-accent);
-	box-shadow: 0 0 0 3px var(--upa-accent-ring);
-}
-
-body.upa .select2-container--open.select2-container--below .select2-selection--single,
-body.upa .select2-container--open.select2-container--below .select2-selection--multiple {
-	border-bottom-left-radius: 0;
-	border-bottom-right-radius: 0;
-	border-bottom-color: var(--upa-border2);
-}
-
-body.upa .select2-container--open.select2-container--above .select2-selection--single,
-body.upa .select2-container--open.select2-container--above .select2-selection--multiple {
-	border-top-left-radius: 0;
-	border-top-right-radius: 0;
-	border-top-color: var(--upa-border2);
-}
-
-body.upa .select2-dropdown {
-	border: 1px solid var(--upa-accent);
-	box-shadow: 0 0 0 3px var(--upa-accent-ring);
-	background: var(--upa-panel);
-	color: var(--upa-text);
-	overflow: hidden;
-}
-
-body.upa .select2-container .select2-dropdown.select2-dropdown--below,
-body.upa .select2-dropdown--below {
-	border-top: 1px solid var(--upa-border2);
-	border-radius: 0 0 var(--upa-radius, 9px) var(--upa-radius, 9px);
-	margin-top: 0;
-}
-
-body.upa .select2-container .select2-dropdown.select2-dropdown--above,
-body.upa .select2-dropdown--above {
-	border-bottom: 1px solid var(--upa-border2);
-	border-radius: var(--upa-radius, 9px) var(--upa-radius, 9px) 0 0;
-	margin-bottom: 0;
-}
-
-body.upa .select2-search--dropdown {
-	padding: 8px;
-	background: var(--upa-panel);
-}
-
-body.upa .select2-container--default .select2-search--dropdown .select2-search__field {
-	min-height: 32px;
-	padding: 0 10px;
-	border: 1px solid var(--upa-border2);
-	border-radius: var(--upa-radius-sm, 6px);
-	background: var(--upa-panel2);
-	color: var(--upa-text);
-}
-
-body.upa .select2-container--default .select2-search--dropdown .select2-search__field:focus {
-	border-color: var(--upa-accent);
-	box-shadow: none;
-	outline: none;
-}
-
-body.upa .select2-results__options {
-	padding: 4px;
-}
-
-body.upa .select2-container--default .select2-results__option {
-	padding: 7px 10px;
-	border-radius: var(--upa-radius-sm, 6px);
-	color: var(--upa-text2);
-	font-size: 13px;
-}
-
-/* Selected (but not under the cursor): a soft accent chip. */
-body.upa .select2-container--default .select2-results__option[aria-selected="true"]:not(.select2-results__option--highlighted) {
-	background: var(--upa-accent-soft);
-	color: var(--upa-accent);
-	font-weight: 600;
-}
-
-/* Under the cursor wins — including when it is also the selected option,
- * which otherwise renders accent text on an accent fill. */
-body.upa .select2-container--default .select2-results__option--highlighted,
-body.upa .select2-container--default .select2-results__option--highlighted[aria-selected],
-body.upa .select2-container--default .select2-results__option--highlighted[aria-selected="true"] {
-	background: var(--upa-accent);
-	color: var(--upa-accent-fg);
-}
-
-body.upa .select2-container--default .select2-selection--single .select2-selection__placeholder {
-	color: var(--upa-text3);
-}
-
-
-/* Card grids (Add Plugins / Add Themes) are not really tables: the element
- * only wraps a grid of .plugin-card / .theme, so the card chrome belongs on
- * the cards, not on a big panel behind them. */
-body.upa .wp-list-table.plugin-install,
-body.upa .wp-list-table.widefat.plugin-install {
-	background: transparent;
-	border: 0;
-	border-radius: 0;
-	box-shadow: none;
-	overflow: visible;
-	margin-top: 0;
-}
-
-body.upa .plugin-card {
-	background: var(--upa-panel);
-	border: 1px solid var(--upa-border);
-	border-radius: var(--upa-radius-lg, 14px);
-	box-shadow: var(--upa-shadow-sm);
-	overflow: hidden;
-}
-
-body.upa .plugin-card h3,
-body.upa .plugin-card .name h3 a {
-	color: var(--upa-text);
-	font-weight: 650;
-}
-
-body.upa .plugin-card .desc,
-body.upa .plugin-card .desc p {
-	color: var(--upa-text2);
-}
-
-body.upa .plugin-card .plugin-card-bottom {
-	background: var(--upa-panel2);
-	border-top: 1px solid var(--upa-border);
-	color: var(--upa-text3);
-}
-
-body.upa .plugin-card .plugin-card-bottom .column-updated,
-body.upa .plugin-card .plugin-card-bottom .column-downloaded,
-body.upa .plugin-card .plugin-card-bottom .column-compatibility {
-	color: var(--upa-text3);
-}
-
-body.upa .plugin-card .plugin-icon {
-	border-radius: var(--upa-radius, 9px);
-}
-
-body.upa .plugin-card .notice,
-body.upa .plugin-card .notice-alt {
-	border-radius: var(--upa-radius, 9px);
-}
-
-/* Round only the THEAD (a row group paints behind its cells); rounding the
- * cells themselves carved an arc that exposed the surface underneath. */
-body.upa .wp-list-table thead,
-body.upa table.widefat thead {
-	background: var(--upa-panel2);
-	border-top-left-radius: calc(var(--upa-radius-lg, 14px) - 1px);
-	border-top-right-radius: calc(var(--upa-radius-lg, 14px) - 1px);
-}
-
-body.upa .wp-list-table tbody tr:last-child > *:first-child,
-body.upa table.widefat tbody tr:last-child > *:first-child {
-	border-bottom-left-radius: calc(var(--upa-radius-lg, 14px) - 1px);
-}
-
-body.upa .wp-list-table tbody tr:last-child > *:last-child,
-body.upa table.widefat tbody tr:last-child > *:last-child {
-	border-bottom-right-radius: calc(var(--upa-radius-lg, 14px) - 1px);
-}
-
-/* Site Health ------------------------------------------------------------ */
-
-body.upa .health-check-body,
-body.upa .site-health-progress-wrapper,
-body.upa .site-health-issues-wrapper h3 {
-	color: var(--upa-text);
-}
-
-/* The count heading is a HEADING, not a card — it had inherited the panel
- * surface and read as an empty white bar above each list. */
-body.upa .site-health-issue-count-title {
-	background: transparent;
-	border: 0;
-	border-radius: 0;
-	box-shadow: none;
-	padding: 0;
-	margin: 28px 0 6px;
-	font-size: 18px;
-	font-weight: 650;
-	letter-spacing: -0.01em;
-	color: var(--upa-text);
-}
-
-body.upa .site-health-issues-wrapper > p,
-body.upa .health-check-body > p {
-	color: var(--upa-text2);
-	margin: 0 0 14px;
-}
-
-/* One card per list, rows divided by hairlines. */
-body.upa .health-check-accordion {
-	background: var(--upa-panel);
-	border: 1px solid var(--upa-border);
-	border-radius: var(--upa-radius-lg, 14px);
-	box-shadow: var(--upa-shadow-sm);
-	overflow: hidden;
-}
-
-body.upa .health-check-accordion-heading {
-	border: 0;
-	border-top: 1px solid var(--upa-border);
-	margin: 0;
-}
-
-body.upa .health-check-accordion-heading:first-of-type {
-	border-top: 0;
-}
-
-body.upa .health-check-accordion-trigger {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	width: 100%;
-	padding: 14px 18px;
-	background: transparent;
-	border: 0;
-	color: var(--upa-text);
-	font-size: 13.5px;
-	font-weight: 500;
-	text-align: left;
-}
-
-body.upa .health-check-accordion-trigger:hover,
-body.upa .health-check-accordion-trigger:focus {
-	background: var(--upa-hover);
-	color: var(--upa-text);
-	box-shadow: none;
-	outline: none;
-}
-
-body.upa .health-check-accordion-trigger .title {
-	flex: 1 1 auto;
-	min-width: 0;
-}
-
-body.upa .health-check-accordion-trigger .icon {
-	position: static;
-	flex: 0 0 auto;
-	transform: none;
-	margin: 0;
-}
-
-body.upa .health-check-accordion-trigger .icon::before {
-	color: var(--upa-text3);
-}
-
-/* Category badges: a soft pill per kind instead of a hard outline. */
-body.upa .health-check-accordion-trigger .badge {
-	flex: 0 0 auto;
-	border: 0;
-	border-radius: 999px;
-	padding: 3px 10px;
-	font-size: 11.5px;
-	font-weight: 600;
-	background: var(--upa-panel2);
-	color: var(--upa-text2);
-}
-
-body.upa .health-check-accordion-trigger .badge.blue {
-	background: var(--upa-blue-soft);
-	color: var(--upa-blue-text);
-}
-
-body.upa .health-check-accordion-trigger .badge.orange,
-body.upa .health-check-accordion-trigger .badge.red {
-	background: var(--upa-red-soft);
-	color: var(--upa-red-text);
-}
-
-body.upa .health-check-accordion-trigger .badge.green {
-	background: var(--upa-green-soft);
-	color: var(--upa-green-text);
-}
-
-body.upa .health-check-accordion-trigger .badge.gray,
-body.upa .health-check-accordion-trigger .badge.grey,
-body.upa .health-check-accordion-trigger .badge.purple {
-	background: var(--upa-accent-soft);
-	color: var(--upa-accent);
-}
-
-body.upa .health-check-accordion-panel {
-	background: var(--upa-panel2);
-	border-top: 1px solid var(--upa-border);
-	color: var(--upa-text2);
-	padding: 16px 18px;
-}
-
-body.upa .health-check-accordion-panel p,
-body.upa .health-check-accordion-panel li {
-	color: var(--upa-text2);
-}
-
-/* Status header + tabs */
-body.upa .health-check-header {
-	background: transparent;
-	border: 0;
-	margin: 0 0 20px;
-	padding: 0;
-	max-width: none;
-}
-
-body.upa .health-check-title-section h1 {
-	color: var(--upa-text);
-}
-
-body.upa .site-health-progress {
-	margin: 0 12px 0 0;
-}
-
-body.upa .site-health-progress svg circle.bg {
-	stroke: var(--upa-border);
-}
-
-body.upa .site-health-progress-label,
-body.upa .site-health-progress-count {
-	color: var(--upa-text);
-}
-
-/* Info tab: each section is its own card */
-body.upa .health-check-accordion.health-check-debug {
-	margin-bottom: 20px;
-}
-
-body.upa .health-check-table th,
-body.upa .health-check-table td {
-	color: var(--upa-text2);
-	border-color: var(--upa-border);
-}
-
-/* Widgets screen, misc */
-body.upa .widgets-holder-wrap,
-body.upa #available-widgets .widget,
-body.upa .widget-top {
-	background: var(--upa-panel);
-	border-color: var(--upa-border);
-	color: var(--upa-text);
-	border-radius: var(--upa-radius, 9px);
-}
-
-body.upa .widget .widget-top {
-	box-shadow: none;
-}
-
-body.upa .widget-inside {
-	background: var(--upa-panel);
-	border-color: var(--upa-border);
-}
-
-/* Post title field (core sets it by id) */
-body.upa #titlediv #title,
-body.upa #titlewrap #title {
-	background: var(--upa-panel);
-	border: 1px solid var(--upa-border2);
-	border-radius: var(--upa-radius, 9px);
-	color: var(--upa-text);
-	font-family: var(--upa-font-ui);
-	font-size: 22px;
-	font-weight: 600;
-	letter-spacing: -0.01em;
-	padding: 6px 14px;
-	height: auto;
-	box-shadow: none;
-}
-
-body.upa #titlediv #title:focus {
-	border-color: var(--upa-accent);
-	box-shadow: 0 0 0 3px var(--upa-accent-ring);
-}
-
-body.upa #titlediv #title-prompt-text,
-body.upa #titlewrap #title-prompt-text {
-	color: var(--upa-text3);
-	font-size: 22px;
-	padding: 6px 14px;
-}
-
-body.upa #edit-slug-box,
-body.upa #edit-slug-box a {
-	color: var(--upa-text3);
-}
-
-/* Publish box: core strips the .inside padding here, so pad each section */
-body.upa #submitdiv .inside,
-body.upa #submitpost {
-	padding: 0;
-	margin: 0;
-}
-
-body.upa #submitpost > :first-child,
-body.upa #submitdiv .inside > :first-child {
-	margin-top: 0;
-}
-
-body.upa #minor-publishing-actions {
-	padding: 14px 18px 12px;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 8px;
-}
-
-body.upa #minor-publishing-actions #save-action,
-body.upa #minor-publishing-actions #preview-action {
-	float: none;
-}
-
-body.upa #misc-publishing-actions {
-	padding: 0 18px;
-}
-
-body.upa #misc-publishing-actions .misc-pub-section {
-	padding: 6px 0;
-	border: 0 !important;
-}
-
-body.upa #misc-publishing-actions {
-	padding: 4px 18px 10px;
-}
-
-body.upa #major-publishing-actions {
-	margin: 0;
-	padding: 14px 18px;
-	background: var(--upa-panel2);
-	border-top: 1px solid var(--upa-border);
-	border-radius: 0 0 var(--upa-radius-lg, 14px) var(--upa-radius-lg, 14px);
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-}
-
-body.upa #major-publishing-actions #delete-action,
-body.upa #major-publishing-actions #publishing-action {
-	float: none;
-}
-
-body.upa #publishing-action .spinner {
-	float: none;
-	margin: 0 6px 0 0;
-}
-
-body.upa #minor-publishing,
-body.upa #misc-publishing-actions,
-body.upa #minor-publishing-actions,
-body.upa #major-publishing-actions {
-	box-shadow: none;
-}
-
-/* Metabox card body generally: give sections that core leaves flush some air */
-body.upa .postbox .inside.no-padding,
-body.upa .postbox .inside > .categorydiv,
-body.upa .postbox .inside > .tagsdiv {
-	margin-top: 8px;
-}
-
-
-body.upa #wp-content-editor-tools:after,
-body.upa .wp-editor-tools:after {
-	display: none;
-}
-
-body.upa .wp-editor-tools .wp-media-buttons {
-	float: none;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
-}
-
-body.upa .wp-editor-tools .wp-media-buttons .button {
-	margin: 0;
-}
-
-body.upa .wp-editor-tabs {
-	float: none;
-	display: inline-flex;
-	gap: 3px;
-	padding: 3px;
-	background: var(--upa-panel2);
-	border-radius: var(--upa-radius, 9px);
-	margin: 0;
-}
-
-body.upa .wp-editor-tools .wp-editor-tabs button.wp-switch-editor,
-body.upa .wp-switch-editor,
-body.upa .wp-switch-editor:hover {
-	float: none;
-	margin: 0;
-	padding: 5px 12px;
-	height: auto;
-	border: 0;
-	border-radius: var(--upa-radius-sm, 6px);
-	background: transparent;
-	color: var(--upa-text2);
-	font-size: 12.5px;
-	font-weight: 500;
-	line-height: 1.4;
-	box-shadow: none;
-	top: 0;
-}
-
-body.upa .wp-editor-tools .wp-editor-tabs button.wp-switch-editor:hover,
-body.upa .wp-switch-editor:hover {
-	color: var(--upa-text);
-	background: color-mix(in srgb, var(--upa-text) 6%, transparent);
-}
-
-/* Active tab. Specificity must match (or beat) the base rule above, which is
- * scoped through .wp-editor-tools .wp-editor-tabs — a plain
- * `.html-active .switch-html` loses to it and the pill disappears. */
-body.upa .wp-editor-tools .wp-editor-tabs button.switch-html,
-body.upa .wp-editor-tools .wp-editor-tabs button.switch-tmce,
-body.upa .html-active .switch-html,
-body.upa .tmce-active .switch-tmce {
-	/* placeholder so the states below are the only thing that fills */
-	background: transparent;
-}
-
-body.upa .html-active .wp-editor-tools .wp-editor-tabs button.switch-html,
-body.upa .tmce-active .wp-editor-tools .wp-editor-tabs button.switch-tmce,
-body.upa .html-active .wp-editor-tools .wp-editor-tabs button.switch-html:hover,
-body.upa .tmce-active .wp-editor-tools .wp-editor-tabs button.switch-tmce:hover,
-body.upa .html-active .switch-html,
-body.upa .tmce-active .switch-tmce,
-body.upa .html-active .switch-html:hover,
-body.upa .tmce-active .switch-tmce:hover {
-	background: var(--upa-accent);
-	color: var(--upa-accent-fg);
-	font-weight: 600;
-	box-shadow: none;
-	border: 0;
-}
-
-body.upa .wp-editor-container,
-body.upa #wp-content-wrap .wp-editor-container {
-	border: 1px solid var(--upa-border);
-	border-radius: var(--upa-radius-lg, 14px);
-	box-shadow: var(--upa-shadow-sm);
-	background: var(--upa-panel);
-	overflow: hidden;
-}
-
-body.upa .quicktags-toolbar,
-body.upa .mce-toolbar-grp,
-body.upa .mce-top-part::before,
-body.upa div.mce-toolbar-grp {
-	background: var(--upa-panel2);
-	border: 0;
-	border-bottom: 1px solid var(--upa-border);
-	box-shadow: none;
-	padding: 6px 8px;
-	box-sizing: border-box;
-}
-
-body.upa div.mce-toolbar-grp > div.mce-container-body,
-body.upa .mce-toolbar-grp .mce-flow-layout {
-	width: auto !important;
-}
-
-body.upa .quicktags-toolbar input.ed_button,
-body.upa .quicktags-toolbar .button {
-	min-height: 28px;
-	padding: 0 10px;
-	font-size: 12px;
-	margin: 2px 4px 2px 0;
-}
-
-body.upa .wp-editor-area,
-body.upa textarea.wp-editor-area {
-	border: 0;
-	border-radius: 0;
-	box-shadow: none;
-	background: var(--upa-panel);
-	color: var(--upa-text);
-	padding: 14px 16px;
-	font-family: var(--upa-font-mono);
-	font-size: 13px;
-}
-
-/* Inner TinyMCE containers are structural: they must not paint over the
- * toolbar band or the canvas, only the edit area and status bar do. */
-body.upa .mce-container,
-body.upa .mce-container-body,
-body.upa .mce-panel,
-body.upa .mce-flow-layout,
-body.upa .mce-stack-layout,
-body.upa .mce-stack-layout-item,
-body.upa .mce-toolbar,
-body.upa .mce-flow-layout-item {
-	background: transparent;
-	border-color: var(--upa-border) !important;
-	color: var(--upa-text2);
-}
-
-body.upa .mce-edit-area,
-body.upa .mce-edit-area iframe,
-body.upa .mce-statusbar,
-body.upa div.mce-statusbar,
-body.upa .mce-path {
-	background: var(--upa-panel);
-	color: var(--upa-text2);
-	border-color: var(--upa-border) !important;
-}
-
-body.upa .mce-statusbar,
-body.upa div.mce-statusbar {
-	border-top: 1px solid var(--upa-border) !important;
-}
-
-body.upa .mce-btn,
-body.upa .mce-btn button,
-body.upa .mce-btn i {
-	color: var(--upa-text2);
-	background: transparent;
-	border-color: transparent;
-	box-shadow: none;
-}
-
-body.upa .mce-btn:hover,
-body.upa .mce-btn.mce-active,
-body.upa .mce-btn:focus {
-	background: var(--upa-hover);
-	border-color: transparent;
-	box-shadow: none;
-}
-
-body.upa .mce-btn.mce-active i,
-body.upa .mce-btn:hover i {
-	color: var(--upa-text);
-}
-
-body.upa .mce-menubtn button span,
-body.upa .mce-listbox button {
-	color: var(--upa-text2);
-}
-
-body.upa .mce-listbox,
-body.upa .mce-listbox button {
-	background: var(--upa-panel);
-	border-color: var(--upa-border2);
-	border-radius: var(--upa-radius-sm, 6px);
-}
-
-body.upa #post-status-info {
-	border: 0;
-	background: transparent;
-	color: var(--upa-text3);
-	font-size: 12px;
-	box-shadow: none;
-	margin-top: 6px;
-}
-
-body.upa #post-status-info td {
-	color: var(--upa-text3);
-	border: 0;
-	background: transparent;
-	padding: 0 4px;
-}
-
-body.upa #content-resize-handle,
-body.upa .wp-editor-expand #content-resize-handle {
-	background: none;
-	opacity: .5;
-}
-
-body.upa #wp-content-editor-container {
-	border: 0;
-}
-
-body.upa .mce-menu,
-body.upa .mce-floatpanel {
-	background: var(--upa-panel);
-	border: 1px solid var(--upa-border);
-	border-radius: var(--upa-radius, 9px);
-	box-shadow: var(--upa-shadow);
-	color: var(--upa-text);
-}
-
-body.upa .mce-menu-item,
-body.upa .mce-menu-item .mce-text,
-body.upa .mce-menu-item .mce-ico {
-	color: var(--upa-text2);
-	background: transparent;
-}
-
-body.upa .mce-menu-item:hover,
-body.upa .mce-menu-item.mce-selected,
-body.upa .mce-menu-item:focus {
-	background: var(--upa-hover);
-}
-
-body.upa .mce-menu-item:hover .mce-text,
-body.upa .mce-menu-item.mce-selected .mce-text {
-	color: var(--upa-text);
-}
-
-/* Core command palette (Ctrl+K) */
-body.upa .commands-command-menu__overlay {
-	background: rgba(10, 10, 14, .45);
-}
-
-body.upa .commands-command-menu {
-	background: var(--upa-panel);
-	border: 1px solid var(--upa-border);
-	border-radius: var(--upa-radius-lg, 14px);
-	box-shadow: var(--upa-shadow);
-	color: var(--upa-text);
-	overflow: hidden;
-	max-width: 640px;
-}
-
-body.upa .commands-command-menu__container {
-	padding: 0;
-}
-
-body.upa .commands-command-menu__header {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 6px 12px;
-	border-bottom: 1px solid var(--upa-border);
-	background: transparent;
-}
-
-body.upa .commands-command-menu__header svg {
-	color: var(--upa-text3);
-	fill: currentColor;
-	flex: 0 0 auto;
-}
-
-body.upa .commands-command-menu__header input,
-body.upa .commands-command-menu__header input[type="text"],
-body.upa .commands-command-menu__header [cmdk-input],
-body.upa .commands-command-menu__header input:focus {
-	flex: 1 1 auto;
-	border: 0 !important;
-	box-shadow: none !important;
-	outline: none;
-	background: transparent;
-	min-height: 44px;
-	padding: 0 4px;
-	margin: 0;
-	font-size: 15px;
-	color: var(--upa-text);
-}
-
-body.upa .commands-command-menu__header input::placeholder {
-	color: var(--upa-text3);
-}
-
-body.upa .commands-command-menu [cmdk-list],
-body.upa .commands-command-menu__list {
-	padding: 6px;
-	max-height: 400px;
-}
-
-body.upa .commands-command-menu [cmdk-group-heading] {
-	color: var(--upa-text3);
-	font-size: 11px;
-	font-weight: 650;
-	letter-spacing: .06em;
-	text-transform: uppercase;
-	padding: 8px 10px 4px;
-}
-
-body.upa .commands-command-menu__item,
-body.upa .commands-command-menu [cmdk-item] {
-	color: var(--upa-text2);
-	border-radius: var(--upa-radius-sm, 6px);
-	padding: 8px 10px;
-	font-size: 13.5px;
-}
-
-body.upa .commands-command-menu__item[aria-selected="true"],
-body.upa .commands-command-menu [cmdk-item][aria-selected="true"],
-body.upa .commands-command-menu__item:hover {
-	background: var(--upa-hover);
-	color: var(--upa-text);
-}
-
-body.upa .commands-command-menu__item svg,
-body.upa .commands-command-menu [cmdk-item] svg {
-	fill: currentColor;
-	color: var(--upa-text3);
-}
-
-body.upa .commands-command-menu [cmdk-empty] {
-	color: var(--upa-text3);
-	padding: 24px;
-	text-align: center;
-}
-
-/* Pagination: "1 of 1" and its input on one centred line */
-body.upa .tablenav-pages .paging-input {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	margin: 0 2px;
-	height: 32px;
-	line-height: 32px;
-	color: var(--upa-text3);
-}
-
-body.upa .tablenav-pages .paging-input .tablenav-paging-text,
-body.upa .tablenav-pages .paging-input .total-pages {
-	display: inline-flex;
-	align-items: center;
-	height: 32px;
-	line-height: 1;
-	vertical-align: middle;
-	/* The flex row eats the markup's whitespace, so "of" and the count would
-	   otherwise run together. */
-	gap: 4px;
-}
-
-body.upa .tablenav-pages .paging-input .total-pages {
-	margin-left: 4px;
-}
-
-body.upa .tablenav-pages .paging-input .current-page {
-	height: 32px;
-	min-height: 32px;
-	width: 46px;
-	margin: 0;
-	padding: 0 6px;
-	text-align: center;
-	vertical-align: middle;
-	box-sizing: border-box;
-}
-
-body.upa .tablenav-pages .pagination-links {
-	align-items: center;
-	line-height: 30px;
-}
-
-body.upa .tablenav-pages .pagination-links .tablenav-pages-navspan,
-body.upa .tablenav-pages .pagination-links .button {
-	vertical-align: middle;
-}
-
-body.upa .tablenav-pages .pagination-links .tablenav-pages-navspan {
-	background: var(--upa-panel2);
-	border-color: var(--upa-border);
-	color: var(--upa-text3);
-	box-shadow: none;
-}
-
-/* Sortable headers: label and the sort arrows side by side */
-body.upa .wp-list-table thead th.sortable > a,
-body.upa .wp-list-table thead th.sorted > a,
-body.upa table.widefat thead th.sortable > a,
-body.upa table.widefat thead th.sorted > a {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	padding: 0;
-}
-
-body.upa .wp-list-table thead th.sortable > a > span:first-child,
-body.upa .wp-list-table thead th.sorted > a > span:first-child {
-	float: none;
-}
-
-body.upa .wp-list-table thead .sorting-indicators,
-body.upa table.widefat thead .sorting-indicators {
-	display: inline-flex;
-	flex-direction: column;
-	gap: 1px;
-	float: none;
-	margin: 0;
-	vertical-align: middle;
-}
-
-body.upa .wp-list-table thead .sorting-indicator,
-body.upa table.widefat thead .sorting-indicator {
-	display: block;
-	margin: 0;
-	float: none;
-	width: 10px;
-	height: 5px;
-	line-height: 5px;
-	visibility: visible;
-	opacity: .35;
-}
-
-body.upa .wp-list-table thead .sorting-indicator:before {
-	font-size: 10px;
-	line-height: 5px;
-	width: 10px;
-	height: 5px;
-	color: currentColor;
-	position: static;
-	top: auto;
-}
-
-body.upa .wp-list-table thead th.sorted.asc .sorting-indicator.asc,
-body.upa .wp-list-table thead th.sorted.desc .sorting-indicator.desc,
-body.upa .wp-list-table thead th.sortable:hover .sorting-indicator {
-	opacity: 1;
-}
-
-body.upa .wp-list-table thead th.sortable:hover .sorting-indicator {
-	opacity: .7;
-}
-
-/* Inline heading + action button on one centre line; the spacing below the
- * header moves to the .wp-header-end rule that follows them */
-body.upa .wrap h1.wp-heading-inline {
-	margin: 0 6px 0 0;
-	vertical-align: middle;
-	line-height: 32px;
-}
-
-body.upa .wrap h1.wp-heading-inline + .page-title-action,
-body.upa .wrap .page-title-action {
-	vertical-align: middle;
-	margin: 0 0 0 4px;
-}
-
-body.upa .wrap .wp-header-end {
-	margin: 0 0 18px;
-	height: 0;
-	border: 0;
-	visibility: hidden;
-}
-
-body.upa .wrap h1.wp-heading-inline + .page-title-action + .wp-header-end,
-body.upa .wrap h1.wp-heading-inline + .wp-header-end {
-	margin-top: 0;
-}
-
-/* A postbox with no title still gets a header — a SLIM one. Floating the
- * toggle over the content instead (an earlier attempt) left it sitting on
- * top of the first option row. */
-body.upa .postbox.upa-untitled > .postbox-header {
-	min-height: 34px;
-	padding: 0 8px;
-}
-
-body.upa .postbox.upa-untitled > .postbox-header .hndle {
-	padding: 0;
-	min-height: 0;
-}
-
-body.upa .postbox.upa-untitled > .postbox-header .handle-actions .handlediv {
-	width: 26px;
-	height: 26px;
-}
-
-body.upa .postbox.upa-untitled .inside {
-	padding-top: 8px;
-}
-
-
-/* .wp-editor-expand makes the tools row sticky with its own border/background;
- * the row is ours, so drop both and keep the card below unbroken */
-body.upa .wp-editor-expand #wp-content-editor-tools,
-body.upa .wp-editor-expand .wp-editor-tools {
-	border-bottom: 0;
-	/* Transparent while docked: core gives this row a height that laps over
-	 * the editor card's top border, and an opaque fill would hide it. */
-	background: transparent;
 	padding-top: 20px;
 }
 
@@ -4593,4 +3679,38 @@ body.upa #menu-to-edit .menu-item {
 body.upa #post-body-content .drag-instructions,
 body.upa .nav-menus-php .menu-edit .howto {
 	padding-left: 2px;
+}
+
+/* Core pins the postbox title's horizontal padding with an ID selector
+ * (`#poststuff h2`), which outranks the class-level rule above — so the title
+ * kept a 12px inset while .inside sits at 18px, putting the heading 12px
+ * right of everything under it. Matching that weight lets the header's own
+ * 18px be the single left edge for the whole box. */
+body.upa #poststuff .postbox .hndle,
+body.upa #poststuff .postbox .postbox-header .hndle,
+body.upa #poststuff h2.hndle,
+body.upa #poststuff h3.hndle,
+body.upa #poststuff .stuffbox > h3 {
+	padding-left: 0;
+	padding-right: 0;
+}
+
+/* Core sets `.wp-core-ui select:hover { color: #1e1e1e; border-color: #1e1e1e }`.
+ * The skin recoloured selects at REST but never on hover, so pointing at any
+ * select in dark mode dropped its label to near-black on a near-black field —
+ * the control looked like it went blank. This is every select in the admin,
+ * not just the Add Plugins keyword picker where it was spotted.
+ *
+ * Focus keeps the accent ring that another rule already supplies; only the
+ * text colour is restated here so the two do not fight. */
+body.upa select:hover {
+	color: var(--upa-text);
+	border-color: var(--upa-text3);
+}
+
+/* Declared after the hover rule so that a select which is BOTH hovered and
+ * focused keeps its accent ring rather than the hover edge. */
+body.upa select:focus {
+	color: var(--upa-text);
+	border-color: var(--upa-accent);
 }

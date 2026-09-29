@@ -136,6 +136,50 @@ class FW_Admin_Skin_Registry {
 	 * @param array       $skin   from resolve()
 	 * @param string|null $accent optional per-user accent hex overriding both modes
 	 */
+	/**
+	 * Compact density, derived from the skin's own comfortable values.
+	 *
+	 * A skin may declare `density_compact` in its skin.json and have the last
+	 * word; when it does not, the numbers are stepped down from what it did
+	 * declare, so a skin never has to spell out a second set to get a working
+	 * compact mode. Only lengths are touched -- fonts, colour and shape are the
+	 * skin's identity and stay put.
+	 *
+	 * @param array $skin from resolve()
+	 * @return array token => value
+	 */
+	private function compact_tokens( array $skin ) {
+		if ( ! empty( $skin['density_compact'] ) && is_array( $skin['density_compact'] ) ) {
+			return $skin['density_compact'];
+		}
+
+		$density = ! empty( $skin['density'] ) && is_array( $skin['density'] ) ? $skin['density'] : [];
+
+		// [ subtracted, floor ] -- the floor is what keeps a compact skin from
+		// becoming an unusable one, whatever a skin declares.
+		$steps = [
+			'font-size' => [ 1, 12 ],
+			'control-h' => [ 4, 28 ],
+			'row-h'     => [ 8, 36 ],
+			'sidebar-w' => [ 28, 180 ],
+			'bar-h'     => [ 6, 40 ],
+		];
+
+		$out = [];
+		foreach ( $steps as $key => $step ) {
+			if ( ! isset( $density[ $key ] ) || ! preg_match( '/^(\d+(?:\.\d+)?)px$/', trim( (string) $density[ $key ] ), $m ) ) {
+				continue;
+			}
+			$out[ $key ] = max( $step[1], (float) $m[1] - $step[0] ) . 'px';
+		}
+
+		if ( isset( $density['line-height'] ) && is_numeric( $density['line-height'] ) ) {
+			$out['line-height'] = max( 1.3, (float) $density['line-height'] - 0.06 );
+		}
+
+		return $out;
+	}
+
 	public function css( array $skin, $accent = null ) {
 		$css = '';
 
@@ -168,6 +212,14 @@ class FW_Admin_Skin_Registry {
 			}
 		}
 		$css .= ':root{' . $this->declarations( $root ) . "}\n";
+
+		// Compact is an override block rather than a second :root, so the
+		// viewer's choice is one attribute on <html> and switches without a
+		// reload -- the same trick the modes use.
+		$compact = $this->compact_tokens( $skin );
+		if ( $compact ) {
+			$css .= 'html[data-upa-density="compact"]{' . $this->declarations( $compact ) . "}\n";
+		}
 
 		// Mode tokens.
 		$light = $this->mode_tokens( $skin, 'light', $accent );

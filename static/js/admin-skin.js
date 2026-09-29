@@ -50,6 +50,7 @@
 	}
 
 	var ICONS = {
+		mute: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="m22 9-6 6M16 9l6 6"/></svg>',
 		search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
 		sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/></svg>',
 		moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>',
@@ -69,7 +70,7 @@
 	function savePrefs() {
 		// Always send the whole preference set: two quick clicks would
 		// otherwise race each other's read-modify-write on the server.
-		return post( { mode: state.mode, accent: state.accent } );
+		return post( { mode: state.mode, accent: state.accent, density: state.density } );
 	}
 
 	function post( data ) {
@@ -113,12 +114,13 @@
 	}
 
 	/* ------------------------------------------------------------------ */
-	/* Mode + accent                                                        */
+	/* Mode + accent + density                                              */
 	/* ------------------------------------------------------------------ */
 
 	var state = {
 		mode: cfg.mode || 'light',
-		accent: cfg.accent || ''
+		accent: cfg.accent || '',
+		density: cfg.density || 'comfortable'
 	};
 
 	function applyMode( mode ) {
@@ -146,6 +148,19 @@
 		} );
 	}
 
+	/**
+	 * Comfortable / compact. The compact token block is already in the page
+	 * (the registry emits it next to :root), so this is one attribute and the
+	 * whole admin resizes -- no reload, no second stylesheet.
+	 */
+	function applyDensity( density ) {
+		state.density = 'compact' === density ? 'compact' : 'comfortable';
+		html.setAttribute( 'data-upa-density', state.density );
+		doc.querySelectorAll( '.upa-seg button[data-density]' ).forEach( function ( b ) {
+			b.classList.toggle( 'is-active', b.getAttribute( 'data-density' ) === state.density );
+		} );
+	}
+
 	/* ------------------------------------------------------------------ */
 	/* Sidebar                                                              */
 	/* ------------------------------------------------------------------ */
@@ -164,13 +179,60 @@
 		} else {
 			mark.textContent = ( name.trim().charAt( 0 ) || 'W' ).toUpperCase();
 		}
-		var brand = el( 'div', { class: 'upa-brand' }, [
+		// The WordPress mark is DRAWN here rather than moving core's
+		// #wp-admin-bar-wp-logo into the sidebar. That move was tried and
+		// reverted: every rule core writes for it is scoped under #wpadminbar,
+		// so relocating the node lost its icon styling AND the rule that keeps
+		// its dropdown closed — the About / Get Involved / WordPress.org links
+		// rendered permanently expanded over the menu. Core's node stays where
+		// it is (hidden), and this is a plain link to the About screen.
+		var brandKids = [];
+		if ( cfg.showWpLogo ) {
+			// Behaves like core's W logo: the mark is a LINK to the About
+			// screen and the menu opens on HOVER, handled in CSS. An earlier
+			// version made it a click-toggle with JS open/close state, which
+			// was more code doing less than stock wp-admin.
+			var wpTrigger = el( 'a', {
+				class: 'upa-brand-wp',
+				href: ( cfg.adminUrl || '' ) + 'about.php',
+				title: 'WordPress',
+				'aria-label': 'WordPress'
+			}, [ el( 'span', { class: 'dashicons dashicons-wordpress-alt' } ) ] );
+
+			// Core's own items are MIRRORED in (About WordPress, Documentation,
+			// Support, …) rather than hand-written, so anything a plugin adds
+			// under the W menu comes along. Core's node stays hidden in the bar.
+			var wpMenu = el( 'div', { class: 'upa-brand-wp-menu', role: 'menu' } );
+			var srcLinks = doc.querySelectorAll( '#wp-admin-bar-wp-logo .ab-sub-wrapper a.ab-item' );
+			Array.prototype.forEach.call( srcLinks, function ( a ) {
+				var label = ( a.textContent || '' ).replace( /\s+/g, ' ' ).trim();
+				if ( ! label || ! a.getAttribute( 'href' ) ) {
+					return;
+				}
+				wpMenu.appendChild( el( 'a', {
+					class: 'upa-brand-wp-item',
+					href: a.getAttribute( 'href' ),
+					text: label,
+					role: 'menuitem',
+					target: a.getAttribute( 'target' ) || null,
+					rel: a.getAttribute( 'rel' ) || null
+				} ) );
+			} );
+
+			if ( ! wpMenu.children.length ) {
+				wpMenu.appendChild( el( 'a', { class: 'upa-brand-wp-item', href: ( cfg.adminUrl || '' ) + 'about.php', text: 'About WordPress', role: 'menuitem' } ) );
+			}
+
+			brandKids.push( el( 'div', { class: 'upa-brand-wp-wrap' }, [ wpTrigger, wpMenu ] ) );
+		}
+
+		var brand = el( 'div', { class: 'upa-brand' }, brandKids.concat( [
 			el( 'a', { class: 'upa-brand-link', href: cfg.adminUrl || '#', title: name }, [
 				mark,
 				el( 'span', { class: 'upa-brand-name', text: name } )
 			] ),
 			el( 'a', { class: 'upa-icon-btn upa-brand-visit', href: cfg.siteUrl || '/', title: i18n.viewSite || 'Visit site', 'aria-label': i18n.viewSite || 'Visit site' }, [ svg( 'external' ) ] )
-		] );
+		] ) );
 		menuWrap.insertBefore( brand, menuWrap.firstChild );
 	}
 
@@ -290,6 +352,23 @@
 			}
 			buckets[ g ].push( li );
 		} );
+
+		// A saved layout (Unyson+ -> Admin Menu) supplies an index per item.
+		// Anything it has never seen -- a plugin installed since it was saved --
+		// sorts after what it has, in the menu's own order, so a new item shows
+		// up at the end of its group rather than disappearing.
+		var savedOrder = groups.order || null;
+		if ( savedOrder ) {
+			Object.keys( buckets ).forEach( function ( key ) {
+				buckets[ key ].forEach( function ( li, i ) { li._upaSeen = i; } );
+				buckets[ key ].sort( function ( a, b ) {
+					var ai = savedOrder[ a.id ], bi = savedOrder[ b.id ];
+					ai = ( undefined === ai ? Infinity : ai );
+					bi = ( undefined === bi ? Infinity : bi );
+					return ai === bi ? a._upaSeen - b._upaSeen : ai - bi;
+				} );
+			} );
+		}
 
 		order.forEach( function ( key ) {
 			if ( ! buckets[ key ].length ) {
@@ -444,6 +523,15 @@
 		function open( li ) {
 			if ( doc.body.classList.contains( 'folded' ) ) {
 				return; // folded uses core's own flyout
+			}
+			// Not on a phone. The flyout is a HOVER affordance for the
+			// expanded desktop sidebar; in the off-canvas menu a tap fires
+			// mouseover first, so the card opened on top of the menu it was
+			// meant to supplement -- and then swallowed the tap that was
+			// supposed to follow the link. Small screens use core's own
+			// inline expand instead.
+			if ( window.matchMedia && window.matchMedia( '(max-width: 782px)' ).matches ) {
+				return;
 			}
 			var sub = li.querySelector( '.wp-submenu' );
 			if ( ! sub || li.classList.contains( 'wp-has-current-submenu' ) ) {
@@ -615,6 +703,16 @@
 		custom.appendChild( picker );
 		swatches.appendChild( custom );
 
+		var dens = el( 'div', { class: 'upa-seg upa-seg-density' } );
+		[ [ 'comfortable', 'comfortable' ], [ 'compact', 'compact' ] ].forEach( function ( pair ) {
+			var b = el( 'button', { type: 'button', 'data-density': pair[ 0 ], text: i18n[ pair[ 1 ] ] || pair[ 1 ] } );
+			b.addEventListener( 'click', function () {
+				applyDensity( pair[ 0 ] );
+				savePrefs();
+			} );
+			dens.appendChild( b );
+		} );
+
 		var classic = el( 'a', { href: '#', text: i18n.classic || 'Use classic wp-admin' } );
 		classic.addEventListener( 'click', function ( e ) {
 			e.preventDefault();
@@ -627,6 +725,8 @@
 		pop.appendChild( seg );
 		pop.appendChild( el( 'h4', { text: i18n.accent || 'Accent' } ) );
 		pop.appendChild( swatches );
+		pop.appendChild( el( 'h4', { text: i18n.density || 'Density' } ) );
+		pop.appendChild( dens );
 		pop.appendChild( el( 'div', { class: 'upa-appearance-foot' }, [
 			el( 'span', { text: cfg.skinTitle || '' } ),
 			classic
@@ -670,6 +770,7 @@
 	var tray = null;
 	var trayList = null;
 	var trayToggle = null;
+	var trayFoot = null;
 
 	function isTrayable( n ) {
 		if ( ! n || 1 !== n.nodeType ) {
@@ -692,15 +793,77 @@
 		return n.matches( '.notice-success, .notice-error, div.updated, div.error, #message, .settings-error' );
 	}
 
+	/**
+	 * A stable key for a notice, so "do not show me this again" can survive a
+	 * page load. There is nothing in the markup to key on -- notices rarely
+	 * carry an id, and the class list is shared by every plugin -- so the key
+	 * is a hash of the text itself, trimmed and whitespace-collapsed. That
+	 * makes it exact rather than clever: a notice whose wording changes is a
+	 * different notice and comes back, which is the safer direction for
+	 * something a user asked never to see. Numbers are stripped so a counter
+	 * ("3 updates available") does not mint a new key every week.
+	 */
+	function noticeKey( n ) {
+		var text = ( n.textContent || '' ).replace( /[0-9]+/g, '#' ).replace( /\s+/g, ' ' ).trim().slice( 0, 200 );
+		var h = 5381;
+		for ( var i = 0; i < text.length; i++ ) {
+			h = ( ( h << 5 ) + h + text.charCodeAt( i ) ) >>> 0;
+		}
+		return 'n' + h.toString( 36 );
+	}
+
+	var muted = Array.isArray( cfg.mutedNotices ) ? cfg.mutedNotices.slice() : [];
+
+	function isMuted( key ) {
+		return muted.indexOf( key ) !== -1;
+	}
+
+	function setMuted( n, on ) {
+		var key = n.getAttribute( 'data-upa-key' );
+		if ( ! key ) {
+			return;
+		}
+		if ( on ) {
+			if ( ! isMuted( key ) ) {
+				muted.push( key );
+			}
+			post( { mute: key } );
+		} else {
+			muted = muted.filter( function ( k ) { return k !== key; } );
+			post( { unmute: key } );
+		}
+		n.classList.toggle( 'upa-notice-muted', !! on );
+		var b = n.querySelector( '.upa-mute' );
+		if ( b ) {
+			b.setAttribute( 'title', on ? ( i18n.unmute || 'Show this notice again' ) : ( i18n.mute || 'Mute this notice' ) );
+			b.setAttribute( 'aria-pressed', on ? 'true' : 'false' );
+		}
+		updateTray();
+	}
+
 	function updateTray() {
 		if ( ! tray ) {
 			return;
 		}
-		var items = Array.prototype.filter.call( trayList.children, function ( n ) {
+		var all = Array.prototype.filter.call( trayList.children, function ( n ) {
 			return 'none' !== n.style.display && ! n.classList.contains( 'hidden' );
 		} );
+		var items = all.filter( function ( n ) { return ! n.classList.contains( 'upa-notice-muted' ); } );
+		var mutedCount = all.length - items.length;
+		if ( trayFoot ) {
+			trayFoot.style.display = mutedCount ? '' : 'none';
+			trayFoot.querySelector( '.upa-muted-count' ).textContent =
+				( i18n.mutedCount || '%d muted' ).replace( '%d', mutedCount );
+			trayFoot.querySelector( '.upa-muted-toggle' ).textContent =
+				tray.classList.contains( 'show-muted' ) ? ( i18n.hide || 'Hide' ) : ( i18n.show || 'Show' );
+		}
 		var count = items.length;
-		tray.style.display = count ? '' : 'none';
+		tray.style.display = ( count || mutedCount ) ? '' : 'none';
+		// The toggle is a sibling of the bar now, so it needs hiding on its own.
+		var barItem = trayToggle.closest( '.upa-notices-bar-item' );
+		if ( barItem ) {
+			barItem.style.display = count ? '' : 'none';
+		}
 		var hasError = items.some( function ( n ) { return n.matches( '.notice-error, div.error' ); } );
 		var hasSuccess = items.some( function ( n ) { return n.matches( '.notice-success, div.updated' ); } );
 		var dot = trayToggle.querySelector( '.upa-dot' );
@@ -719,8 +882,40 @@
 				el( 'span', { class: 'upa-notices-action' } )
 			] );
 			trayList = el( 'div', { class: 'upa-notices-list' } );
-			tray.appendChild( trayToggle );
+			// Muted notices stay in the list, hidden, rather than being deleted:
+			// a user who mutes the wrong thing needs a way back, and a footer that
+			// says how many are hidden is that way.
+			trayFoot = el( 'div', { class: 'upa-notices-foot' }, [
+				el( 'span', { class: 'upa-muted-count' } ),
+				el( 'button', { type: 'button', class: 'upa-muted-toggle' } )
+			] );
+			trayFoot.querySelector( '.upa-muted-toggle' ).addEventListener( 'click', function () {
+				tray.classList.toggle( 'show-muted' );
+				updateTray();
+			} );
+			// The toggle lives in the TOP BAR, beside the appearance control,
+			// not in the page. In the content area it had to be positioned
+			// against .wrap, and every screen puts something different there:
+			// it sat on the description text, then under Screen Options, then
+			// across the Theme Settings header's Save button. The bar is the
+			// one place that is identical on every screen, so it cannot
+			// collide with a page's own chrome. The LIST stays in the content
+			// area, where the notices belong.
+			var barSlot = doc.getElementById( 'wp-admin-bar-top-secondary' );
+			if ( barSlot ) {
+				var li = el( 'li', { id: 'wp-admin-bar-upa-notices', class: 'upa-notices-bar-item' } );
+				li.appendChild( trayToggle );
+				var appearance = doc.getElementById( 'wp-admin-bar-upa-appearance' );
+				if ( appearance ) {
+					barSlot.insertBefore( li, appearance );
+				} else {
+					barSlot.insertBefore( li, barSlot.firstChild );
+				}
+			} else {
+				tray.appendChild( trayToggle );
+			}
 			tray.appendChild( trayList );
+			tray.appendChild( trayFoot );
 			trayToggle.addEventListener( 'click', function () {
 				tray.classList.toggle( 'is-collapsed' );
 				trayToggle.setAttribute( 'aria-expanded', tray.classList.contains( 'is-collapsed' ) ? 'false' : 'true' );
@@ -736,10 +931,31 @@
 				doc.getElementById( 'wpbody-content' ).insertBefore( tray, doc.getElementById( 'wpbody-content' ).firstChild );
 			}
 		}
-		if ( isFeedback( n ) ) {
+		var key = noticeKey( n );
+		n.setAttribute( 'data-upa-key', key );
+
+		if ( ! n.querySelector( '.upa-mute' ) ) {
+			var mb = el( 'button', {
+				type: 'button',
+				class: 'upa-mute',
+				'aria-pressed': isMuted( key ) ? 'true' : 'false',
+				title: isMuted( key ) ? ( i18n.unmute || 'Show this notice again' ) : ( i18n.mute || 'Mute this notice' )
+			}, [ svg( 'mute' ) ] );
+			mb.addEventListener( 'click', function () {
+				setMuted( n, ! n.classList.contains( 'upa-notice-muted' ) );
+			} );
+			n.appendChild( mb );
+		}
+
+		if ( isMuted( key ) ) {
+			n.classList.add( 'upa-notice-muted' );
+		} else if ( isFeedback( n ) ) {
+			// Success and error feedback opens the tray on its own -- but only
+			// when it is something the user still wants to see.
 			tray.classList.remove( 'is-collapsed' );
 			trayToggle.setAttribute( 'aria-expanded', 'true' );
 		}
+
 		trayList.appendChild( n );
 		updateTray();
 	}

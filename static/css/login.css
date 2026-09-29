@@ -1,0 +1,589 @@
+/**
+ * Admin Skin — wp-login.php
+ *
+ * The login screen is the one admin surface a logged-out visitor sees, and
+ * until now the skin stopped at the door: you would sign in through stock
+ * WordPress blue and land in a skinned admin. Everything here reads the same
+ * --upa-* tokens the admin does, so a skin, an accent and light/dark all
+ * arrive without a second palette to maintain.
+ *
+ * Scoped to body.login.upa. The mode attribute is written on <html> before
+ * first paint by the same inline script the admin uses, so there is no flash.
+ *
+ * This also covers the "interim login" modal (body.interim-login), which core
+ * renders inside wp-admin when a session expires mid-edit.
+ */
+
+body.login.upa {
+	/* Core's own variables, pointed at the skin's. Logged out there is no
+	 * admin colour scheme, so --wp-admin-theme-color falls back to the stock
+	 * blue -- and core styles several controls through it with ID selectors
+	 * that no class-scoped rule can outrank. Redefining the variable fixes all
+	 * of them at once instead of chasing each control. */
+	--wp-admin-theme-color: var(--upa-accent);
+	--wp-admin-theme-color--rgb: 0, 0, 0;
+	--wp-admin-theme-color-darker-10: var(--upa-accent2);
+	--wp-admin-theme-color-darker-20: var(--upa-accent2);
+	--wp-admin-border-width-focus: 3px;
+
+	background: var(--upa-bg);
+	color: var(--upa-text);
+	font-family: var(--upa-font-ui);
+	font-size: var(--upa-font-size, 14px);
+	line-height: var(--upa-line-height, 1.5);
+	letter-spacing: var(--upa-tracking, 0);
+}
+
+body.login.upa #login {
+	width: 340px;
+	max-width: calc(100vw - 32px);
+	padding: 7vh 0 4vh;
+}
+
+/* ---- The mark -----------------------------------------------------------
+ *
+ * Core draws the WordPress logo as a background sprite on the <a>, with the
+ * link text hidden by a text-indent. Two cases: a site with a site icon shows
+ * it (the PHP side supplies the URL), and a site without one shows its NAME,
+ * which is more use than a generic mark on a login screen that could belong
+ * to anyone. */
+body.login.upa h1.wp-login-logo {
+	margin: 0 0 20px;
+	text-align: center;
+}
+
+body.login.upa h1.wp-login-logo a {
+	display: block;
+	width: auto;
+	height: auto;
+	margin: 0;
+	padding: 0;
+	overflow: visible;
+	background: none;
+	text-indent: 0;
+	color: var(--upa-text);
+	font-size: 19px;
+	font-weight: 650;
+	letter-spacing: -0.01em;
+	line-height: 1.3;
+	text-decoration: none;
+}
+
+body.login.upa h1.wp-login-logo a:hover,
+body.login.upa h1.wp-login-logo a:focus {
+	color: var(--upa-accent);
+	box-shadow: none;
+}
+
+/* With a site icon, the name gives way to it. */
+body.login.upa.upa-login-icon h1.wp-login-logo a {
+	width: 64px;
+	height: 64px;
+	margin: 0 auto;
+	background-image: var(--upa-login-icon);
+	background-size: 64px 64px;
+	background-position: center;
+	background-repeat: no-repeat;
+	border-radius: var(--upa-radius, 9px);
+	font-size: 0;
+	text-indent: -9999px;
+}
+
+/* ---- The card ---------------------------------------------------------- */
+
+body.login.upa form {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 24px;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius-lg, 14px);
+	box-shadow: var(--upa-shadow-sm);
+	overflow: visible;
+}
+
+/* `#login form p` is how core zeroes these, and an ID beats any number of
+ * classes -- without matching it the gaps simply did not apply, which is why
+ * the Lost Password form had its button welded to its input. */
+body.login.upa #login form p {
+	margin: 0 0 16px;
+}
+
+body.login.upa #login form p:last-of-type {
+	margin-bottom: 0;
+}
+
+body.login.upa #login form p.submit {
+	margin: 0;
+	padding: 0;
+}
+
+body.login.upa form label,
+body.login.upa .user-pass-wrap label {
+	display: block;
+	margin: 0 0 6px;
+	color: var(--upa-text2);
+	font-size: 12.5px;
+	font-weight: 550;
+	line-height: 1.4;
+}
+
+body.login.upa input[type="text"],
+body.login.upa input[type="password"],
+body.login.upa input[type="email"] {
+	box-sizing: border-box;
+	width: 100%;
+	height: 44px;
+	margin: 0;
+	padding: 0 12px;
+	background: var(--upa-bg2);
+	border: 1px solid var(--upa-border2);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: none;
+	color: var(--upa-text);
+	font-family: var(--upa-font-ui);
+	font-size: 14px;
+	line-height: 42px;
+	transition: border-color .15s linear, box-shadow .15s linear;
+}
+
+body.login.upa input[type="text"]:hover,
+body.login.upa input[type="password"]:hover,
+body.login.upa input[type="email"]:hover {
+	border-color: var(--upa-text3);
+}
+
+body.login.upa input[type="text"]:focus,
+body.login.upa input[type="password"]:focus,
+body.login.upa input[type="email"]:focus {
+	border-color: var(--upa-accent);
+	box-shadow: 0 0 0 3px var(--upa-accent-ring);
+	outline: 2px solid transparent;
+	outline-offset: 0;
+}
+
+body.login.upa input::placeholder {
+	color: var(--upa-text3);
+}
+
+/* The show/hide-password button sits inside the field's box, so it is drawn
+ * as part of the control rather than as a second button beside it. */
+body.login.upa .wp-pwd {
+	position: relative;
+}
+
+body.login.upa .wp-pwd input[type="text"],
+body.login.upa .wp-pwd input[type="password"] {
+	padding-right: 44px;
+}
+
+body.login.upa .wp-pwd button.wp-hide-pw {
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 44px;
+	height: 44px;
+	display: grid;
+	place-items: center;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: none;
+	color: var(--upa-text3);
+}
+
+body.login.upa .wp-pwd button.wp-hide-pw:hover,
+body.login.upa .wp-pwd button.wp-hide-pw:focus {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+body.login.upa .wp-pwd button.wp-hide-pw .dashicons {
+	width: 20px;
+	height: 20px;
+	font-size: 20px;
+	line-height: 20px;
+}
+
+/* ---- Remember me + the help toggletip ---------------------------------- */
+
+body.login.upa .forgetmenot {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	float: none;
+	margin: 0 0 18px;
+	font-weight: 400;
+	line-height: 1.4;
+}
+
+body.login.upa .forgetmenot label {
+	display: inline;
+	margin: 0;
+	color: var(--upa-text2);
+	font-size: 13px;
+	font-weight: 400;
+}
+
+body.login.upa input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	margin: 0;
+	background: var(--upa-bg2);
+	border: 1px solid var(--upa-border2);
+	border-radius: var(--upa-radius-sm, 6px);
+	box-shadow: none;
+}
+
+body.login.upa input[type="checkbox"]:checked {
+	background: var(--upa-accent);
+	border-color: var(--upa-accent);
+}
+
+body.login.upa input[type="checkbox"]:checked::before {
+	margin: -2px 0 0 -3px;
+	color: var(--upa-accent-fg);
+	font-size: 18px;
+}
+
+body.login.upa input[type="checkbox"]:focus {
+	border-color: var(--upa-accent);
+	box-shadow: 0 0 0 3px var(--upa-accent-ring);
+	outline: 2px solid transparent;
+}
+
+body.login.upa .wp-tooltip__toggle {
+	display: inline-grid;
+	place-items: center;
+	padding: 0;
+	background: transparent;
+	border: 0;
+	color: var(--upa-text3);
+	cursor: pointer;
+}
+
+body.login.upa .wp-tooltip__toggle:hover,
+body.login.upa .wp-tooltip__toggle:focus {
+	color: var(--upa-accent);
+}
+
+body.login.upa .wp-tooltip__bubble {
+	padding: 10px 12px;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: var(--upa-shadow);
+	color: var(--upa-text2);
+	font-size: 12.5px;
+	line-height: 1.5;
+}
+
+/* ---- Submit ------------------------------------------------------------ */
+
+body.login.upa .button.button-primary,
+body.login.upa #wp-submit {
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	height: 44px;
+	float: none;
+	margin: 0;
+	padding: 0 16px;
+	background: var(--upa-accent);
+	border: 1px solid var(--upa-accent);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: none;
+	color: var(--upa-accent-fg);
+	font-family: var(--upa-font-ui);
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 42px;
+	text-shadow: none;
+	transition: background-color .15s linear, border-color .15s linear;
+}
+
+body.login.upa .button.button-primary:hover,
+body.login.upa #wp-submit:hover,
+body.login.upa .button.button-primary:focus,
+body.login.upa #wp-submit:focus {
+	background: var(--upa-accent2);
+	border-color: var(--upa-accent2);
+	color: var(--upa-accent-fg);
+	box-shadow: none;
+}
+
+body.login.upa .button.button-primary:focus-visible,
+body.login.upa #wp-submit:focus-visible {
+	box-shadow: 0 0 0 3px var(--upa-accent-ring);
+	outline: 2px solid transparent;
+}
+
+/* ---- Below the card ---------------------------------------------------- */
+
+body.login.upa #nav,
+body.login.upa #backtoblog {
+	margin: 0;
+	padding: 0;
+	text-align: center;
+}
+
+body.login.upa #nav {
+	margin-top: 18px;
+}
+
+body.login.upa #backtoblog {
+	margin-top: 8px;
+}
+
+body.login.upa #nav a,
+body.login.upa #backtoblog a,
+body.login.upa .privacy-policy-page-link a {
+	color: var(--upa-text3);
+	font-size: 13px;
+	text-decoration: none;
+}
+
+body.login.upa #nav a:hover,
+body.login.upa #nav a:focus,
+body.login.upa #backtoblog a:hover,
+body.login.upa #backtoblog a:focus,
+body.login.upa .privacy-policy-page-link a:hover,
+body.login.upa .privacy-policy-page-link a:focus {
+	color: var(--upa-accent);
+	text-decoration: underline;
+}
+
+body.login.upa .privacy-policy-page-link {
+	margin-top: 18px;
+}
+
+/* ---- Messages ---------------------------------------------------------- */
+
+body.login.upa #login_error,
+body.login.upa .notice,
+body.login.upa .message,
+body.login.upa .success {
+	box-sizing: border-box;
+	margin: 0 0 18px;
+	padding: 11px 14px;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-left: 3px solid var(--upa-border2);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: var(--upa-shadow-sm);
+	color: var(--upa-text2);
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+body.login.upa #login_error,
+body.login.upa .notice-error {
+	border-left-color: var(--upa-red);
+}
+
+body.login.upa .message,
+body.login.upa .notice-info {
+	border-left-color: var(--upa-accent);
+}
+
+body.login.upa .success,
+body.login.upa .notice-success {
+	border-left-color: var(--upa-green);
+}
+
+body.login.upa #login_error a,
+body.login.upa .notice a,
+body.login.upa .message a {
+	color: var(--upa-accent);
+}
+
+body.login.upa #login_error strong,
+body.login.upa .notice strong,
+body.login.upa .message strong {
+	color: var(--upa-text);
+}
+
+/* ---- Language switcher ------------------------------------------------- */
+
+body.login.upa .language-switcher {
+	margin: 18px 0 0;
+}
+
+body.login.upa .language-switcher form {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 0;
+	background: none;
+	border: 0;
+	box-shadow: none;
+}
+
+body.login.upa .language-switcher select {
+	height: 32px;
+	padding: 0 24px 0 8px;
+	background-color: var(--upa-panel);
+	border: 1px solid var(--upa-border2);
+	border-radius: var(--upa-radius-sm, 6px);
+	box-shadow: none;
+	color: var(--upa-text2);
+	font-size: 13px;
+}
+
+body.login.upa .language-switcher .button {
+	height: 32px;
+	padding: 0 12px;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border2);
+	border-radius: var(--upa-radius-sm, 6px);
+	box-shadow: none;
+	color: var(--upa-text);
+	font-size: 13px;
+	line-height: 30px;
+}
+
+body.login.upa .language-switcher .button:hover,
+body.login.upa .language-switcher .button:focus {
+	background: var(--upa-hover);
+	border-color: var(--upa-border2);
+	color: var(--upa-text);
+}
+
+/* The password field is styled by core through `#pass1`, an ID, so the shared
+ * input rules above lose to it. Restated at that weight so every field on the
+ * form carries the same focus ring, and so the strength states use the skin's
+ * semantic colours rather than the core palette. */
+body.login.upa #pass1:focus,
+body.login.upa #pass1-text:focus {
+	border-color: var(--upa-accent);
+	box-shadow: 0 0 0 3px var(--upa-accent-ring);
+	outline: 2px solid transparent;
+}
+
+body.login.upa #pass1.short,
+body.login.upa #pass1.bad,
+body.login.upa #pass1-text.short,
+body.login.upa #pass1-text.bad {
+	border-color: var(--upa-red);
+}
+
+body.login.upa #pass1.good,
+body.login.upa #pass1-text.good {
+	border-color: var(--upa-amber);
+}
+
+body.login.upa #pass1.strong,
+body.login.upa #pass1-text.strong {
+	border-color: var(--upa-green);
+}
+
+/* ---- Reset password ----------------------------------------------------
+ *
+ * The screen a password-reset link lands on: the same card, plus a generated
+ * password, a strength meter and a confirmation checkbox for a weak one. */
+
+body.login.upa .indicator-hint,
+body.login.upa #reg_passmail {
+	margin: 6px 0 16px;
+	color: var(--upa-text3);
+	font-size: 12.5px;
+	line-height: 1.5;
+}
+
+body.login.upa .wp-pwd button.wp-hide-pw ~ button,
+body.login.upa .button.wp-generate-pw,
+body.login.upa .button.wp-cancel-pw {
+	height: 36px;
+	padding: 0 12px;
+	background: var(--upa-panel2);
+	border: 1px solid var(--upa-border2);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: none;
+	color: var(--upa-text);
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 34px;
+}
+
+body.login.upa .button.wp-generate-pw:hover,
+body.login.upa .button.wp-cancel-pw:hover,
+body.login.upa .button.wp-generate-pw:focus,
+body.login.upa .button.wp-cancel-pw:focus {
+	background: var(--upa-hover);
+	border-color: var(--upa-border2);
+	color: var(--upa-text);
+}
+
+body.login.upa #pass-strength-result {
+	box-sizing: border-box;
+	width: 100%;
+	margin: 8px 0 0;
+	padding: 8px 12px;
+	background: var(--upa-panel2);
+	border: 1px solid var(--upa-border);
+	border-left: 3px solid var(--upa-border2);
+	border-radius: var(--upa-radius, 9px);
+	color: var(--upa-text2);
+	font-size: 12.5px;
+	font-weight: 500;
+	line-height: 1.4;
+	text-align: left;
+}
+
+body.login.upa #pass-strength-result.short,
+body.login.upa #pass-strength-result.bad {
+	border-left-color: var(--upa-red);
+}
+
+body.login.upa #pass-strength-result.good {
+	border-left-color: var(--upa-amber);
+}
+
+body.login.upa #pass-strength-result.strong {
+	border-left-color: var(--upa-green);
+}
+
+body.login.upa .pw-weak {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 12px 0 0;
+}
+
+body.login.upa .pw-weak label {
+	display: inline;
+	margin: 0;
+	color: var(--upa-text2);
+	font-size: 13px;
+	font-weight: 400;
+}
+
+/* ---- Interim login ------------------------------------------------------
+ *
+ * Core's session-expired modal inside wp-admin. It is the same form in a
+ * small iframe, so it inherits everything above; only the outer padding and
+ * the card's own shadow need to go, since the modal supplies both. */
+body.login.upa.interim-login #login {
+	width: auto;
+	padding: 0;
+}
+
+body.login.upa.interim-login form {
+	border: 0;
+	box-shadow: none;
+}
+
+body.login.upa.interim-login h1.wp-login-logo {
+	display: none;
+}
+
+/* ---- Small screens ----------------------------------------------------- */
+
+@media screen and (max-width: 782px) {
+	body.login.upa #login {
+		width: 100%;
+		padding: 4vh 16px 3vh;
+	}
+}

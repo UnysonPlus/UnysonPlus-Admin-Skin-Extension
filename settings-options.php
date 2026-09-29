@@ -32,6 +32,16 @@ $options = [
 						],
 						'value'   => 'light',
 					],
+					'density'     => [
+						'label'   => __( 'Density', 'fw' ),
+						'desc'    => __( 'How much room the admin gives itself. Compact steps the type, control heights, table rows and sidebar width down from whatever the active skin declares &mdash; the same skin, tightened, not a different one. Most useful on long list tables. Each user can override this from the Appearance menu in the top bar.', 'fw' ),
+						'type'    => 'select',
+						'choices' => [
+							'comfortable' => __( 'Comfortable', 'fw' ),
+							'compact'     => __( 'Compact', 'fw' ),
+						],
+						'value'   => 'comfortable',
+					],
 					'accent'       => [
 						'label' => __( 'Accent colour', 'fw' ),
 						'desc'  => __( 'Overrides the skin\'s accent for everyone. Leave empty to keep the skin\'s own.', 'fw' ),
@@ -96,6 +106,12 @@ $options = [
 						'type'  => 'switch',
 						'value' => true,
 					],
+					'skin_login'     => [
+						'label' => __( 'Skin the login screen', 'fw' ),
+						'desc'  => __( 'Apply the skin to wp-login.php, so signing in looks like the admin it leads to rather than stock WordPress. The mark above the form becomes your site icon, or your site name when there is no icon, and links to your home page instead of wordpress.org. Nobody is logged in on that screen, so it uses the site&rsquo;s default mode and accent above, never a per-user choice.', 'fw' ),
+						'type'  => 'switch',
+						'value' => true,
+					],
 					'dark_canvas'    => [
 						'label' => __( 'Dark editor canvas', 'fw' ),
 						'desc'  => __( 'In dark mode, tint the classic editor&rsquo;s writing area too. Off by default: that area is an iframe rendering your FRONT-END styles, so it previews how the post will really look &mdash; on a dark canvas the preview no longer matches the published page, and text colours picked there can turn out unreadable on the live site. Gutenberg and the front end are never touched.', 'fw' ),
@@ -128,7 +144,7 @@ $options = [
 						'label' => __( 'Keep the WordPress logo', 'fw' ),
 						'desc'  => __( 'Show the W logo menu in the top bar.', 'fw' ),
 						'type'  => 'switch',
-						'value' => false,
+						'value' => true,
 					],
 				],
 			],

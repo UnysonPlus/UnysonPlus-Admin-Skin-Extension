@@ -342,8 +342,26 @@ body.upa #adminmenu .wp-menu-image:before {
 	font-size: 18px;
 	line-height: 1;
 	color: currentColor;
-	width: auto;
-	height: auto;
+}
+
+/* NO width/height reset here, deliberately.
+ *
+ * It was added to undo core's fixed 20x20 box around a dashicon glyph, then
+ * narrowed to .dashicons-before when it was found to be collapsing plugin
+ * icons. That narrowing was not enough: a plugin can carry the
+ * dashicons-before CLASS while drawing its icon as a sized background on this
+ * pseudo — Pretty Links declares `content:""; width:20px; height:20px` — so
+ * `auto` still flattened it to 0x0 and the icon vanished.
+ *
+ * The reset was never needed: the parent is an 18px grid cell with
+ * place-items:center, so a 20x20 pseudo centres itself regardless. Letting
+ * each icon keep its own box is what makes this work for mechanisms the skin
+ * has not seen. */
+
+/* Keep a background-image icon inside the 18px slot the rest of the menu uses. */
+body.upa #adminmenu .wp-menu-image:before {
+	background-repeat: no-repeat;
+	background-position: center;
 }
 
 body.upa #adminmenu .wp-menu-image img {
@@ -365,16 +383,105 @@ body.upa #adminmenu .wp-menu-image.svg {
 	opacity: .8;
 }
 
+/* Plugin menu icons are <img> / CSS-background bitmaps authored for CORE's
+ * sidebar, which is dark — so most of them are solid WHITE. On this skin's
+ * light sidebar that is white on white: the image loads and sizes correctly
+ * (measured 18x18, complete, filter none), it is purely a colour clash.
+ * Dashicons never hit this because they are font glyphs following
+ * currentColor.
+ *
+ * There is no way to know a given icon's colour, so the only reliable fix is
+ * to flatten them to ONE ink per mode: black in light, white in dark. Brand
+ * colour is lost, which is the accepted trade for icons that are always
+ * legible and consistent with the dashicons beside them.
+ *
+ * The previous rule only inverted in DARK mode, which assumed icons were dark
+ * to begin with — backwards for the common case, and it left light mode with
+ * invisible icons. */
+/* WordPress lets a plugin supply its menu icon in five different ways, and a
+ * fix aimed at one of them leaves the rest broken. All the bitmap forms are
+ * covered here in one place:
+ *
+ *   1. dashicon glyph          -- EXCLUDED on purpose (see below)
+ *   2. <img> child             -- .wp-menu-image img
+ *   3. inline <svg> child      -- .wp-menu-image svg
+ *   4. background-image on the element, with or without WP's .svg class
+ *   5. background-image on :before, when the wrapper is not a glyph
+ *
+ * Forms 4 and 5 are reached by filtering the ELEMENT, which is why the
+ * selector is :not(.dashicons-before) rather than a list of known classes —
+ * it catches icon mechanisms this skin has never seen.
+ *
+ * Glyphs are excluded deliberately: they already paint in currentColor, so
+ * they follow the menu's text and accent colours. Flattening them would kill
+ * the accent tint on the active item.
+ *
+ * The child rules are NOT folded into the :not() above, because a plugin can
+ * put dashicons-before on the wrapper AND still supply an <img> (WP Engine's
+ * Site Migration does exactly that). */
+body.upa #adminmenu .wp-menu-image:not(.dashicons-before),
+body.upa #adminmenu .wp-menu-image.svg,
+body.upa #adminmenu .wp-menu-image img,
+body.upa #adminmenu .wp-menu-image svg {
+	filter: brightness(0) saturate(100%);
+}
+
+html[data-upa-mode="dark"] body.upa #adminmenu .wp-menu-image:not(.dashicons-before),
 html[data-upa-mode="dark"] body.upa #adminmenu .wp-menu-image.svg,
-html[data-upa-mode="dark"] body.upa #adminmenu .wp-menu-image img {
-	filter: invert(1) brightness(1.6);
+html[data-upa-mode="dark"] body.upa #adminmenu .wp-menu-image img,
+html[data-upa-mode="dark"] body.upa #adminmenu .wp-menu-image svg {
+	filter: brightness(0) invert(1);
 }
 
 @media (prefers-color-scheme: dark) {
+	html[data-upa-mode="system"] body.upa #adminmenu .wp-menu-image:not(.dashicons-before),
 	html[data-upa-mode="system"] body.upa #adminmenu .wp-menu-image.svg,
-	html[data-upa-mode="system"] body.upa #adminmenu .wp-menu-image img {
-		filter: invert(1) brightness(1.6);
+	html[data-upa-mode="system"] body.upa #adminmenu .wp-menu-image img,
+	html[data-upa-mode="system"] body.upa #adminmenu .wp-menu-image svg {
+		filter: brightness(0) invert(1);
 	}
+}
+
+/* The same treatment for bitmap / SVG icons in the ADMIN BAR. Plugins ship
+ * these drawn for stock wp-admin's near-black bar, so they are usually white
+ * or near-white -- on the skin's light bar they are simply not there (the
+ * Live Editor's own logo is #feffff, and it was invisible). Flattening them
+ * to one ink keeps them legible in both modes, the same bargain the sidebar
+ * icons already make: a coloured logo loses its colour, but a white one stops
+ * disappearing. Dashicons are excluded -- they are font glyphs and follow
+ * currentColor already. */
+body.upa #wpadminbar .ab-item img,
+body.upa #wpadminbar .ab-item svg:not(.dashicon),
+body.upa #wpadminbar .ab-item .ab-icon img,
+body.upa #wpadminbar .ab-item .ab-icon svg {
+	filter: brightness(0) saturate(100%);
+	opacity: .78;
+}
+
+html[data-upa-mode="dark"] body.upa #wpadminbar .ab-item img,
+html[data-upa-mode="dark"] body.upa #wpadminbar .ab-item svg:not(.dashicon),
+html[data-upa-mode="dark"] body.upa #wpadminbar .ab-item .ab-icon img,
+html[data-upa-mode="dark"] body.upa #wpadminbar .ab-item .ab-icon svg {
+	filter: brightness(0) invert(1);
+}
+
+@media (prefers-color-scheme: dark) {
+	html[data-upa-mode="system"] body.upa #wpadminbar .ab-item img,
+	html[data-upa-mode="system"] body.upa #wpadminbar .ab-item svg:not(.dashicon),
+	html[data-upa-mode="system"] body.upa #wpadminbar .ab-item .ab-icon img,
+	html[data-upa-mode="system"] body.upa #wpadminbar .ab-item .ab-icon svg {
+		filter: brightness(0) invert(1);
+	}
+}
+
+/* The avatar is a photograph, not an icon -- flattening it to a black
+ * silhouette would be worse than leaving it alone. */
+body.upa #wpadminbar .ab-item img.avatar,
+body.upa #wpadminbar #wp-admin-bar-site-name img.site-icon,
+html[data-upa-mode="dark"] body.upa #wpadminbar .ab-item img.avatar,
+html[data-upa-mode="dark"] body.upa #wpadminbar #wp-admin-bar-site-name img.site-icon {
+	filter: none;
+	opacity: 1;
 }
 
 body.upa #adminmenu .wp-menu-name {
@@ -466,9 +573,19 @@ body.upa #adminmenu .wp-submenu a:focus {
 	box-shadow: none;
 }
 
+/* The `.opensub` branches are not decoration. Core's colour scheme paints the
+ * current submenu item white, for a sidebar that has a dark fill behind it;
+ * the skin flattens that fill, so white-on-white would erase the label. Its
+ * selector list includes `#adminmenu .opensub .wp-submenu li.current a`, which
+ * ties this rule's weight and loads later -- and core adds `opensub` on touch,
+ * so the tie only happened on a phone: "Home" under Dashboard rendered as a
+ * bullet with nothing after it. Every branch core colours is answered here. */
 body.upa #adminmenu .wp-submenu li.current a,
 body.upa #adminmenu .wp-submenu a.current,
-body.upa #adminmenu .wp-submenu li.current a:hover {
+body.upa #adminmenu .wp-submenu li.current a:hover,
+body.upa #adminmenu .wp-submenu li.current a:focus,
+body.upa #adminmenu .opensub .wp-submenu li.current a,
+body.upa #adminmenu a.wp-has-current-submenu:focus + .wp-submenu li.current a {
 	color: var(--upa-accent);
 	font-weight: 600;
 	background: transparent;
@@ -979,12 +1096,16 @@ body.upa #wpadminbar .ab-top-menu > li > .ab-item > * {
 /* Hidden by default: the WordPress logo menu and the site-name item (the
  * sidebar brand carries the site name). */
 body.upa #wpadminbar #wp-admin-bar-wp-logo,
-body.upa #wpadminbar #wp-admin-bar-site-name {
+body.upa #wpadminbar li#wp-admin-bar-site-name {
 	display: none;
 }
 
-body.upa.upa-wp-logo #wpadminbar #wp-admin-bar-wp-logo {
-	display: block;
+/* Core's bar logo stays hidden even when the setting is ON: the skin draws
+ * its own WordPress mark at the far left of the brand row instead, so showing
+ * this one as well would put the logo on screen twice. The setting governs
+ * the brand mark (see buildBrand), not this node. */
+body.upa.upa-wp-logo #wpadminbar li#wp-admin-bar-wp-logo {
+	display: none;
 }
 
 /* Page title (injected) */
@@ -1153,29 +1274,10 @@ body.upa #wpadminbar .ab-sub-secondary {
 	padding-top: 6px;
 }
 
-body.upa #wpadminbar #wp-admin-bar-user-info .avatar {
-	width: 48px;
-	height: 48px;
-	border-radius: 50%;
-	margin: 0 12px 0 0;
-}
-
-body.upa #wpadminbar #wp-admin-bar-user-info .ab-item,
-body.upa #wpadminbar #wp-admin-bar-user-info .ab-item:hover {
-	height: auto;
-	display: flex;
-	align-items: center;
-	background: transparent;
-	padding: 8px 10px 12px;
-}
-
-body.upa #wpadminbar #wp-admin-bar-user-info .display-name {
-	color: var(--upa-text);
-	font-weight: 600;
-	display: block;
-	height: auto;
-	line-height: 1.3;
-}
+/* The account block's own layout lives further down, with the appearance
+ * popover: a grid rule that sets every one of these properties again. Three
+ * older copies sat here and were entirely dead. `.username` stays below --
+ * two of ITS properties are not re-declared later. */
 
 body.upa #wpadminbar #wp-admin-bar-user-info .username {
 	color: var(--upa-text3);
@@ -1225,6 +1327,12 @@ body.upa #wpadminbar #wp-admin-bar-user-info .username {
 	padding: 3px;
 	background: var(--upa-panel2);
 	border-radius: var(--upa-radius, 9px);
+}
+
+/* The density pair, in the same control as the modes -- two columns, not the
+ * modes' three. */
+.upa-seg.upa-seg-density {
+	grid-template-columns: repeat(2, 1fr);
 }
 
 .upa-seg button {
@@ -1330,11 +1438,21 @@ body.upa #wpcontent {
 }
 
 body.upa #wpbody-content {
-	padding: 0 28px 64px;
+	/* 20px is core's own gutter (it sets `#wpcontent { padding-left: 20px }`).
+	 * The skin used 28px, which read as the content sitting further off the
+	 * menu than stock wp-admin. The footer and the Screen Options offset below
+	 * use the same number so the whole screen shares one gutter. */
+	padding: 0 20px 64px;
 	box-sizing: border-box;
 	max-width: none;
 	margin: 0;
 	float: none;
+	/* A block formatting context, so the Screen Options card's 28px top margin
+	 * stays INSIDE this box instead of collapsing out through it and moving
+	 * #wpbody itself 28px down the moment the card opens. The Screen Options
+	 * button is positioned against #wpbody, so that collapse made it jump 28px
+	 * before easing back -- a transition cannot smooth an origin that moves. */
+	display: flow-root;
 }
 
 body.upa #wpbody-content > .wrap,
@@ -1354,7 +1472,7 @@ body.upa #wpbody-content .wrap {
 
 body.upa #wpfooter {
 	position: static;
-	padding: 12px 28px;
+	padding: 12px 20px;
 	color: var(--upa-text3);
 	font-size: 12px;
 	background: transparent;
@@ -1368,21 +1486,40 @@ body.upa #wpfooter #footer-upgrade {
 	color: var(--upa-text3);
 }
 
-/* Screen Options / Help: two quiet text buttons at the top right */
+/* Screen Options / Help: two quiet text buttons at the top right.
+ *
+ * 28px is `.wrap`'s top padding, and both the buttons and the page's h1 are
+ * 32px tall -- so the pair sits on exactly the same line as the page title
+ * rather than floating above it in a band of its own. */
 body.upa #screen-meta-links {
 	position: absolute;
-	right: 28px;
-	top: 14px;
+	right: 20px;
+	top: 28px;
 	margin: 0;
 	z-index: 2;
 	float: none;
 	display: flex;
 	gap: 2px;
+	/* Opening a panel moves this row from the page-title line into the card's
+	 * corner. Both offsets change at once, so without a transition the button
+	 * snaps across ~70px the instant the panel starts sliding open. */
+	transition: top .24s cubic-bezier(.4, 0, .2, 1), right .24s cubic-bezier(.4, 0, .2, 1);
+}
+
+body.upa #screen-meta-links .show-settings {
+	transition: background-color .16s linear, color .16s linear;
 }
 
 body.upa #screen-meta-links .screen-meta-toggle {
 	float: none;
 	margin: 0;
+	/* Collapsed rather than removed when core hides it -- see the rule further
+	 * down. A width that animates is what lets the remaining button travel to
+	 * the corner instead of teleporting there. */
+	overflow: hidden;
+	max-width: 240px;
+	opacity: 1;
+	transition: max-width .24s cubic-bezier(.4, 0, .2, 1), opacity .16s linear;
 }
 
 body.upa #screen-meta-links .show-settings,
@@ -1581,6 +1718,20 @@ body.upa.is-fullscreen-mode #adminmenuback {
 }
 
 @media screen and (max-width: 782px) {
+	/* Stock wp-admin runs a 46px bar on small screens with uniform 52px-wide
+	 * items -- a deliberate touch geometry, not a leftover of the desktop
+	 * layout. The skin kept its own 52px bar, which left every item a
+	 * different width with gaps between them. Redefining the token here makes
+	 * everything that reserves space for the bar (html padding-top, the
+	 * off-canvas sidebar's top, the sticky offsets) follow from one value. */
+	/* `html.wp-toolbar`, not a bare `html`: the skin's generated colour sheet
+	 * emits the density tokens on `:root`, which outranks a plain element
+	 * selector whatever the source order -- the 46px was being written and
+	 * then ignored. */
+	html.wp-toolbar {
+		--upa-bar-h: 46px;
+	}
+
 	html.wp-toolbar {
 		padding-top: var(--upa-bar-h, 52px) !important;
 	}
@@ -1596,13 +1747,6 @@ body.upa.is-fullscreen-mode #adminmenuback {
 
 	body.upa #wpadminbar #wp-admin-bar-menu-toggle {
 		display: block;
-	}
-
-	body.upa #wpadminbar #wp-admin-bar-menu-toggle .ab-item {
-		height: 34px;
-		width: 34px;
-		padding: 0;
-		justify-content: center;
 	}
 
 	body.upa #wpadminbar #wp-admin-bar-upa-title > .ab-item {
@@ -1627,12 +1771,38 @@ body.upa.is-fullscreen-mode #adminmenuback {
 		display: none;
 	}
 
-	body.upa.auto-fold.wp-responsive-open #adminmenuwrap {
+	/* Core toggles `wp-responsive-open` on #wpwrap, NOT on <body> -- the skin
+	 * matched it on body, so the class was never there and the panel stayed
+	 * parked off-canvas however many times the toggle was pressed. The only
+	 * thing that appeared was a submenu flyout escaping the hidden panel. */
+	body.upa.auto-fold #wpwrap.wp-responsive-open #adminmenuwrap {
 		transform: none;
 	}
 
+	/* Core's own backdrop, used as the dismiss target: with the panel now
+	 * overlaying the page rather than pushing it, a tap outside has to close
+	 * it, and the dimming says which layer is live. */
 	body.upa.auto-fold #adminmenuback {
 		display: none;
+	}
+
+	body.upa.auto-fold #wpwrap.wp-responsive-open #adminmenuback {
+		display: block;
+		position: fixed;
+		top: var(--upa-bar-h, 52px);
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: auto;
+		background: rgba(0, 0, 0, .35);
+		z-index: 9989;
+	}
+
+	/* A long menu has to scroll on a phone; the panel is fixed to the
+	 * viewport, so without this its tail is simply unreachable. */
+	body.upa.auto-fold #wpwrap.wp-responsive-open #adminmenuwrap {
+		overflow-y: auto;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	body.upa.auto-fold #wpcontent,
@@ -1679,12 +1849,16 @@ body.upa.is-fullscreen-mode #adminmenuback {
 		padding-left: 38px;
 	}
 
+	/* Core's own small-screen gutter is 10px (`#wpcontent { padding-left: 10px }`),
+	 * which is what keeps a phone-width screen from spending 8% of its width
+	 * on margins. The skin used 16px and the content sat visibly further in
+	 * than stock. */
 	body.upa #wpbody-content {
-		padding: 0 16px 48px;
+		padding: 0 10px 48px;
 	}
 
 	body.upa #screen-meta-links {
-		right: 16px;
+		right: 10px;
 	}
 
 	body.upa .interface-interface-skeleton,
@@ -1896,11 +2070,47 @@ body.upa .contextual-help-sidebar a {
 	color: var(--upa-accent);
 }
 
-/* The toggle that core marks active while its panel is open: drop the
- * toggle row into the open card so it reads as the card's own close button */
+/* The toggle that core marks active while its panel is open: drop the toggle
+ * row into the open card so it reads as the card's own close button.
+ *
+ * The offsets put it on the card's CONTENT column, not floating somewhere in
+ * between: 20px is the page gutter (which the card's right edge sits on),
+ * 8px the card's own padding, 20px the panel wrap's. Before this it landed
+ * 9px past the content's right edge and 20px short of the card's, which is
+ * the gap that read as misaligned. The offsets now put it in the card's top
+ * right CORNER: 20px is the page gutter the card's right edge sits on, 8px
+ * and 6px the card's own padding. It is deliberately not indented to the
+ * content column inside -- the button belongs to the card, not to the text.
+ * Note these are measured from #wpbody-content, whose top margin collapses
+ * with the card's when the card is open, which is why this is not the closed
+ * value plus a constant. */
 body.upa #screen-meta-links:has(.screen-meta-active) {
-	top: 10px;
-	right: 40px;
+	/* 28px clears the card's top margin (which no longer collapses away), 6px
+	 * is the card's own padding. */
+	top: calc(28px + 6px);
+	right: calc(20px + 8px);
+}
+
+/* While one panel is open, core hides the OTHER toggle with
+ * `visibility: hidden` -- which keeps its box. Screen Options is first in the
+ * row, so the hidden Help button left an 80px hole between it and the card's
+ * corner; Help is last, so its hole fell off to the left where nothing
+ * showed. That asymmetry is why only one of the two ever looked wrong.
+ * Taking the hidden one out of flow puts whichever is open in the corner. */
+body.upa #screen-meta-links:has(.screen-meta-active) .screen-meta-toggle:not(:has(.screen-meta-active)) {
+	max-width: 0;
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* The whole movement is decoration; anyone who has asked for less of it gets
+ * the end state directly. */
+@media (prefers-reduced-motion: reduce) {
+	body.upa #screen-meta-links,
+	body.upa #screen-meta-links .screen-meta-toggle,
+	body.upa #screen-meta-links .show-settings {
+		transition: none;
+	}
 }
 
 body.upa #screen-meta-links .show-settings.screen-meta-active {
@@ -2042,15 +2252,29 @@ body.upa #adminmenu li.opensub > a.menu-top .wp-menu-image {
 }
 
 /* Appearance toggle in the bar: size its SVG and match the other buttons */
-/* The two right-hand bar buttons sat 3.5px apart vertically: their <li>s are
- * centred correctly, but one .ab-item was top-aligned in its li and the other
- * bottom-aligned, because the avatar makes the account li a pixel taller.
- * Centring the item inside its own li lines both up without hardcoding an
- * offset that would drift the moment either box changes. */
-body.upa #wpadminbar #wp-admin-bar-upa-appearance,
-body.upa #wpadminbar #wp-admin-bar-my-account {
-	display: flex;
-	align-items: center;
+/* Every top-level bar item centres inside its own <li>.
+ *
+ * Left alone, each one lands wherever its own content puts it: core's items
+ * measured y=7, an AIOSEO item y=4, the skin's own appearance button y=9 —
+ * three different baselines across one 52px bar, which reads as items sitting
+ * at random heights. Plugins add their items with whatever padding and icon
+ * sizes they like, so the fix has to be structural rather than a per-item
+ * offset that would need a new number for every plugin. */
+/* DESKTOP ONLY. Below 783px core hides most bar items with `display: none`
+ * and leaves just the essentials, because there is no room for them. Applying
+ * this unconditionally overrode every one of those hides: on a 390px screen
+ * the bar wrapped onto a second row (items measured at y=60 under a 52px bar)
+ * and two of them ran off the right edge. Core's responsive rules own the
+ * small-screen layout; this only aligns the items where they all fit. */
+@media screen and (min-width: 783px) {
+	body.upa #wpadminbar .ab-top-menu > li,
+	body.upa #wpadminbar #wp-admin-bar-root-default > li,
+	body.upa #wpadminbar #wp-admin-bar-top-secondary > li,
+	body.upa #wpadminbar #wp-admin-bar-upa-appearance,
+	body.upa #wpadminbar #wp-admin-bar-my-account {
+		display: flex;
+		align-items: center;
+	}
 }
 
 body.upa #wpadminbar #wp-admin-bar-upa-appearance > .ab-item {
@@ -2102,5 +2326,480 @@ body.upa.auto-fold #adminmenu li.opensub .wp-submenu {
 		border: 0;
 		border-radius: 0;
 		box-shadow: none;
+	}
+}
+
+/* Core hides the responsive menu toggle on desktop with `display: none`, and
+ * the rule above that gives every top-level bar item `display: flex` to align
+ * them was overriding that — so an empty 34px button appeared left of the W
+ * logo. Restore core's behaviour and only lay it out where it is meant to
+ * show. */
+/* `li#...` rather than `#...`: the alignment rule above is
+ * `#wpadminbar #wp-admin-bar-root-default > li`, which carries an extra
+ * element selector and so outranks a plain two-ID selector. Matching its
+ * weight is what lets these win. */
+body.upa #wpadminbar li#wp-admin-bar-menu-toggle {
+	display: none;
+}
+
+@media screen and (max-width: 782px) {
+	body.upa #wpadminbar li#wp-admin-bar-menu-toggle {
+		display: flex;
+		align-items: center;
+	}
+}
+
+/* The skin already hides core's site-name near the top of this file, because
+ * the sidebar brand carries the site name. The bar-alignment rule that gives
+ * every top-level <li> `display: flex` is declared after it at equal
+ * specificity, so it was switching the item back on — which is where the
+ * duplicate site link came from. Re-asserted here, after that rule.
+ *
+ * DESKTOP ONLY. The justification is that the sidebar brand already links to
+ * the front end -- and below 783px that brand is hidden, so hiding this too
+ * left no way out of wp-admin at all. There it stays as core draws it: a
+ * house in the bar whose menu holds Visit Site. */
+@media screen and (min-width: 783px) {
+	body.upa #wpadminbar li#wp-admin-bar-site-name {
+		display: none;
+	}
+}
+
+/* The site icon is dropped from the brand block: with the WordPress logo back
+ * at the far left of the bar, a favicon beside the site name is a second mark
+ * saying the same thing. The name itself still links to the front end. */
+body.upa .upa-brand-mark {
+	display: none;
+}
+
+body.upa .upa-brand-link {
+	gap: 0;
+}
+
+/* The WordPress mark at the far left of the brand row, before the site title —
+ * the order stock wp-admin uses. It is the skin's own link (see buildBrand),
+ * not core's relocated node: moving that node out of #wpadminbar cost it every
+ * rule core scopes there, including the one keeping its dropdown closed.
+ *
+ * Shown only when "Keep the WordPress logo" is on; core's own bar item stays
+ * hidden either way, so the logo never appears twice. */
+body.upa .upa-brand-wp-wrap {
+	position: relative;
+	flex: 0 0 auto;
+}
+
+/* Opens on HOVER, like core's W menu — no click, no JS state. The sidebar
+ * scrolls its own content, so the panel sits above the menu beneath it. */
+body.upa .upa-brand-wp-menu {
+	display: none;
+	position: absolute;
+	top: calc(100% + 6px);
+	left: 0;
+	z-index: 100002;
+	min-width: 190px;
+	padding: 6px;
+	background: var(--upa-panel);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius, 9px);
+	box-shadow: var(--upa-shadow);
+}
+
+body.upa .upa-brand-wp-wrap:hover .upa-brand-wp-menu,
+body.upa .upa-brand-wp-wrap:focus-within .upa-brand-wp-menu {
+	display: block;
+}
+
+/* A transparent bridge across the 6px gap between the mark and the panel:
+ * without it the pointer leaves the wrapper on the way down and the menu
+ * closes before it can be reached. */
+body.upa .upa-brand-wp-menu:before {
+	content: "";
+	position: absolute;
+	top: -8px;
+	left: 0;
+	right: 0;
+	height: 8px;
+}
+
+body.upa .upa-brand-wp-item {
+	display: block;
+	padding: 7px 10px;
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text2);
+	font-size: 13px;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+body.upa .upa-brand-wp-item:hover,
+body.upa .upa-brand-wp-item:focus {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+body.upa .upa-brand-wp {
+	appearance: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+	background: transparent;
+	font: inherit;
+	display: grid;
+	place-items: center;
+	flex: 0 0 auto;
+	width: 30px;
+	height: 30px;
+	margin-right: 8px;
+	border-radius: var(--upa-radius-sm, 6px);
+	color: var(--upa-text2);
+	text-decoration: none;
+}
+
+body.upa .upa-brand-wp:hover,
+body.upa .upa-brand-wp:focus {
+	background: var(--upa-hover);
+	color: var(--upa-text);
+}
+
+body.upa .upa-brand-wp .dashicons {
+	font-size: 22px;
+	width: 22px;
+	height: 22px;
+	line-height: 22px;
+}
+
+/* ---- Admin-bar item internals, applied to every item ---------------------
+ *
+ * The skin lays each .ab-item out as `display:flex; align-items:center`, which
+ * is what puts icons and labels on one line. Two things plugins (and core) do
+ * for the OLD line-height layout then misbehave inside it:
+ *
+ * 1. Core's .ab-icon carries `margin-right: 6px`, which ADDS to the flex
+ *    `gap: 6px` — 12px between icon and text, about double stock wp-admin.
+ *    The gap owns that spacing now, so the margin goes.
+ *
+ * 2. Badges are nudged into place with a vertical margin, because in core's
+ *    layout they sit on a text baseline. AIOSEO's counter uses
+ *    `margin-top: 7px`, which in a CENTRED flex row pushes it 3.5px below the
+ *    middle. Any plugin using the same trick is off by the same kind of
+ *    amount, so vertical margins are neutralised for every direct child
+ *    rather than per plugin — in a centred row they can only be wrong. */
+/* !important is deliberate: core sets this margin with PER-ITEM ID selectors
+ * (`#wpadminbar #wp-admin-bar-comments .ab-icon`, and one for each of the
+ * others), which outrank any generic selector no matter how it is written.
+ * Enumerating them would also miss every plugin that follows the same
+ * pattern, which is exactly what this rule has to cover. */
+body.upa #wpadminbar .ab-item > .ab-icon {
+	margin-right: 0 !important;
+	margin-left: 0 !important;
+}
+
+body.upa #wpadminbar .ab-item > * {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+/* The same treatment for rows inside a dropdown, so a badge on a submenu item
+ * centres against its label instead of hanging below it. */
+body.upa #wpadminbar .ab-sub-wrapper .ab-item {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+body.upa #wpadminbar .ab-sub-wrapper .ab-item > * {
+	margin-top: 0;
+	margin-bottom: 0;
+}
+
+/* MOBILE: keep the bar fixed at the top, as it is on desktop.
+ *
+ * The skin reserves its bar height with `html { padding-top: var(--upa-bar-h) }`,
+ * which assumes a FIXED bar overlaying that space. Below 783px core switches
+ * #wpadminbar to `position: absolute` so it scrolls away — and an absolute bar
+ * starts inside the padding box, so it rendered 52px down the page with an
+ * empty white strip above it (measured: bar y=52 against html padding-top 52).
+ *
+ * Making it fixed here matches the reservation the skin already makes, rather
+ * than unpicking the padding on small screens only. */
+@media screen and (max-width: 782px) {
+	body.upa #wpadminbar {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+	}
+
+	/* The bar reserves the sidebar's width on the left so it starts beside the
+	 * menu. On mobile the sidebar is off-canvas, so that reservation is just a
+	 * 64px hole before the first item (measured: toolbar x=64, first item
+	 * x=72, where stock starts at 0). */
+	body.upa #wpadminbar,
+	body.upa.folded #wpadminbar,
+	body.upa.auto-fold #wpadminbar {
+		padding-left: 0;
+	}
+
+	body.upa #wpadminbar .quicklinks {
+		padding: 0;
+	}
+
+	/* Core's small-screen geometry, adopted wholesale: every item is a 52px
+	 * column, 46px tall, with no padding and no gap -- which is what makes
+	 * stock read as one solid bar of equal buttons. The skin's desktop rules
+	 * (flex row, 6px gap, 14px side padding) produced 63 / 80 / 62px items
+	 * with 2px gaps between them, so they are unwound rather than tuned. */
+	body.upa #wpadminbar .ab-top-menu > li > .ab-item,
+	body.upa #wpadminbar #wp-admin-bar-root-default > li > .ab-item,
+	body.upa #wpadminbar #wp-admin-bar-top-secondary > li > .ab-item {
+		box-sizing: border-box;
+		width: 52px;
+		height: var(--upa-bar-h, 52px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0;
+		padding: 0;
+		margin: 0;
+		border-radius: 0;
+	}
+
+	body.upa #wpadminbar .ab-top-menu > li,
+	body.upa #wpadminbar #wp-admin-bar-root-default > li {
+		margin: 0;
+		padding: 0;
+	}
+
+	/* The 2px flex gap the skin uses to separate desktop bar buttons leaves
+	 * hairline slots between what should read as one continuous strip. */
+	body.upa #wpadminbar .ab-top-menu,
+	body.upa #wpadminbar #wp-admin-bar-root-default,
+	body.upa #wpadminbar #wp-admin-bar-top-secondary {
+		gap: 0;
+	}
+
+	/* The glyph fills its column so the hit area matches what is drawn. */
+	body.upa #wpadminbar .ab-item > .ab-icon,
+	body.upa #wpadminbar .ab-item > .ab-icon:before {
+		width: 52px;
+		height: var(--upa-bar-h, 52px);
+		line-height: var(--upa-bar-h, 52px);
+		margin: 0;
+		padding: 0;
+		text-align: center;
+	}
+
+	/* The accent "New" pill is a desktop flourish. At phone width it is the
+	 * heaviest thing on screen and makes the bar read as one big button with
+	 * some icons next to it; stock shows a plain + like its neighbours. Drop
+	 * the fill here and let it sit level with the rest. */
+	body.upa #wpadminbar #wp-admin-bar-new-content > .ab-item,
+	body.upa #wpadminbar #wp-admin-bar-new-content:hover > .ab-item,
+	body.upa #wpadminbar #wp-admin-bar-new-content.hover > .ab-item {
+		background: transparent;
+		color: var(--upa-text2);
+		border-radius: 0;
+		box-shadow: none;
+	}
+
+	/* The glyph is separately forced to --upa-accent-fg (white) with
+	 * !important, for legibility ON the accent pill. With the pill gone that
+	 * is white on a light bar — the + disappeared entirely — so it follows the
+	 * bar's own text colour here. */
+	body.upa #wpadminbar #wp-admin-bar-new-content .ab-icon:before,
+	body.upa #wpadminbar #wp-admin-bar-new-content .ab-label {
+		color: var(--upa-text2) !important;
+	}
+
+	/* Its glyph is sized for the desktop pill (17px), which beside its
+	 * neighbours read as a stray tick. Core draws every bar dashicon at 40px
+	 * on small screens; the column sizing above supplies the box. */
+	body.upa #wpadminbar #wp-admin-bar-new-content .ab-icon:before {
+		font-size: 40px;
+	}
+
+	/* The notices toggle is the skin's own item and sat 34px tall against
+	 * 46px neighbours, with the word Show/Hide widening it to 77px. At phone
+	 * width it becomes a count beside its dot, full height, flush with the
+	 * right edge the way core's avatar slot is. */
+	body.upa #wpadminbar #wp-admin-bar-upa-notices > .upa-notices-toggle {
+		height: var(--upa-bar-h, 52px);
+		border-radius: 0;
+		padding: 0 12px 0 10px;
+	}
+
+	body.upa #wpadminbar #wp-admin-bar-upa-notices .upa-notices-action {
+		display: none;
+	}
+}
+
+/* ---- Off-canvas menu: core's own small-screen model ----------------------
+ *
+ * The 960px block above styles the folded 64px RAIL, where a submenu is a
+ * flyout pinned beside its icon. Those rules also match at phone width, where
+ * there is no rail -- the panel is a full 248px list -- so every submenu was
+ * drawn as a floating card on top of the labels, and `display: revert
+ * !important` kept them all open at once. What showed through the gaps was a
+ * stack of white cards with the menu itself unreadable behind them.
+ *
+ * Stock wp-admin does something much simpler here: submenus are hidden, and
+ * the one you tap (or the section you are in) opens INLINE underneath its
+ * parent. That is what this restores. It has to sit at the end of the file
+ * and restate the selector shapes, because the flyout surface is declared
+ * outside any media query and with `!important`. */
+@media screen and (max-width: 782px) {
+	/* The rail geometry: a 64px item with the icon absolutely centred over a
+	 * hidden label. In a 248px panel that drew each icon on top of its own
+	 * text ("B[icon]og", "M[icon]dia"). */
+	body.upa.auto-fold #adminmenu li.menu-top,
+	body.upa.auto-fold #adminmenu li.menu-top > a {
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	body.upa.auto-fold #adminmenu .wp-menu-image {
+		position: static;
+	}
+
+	body.upa.auto-fold #adminmenu .wp-menu-name {
+		position: static;
+		left: auto;
+		width: auto;
+		overflow: visible;
+		text-overflow: clip;
+	}
+
+	body.upa.auto-fold #adminmenu .wp-submenu,
+	body.upa.auto-fold #adminmenu li.opensub .wp-submenu,
+	body.upa.auto-fold #adminmenu .wp-has-current-submenu .wp-submenu,
+	body.upa.auto-fold #adminmenu .wp-not-current-submenu .wp-submenu {
+		display: none !important;
+		position: static;
+		top: auto;
+		left: auto;
+		right: auto;
+		width: auto;
+		min-width: 0;
+		margin: 0;
+		padding: 2px 0 6px;
+		background: transparent !important;
+		border: 0;
+		border-radius: 0;
+		box-shadow: none;
+	}
+
+	/* Open: the section you are in, and the one you tapped -- core sets
+	 * `wp-menu-open` / `selected` from its own handler, which the skin leaves
+	 * alone. */
+	body.upa.auto-fold #adminmenu li.wp-has-current-submenu .wp-submenu,
+	body.upa.auto-fold #adminmenu li.wp-menu-open .wp-submenu,
+	body.upa.auto-fold #adminmenu li.selected .wp-submenu {
+		display: block !important;
+	}
+
+	/* Core's own responsive rule (`.auto-fold #adminmenu li.menu-top
+	 * .wp-submenu > li > a`) sets a 20px left pad and carries one more element
+	 * selector than the generic one above, so it wins. That put the current-
+	 * item marker, which sits absolutely at left:20px, directly on the first
+	 * letter of the label. Matching its shape opens a gutter for the marker. */
+	body.upa.auto-fold #adminmenu li.menu-top .wp-submenu > li > a {
+		padding: 8px 10px 8px 38px;
+	}
+
+	body.upa.auto-fold #adminmenu .wp-submenu-head {
+		display: none;
+	}
+}
+
+/* ---- Mobile: the panel header, and the way back to the site --------------- */
+@media screen and (max-width: 782px) {
+	/* The search box sat 2px under the admin bar, touching it. The desktop
+	 * panel has the brand row above it to open that space; the off-canvas one
+	 * hides the brand, so the margin has to carry it. */
+	body.upa.auto-fold .upa-search {
+		margin-top: 12px;
+	}
+
+	/* #adminmenu is absolutely positioned, which took it out of the panel's
+	 * flow and let it cover the account row underneath (both started at the
+	 * same y). In flow, the panel is one scrolling column: search, menu, then
+	 * the profile / log out row -- the second thing missing on a phone. */
+	body.upa.auto-fold #wpwrap.wp-responsive-open #adminmenu {
+		position: static;
+	}
+
+	/* Core PUSHES the page sideways to make room for its menu
+	 * (`.wp-responsive-open #wpbody { right: -16em }`). The skin's panel
+	 * OVERLAYS instead, with a backdrop over the page, so that push has
+	 * nothing to make room for: it just shoved #wpbody 224px past the right
+	 * edge. #wpwrap clips it, but the content still slid out from under the
+	 * viewport and any stray scroll left the panel cut off on the left. */
+	body.upa.auto-fold #wpwrap.wp-responsive-open #wpbody {
+		right: 0;
+	}
+
+	/* Belt and braces: nothing in the admin should scroll the page sideways
+	 * at phone width, open panel or not. */
+	body.upa {
+		overflow-x: hidden;
+	}
+
+	/* Core's site-name item, restored. Our generic bar rule lays every
+	 * .ab-item out as a flex row, and flex defeats the `text-indent` core uses
+	 * to hide the site title behind its icon -- the title would spill across
+	 * the bar. Core's own display model is restated for this one item. */
+	/* `li#...`: the generic mobile bar rule is
+	 * `#wpadminbar #wp-admin-bar-root-default > li > .ab-item`, which carries
+	 * an extra element selector -- without matching it, `display: block` lost
+	 * and the item stayed a flex row, where `text-indent` does not hide the
+	 * site title at all. */
+	body.upa #wpadminbar li#wp-admin-bar-site-name > .ab-item {
+		display: block;
+		position: relative;
+		width: 52px;
+		padding: 0;
+		overflow: hidden;
+		text-indent: 100%;
+		white-space: nowrap;
+		/* With no site icon set, core falls back to a house dashicon drawn by
+		 * this item's ::before, and colours the ITEM #a7aaad -- pale grey,
+		 * noticeably fainter than the icons beside it. The colour has to be
+		 * corrected here rather than on the pseudo-element: the skin pins
+		 * every bar glyph to `currentColor !important`, so the item's own
+		 * colour is the only thing the glyph will follow. */
+		color: var(--upa-text2);
+	}
+
+	/* `display: block` is the whole point of core's has-site-icon rule -- the
+	 * indent still does the hiding, and the icon is drawn by an absolutely
+	 * positioned <img> on top. Cancelling the indent here put the site title
+	 * across the bar, over its neighbours. */
+	body.upa #wpadminbar li#wp-admin-bar-site-name .site-icon {
+		position: absolute;
+		top: 9px;
+		left: 12px;
+		width: 28px;
+		height: 28px;
+		margin: 0;
+		border-radius: 4px;
+	}
+
+	/* The dropdown was starting 8px INSIDE the bar, drawn over the item that
+	 * opened it. That -8px is a desktop tuck: there the bar is 52px and its
+	 * items are 46, so the panel needs to come up to meet them. Here the item
+	 * fills the whole bar, so the tuck has nothing to close. Restated at the
+	 * weight of the rule that sets it (`li.menupop.hover`), or it loses. */
+	body.upa #wpadminbar .ab-sub-wrapper,
+	body.upa #wpadminbar .ab-top-menu > li.menupop:hover > .ab-sub-wrapper,
+	body.upa #wpadminbar .ab-top-menu > li.menupop.hover > .ab-sub-wrapper {
+		top: var(--upa-bar-h, 52px);
+		margin-top: 0;
+	}
+
+	/* The item is hidden unconditionally further up (the sidebar brand carries
+	 * the site name on desktop). Restated at the same weight, later, so it
+	 * comes back on the one screen size where that brand is not there. */
+	body.upa #wpadminbar li#wp-admin-bar-site-name {
+		display: block;
 	}
 }

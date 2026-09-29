@@ -1,0 +1,124 @@
+/**
+ * Admin Skin — the Admin Menu layout screen.
+ *
+ * Written against the skin's own tokens, with plain fallbacks: the screen is
+ * only reachable while the skin is active, but a fallback costs nothing and
+ * keeps it readable if that ever stops being true.
+ */
+
+.fw-ams-menu .fw-ams-lede {
+	max-width: 70ch;
+	color: var(--upa-text2, #50575e);
+}
+
+.fw-ams-menu .fw-ams-rolebar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 16px 0 4px;
+}
+
+.fw-ams-menu .fw-ams-labels {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	margin: 0 0 8px;
+}
+
+.fw-ams-menu .fw-ams-labels label {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-size: 12px;
+	color: var(--upa-text3, #646970);
+}
+
+.fw-ams-menu .fw-ams-labels input {
+	width: 150px;
+}
+
+.fw-ams-menu .fw-ams-list {
+	max-width: 780px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.fw-ams-menu .fw-ams-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0 0 6px;
+	padding: 8px 12px;
+	background: var(--upa-panel, #fff);
+	border: 1px solid var(--upa-border, #dcdcde);
+	border-radius: var(--upa-radius, 4px);
+}
+
+.fw-ams-menu .fw-ams-item.is-hidden {
+	opacity: .55;
+}
+
+.fw-ams-menu .fw-ams-handle {
+	cursor: grab;
+	color: var(--upa-text3, #646970);
+	letter-spacing: -2px;
+	user-select: none;
+}
+
+.fw-ams-menu .fw-ams-item:active .fw-ams-handle {
+	cursor: grabbing;
+}
+
+.fw-ams-menu .fw-ams-title {
+	flex: 1 1 auto;
+	font-weight: 550;
+	color: var(--upa-text, #1d2327);
+}
+
+.fw-ams-menu .fw-ams-slug {
+	flex: 0 1 auto;
+	max-width: 220px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	background: none;
+	color: var(--upa-text3, #646970);
+	font-size: 11.5px;
+}
+
+.fw-ams-menu .fw-ams-hide {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--upa-text2, #50575e);
+	font-size: 12.5px;
+	white-space: nowrap;
+}
+
+/* The one row whose Hide box is refused: the menu this screen lives under,
+ * for a role that could still open this screen. Dimmed rather than removed, so
+ * the refusal is visible and explains itself on hover. */
+.fw-ams-menu .fw-ams-hide.is-locked {
+	opacity: .5;
+	cursor: not-allowed;
+}
+
+.fw-ams-menu .fw-ams-hide.is-locked input {
+	cursor: not-allowed;
+}
+
+/* The gap a dragged row leaves behind, so the list does not jump. */
+.fw-ams-menu .fw-ams-placeholder {
+	margin: 0 0 6px;
+	border: 1px dashed var(--upa-border2, #c3c4c7);
+	border-radius: var(--upa-radius, 4px);
+	background: var(--upa-panel2, #f6f7f7);
+}
+
+.fw-ams-menu .fw-ams-note {
+	max-width: 70ch;
+	margin-top: 18px;
+	color: var(--upa-text2, #50575e);
+	font-size: 13px;
+}

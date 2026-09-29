@@ -64,14 +64,40 @@ body.upa .fw-skin-light {
 	--fw-radius-sm:        var(--upa-radius-sm, 6px);
 	--fw-focus-ring:       0 0 0 2px var(--upa-accent-ring);
 }
+
+/* The options MODAL's top tab strip (Content / Styling / Animations / Advanced)
+ * is a `.fw-options-tabs-list`, NOT a `.ui-tabs-nav`, so the generic tab rules
+ * further down miss it and backend-options.css keeps painting its active tab
+ * white — background plus a hardcoded #fff bottom-border "seam". On a dark skin
+ * that seam reads as a white underline under the active tab (there is none in
+ * light mode, where it blends into the white panel). Repaint the active tab and
+ * its seam in the skin's own surface colour so it merges with the panel in EVERY
+ * mode — the --upa-* tokens already carry the right value per light/dark. */
+body.upa .fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-state-active a.nav-tab,
+body.upa .fw-options-tabs-wrapper > .fw-options-tabs-list ul li.ui-tabs-active a.nav-tab {
+	background-color: var(--upa-panel) !important;
+	border-color: var(--upa-border) !important;
+	border-bottom-color: var(--upa-panel) !important;
+	color: var(--upa-text) !important;
+}
+
 /* Theme Settings header: the framework only colours it for the two core
  * schemes it knows; ours is a third. */
 body.upa .fw-settings-form-header,
 body.upa .fw-backend-side-tabs .fw-settings-form-header {
 	background-color: var(--upa-accent);
-	/* No radius: the form behind it is square and white, so rounding the
-	 * header only exposes white wedges in its top corners. */
-	border-radius: 0;
+	border-radius: 8px;
+}
+
+/* The form behind the header is an opaque white card with square corners, so
+ * rounding the header alone exposed white wedges in its top two corners (the
+ * reason the radius was previously 0). Rounding the form's top corners to
+ * match means the arcs reveal the page canvas instead. No overflow:hidden —
+ * that would clip the option dropdowns that open inside this form. */
+body.upa .fw-settings-form,
+body.upa form.fw-settings-form.fw-backend-side-tabs {
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
 }
 
 /* The skin's page-heading margins would inflate this bar and push the title
@@ -274,9 +300,18 @@ body.upa .fw-postbox > .inside > .fw-backend-options-last-border-hider,
 body.upa .postbox-with-fw-options > .inside > .fw-backend-options-last-border-hider {
 	border-bottom: 0;
 }
+/* Vertical padding matched to a core postbox (4px top / 18px bottom), so a
+ * framework box in the sidebar is not visibly tighter than Publish or Page
+ * Attributes beside it. The HORIZONTAL padding stays 0 on purpose: the option
+ * rows inside carry their own 20px gutter (--u-row-pad-x), so adding the
+ * box's 18px here would indent every row to 38px. */
 body.upa .fw-postbox > .inside,
 body.upa .postbox-with-fw-options > .inside {
-	padding: 0 0 12px !important;
+	/* 6px, not the box's full 18px: the option rows inside already carry a
+	 * 12px gutter of their own, so 6 + 12 puts their labels on the same 18px
+	 * line as the postbox title and as a core box's content. Using 18 here
+	 * would indent every row to 30px. Vertical matches a core postbox. */
+	padding: 4px 6px 18px !important;
 }
 /* …and the row that hairline belonged to is the last one in the box, so it
  * has nothing to separate from. */
@@ -1209,4 +1244,353 @@ html[data-upa-mode="dark"] body.upa .fw-modal .ui-tabs-nav .nav-tab-active {
 		border-color: var(--upa-border) !important;
 		border-bottom-color: var(--upa-panel) !important;
 	}
+}
+
+/* Page-builder canvas, DARK ONLY -------------------------------------------
+ *
+ * The builder encodes nesting depth as a light ladder: a section is #f8fdff,
+ * a column #f8f8f8, a column nested inside one #f0f0f0 (capped at two steps),
+ * and a leaf item #fff so it pops forward. Its label text is #01729c and the
+ * leaf's own text #8c8c8c.
+ *
+ * On a dark canvas that whole ladder is a patchwork of white slabs, and the
+ * leaf's grey-on-white text is close to unreadable. The ladder is REBUILT
+ * here rather than flattened: depth still steps, but from the canvas upward,
+ * and the leaf still ends up the lightest so it keeps reading as the content
+ * block. Light mode is untouched — it is already correct there.
+ *
+ * Done in the skin rather than upstream because these values live in four
+ * separate shortcode item stylesheets (column, flexbox, simple, …), each of
+ * which would need its own version bump and release to carry a token; the
+ * builder canvas is admin chrome the skin already owns.
+ *
+ * All of it is CHROME, not a front-end preview: the leaf's text colour is the
+ * builder's own #8c8c8c with no inline style, so recolouring it cannot
+ * misrepresent how the page will actually render. */
+html[data-upa-mode="dark"] body.upa .pb-item-type-column.pb-item.custom-section {
+	background-color: var(--upa-bg);
+	border-color: var(--upa-border);
+}
+
+html[data-upa-mode="dark"] body.upa .pb-item-type-column {
+	background-color: color-mix(in srgb, var(--upa-text) 4%, var(--upa-bg));
+	border-color: var(--upa-border);
+	color: var(--upa-accent);
+}
+
+html[data-upa-mode="dark"] body.upa .custom-section .pb-item-type-column.custom-section.custom-flexbox {
+	background-color: color-mix(in srgb, var(--upa-text) 7%, var(--upa-bg));
+}
+
+html[data-upa-mode="dark"] body.upa .custom-section .pb-item-type-column.custom-section.custom-flexbox .pb-item-type-column.custom-section.custom-flexbox {
+	background-color: color-mix(in srgb, var(--upa-text) 10%, var(--upa-bg));
+}
+
+/* The leaf stays the lightest step so it still reads as the content block. */
+html[data-upa-mode="dark"] body.upa .pb-item-type-simple {
+	background-color: var(--upa-panel2);
+	border-color: var(--upa-border);
+	color: var(--upa-text2);
+	box-shadow: none;
+}
+
+html[data-upa-mode="dark"] body.upa .pb-item-type-simple .item-content,
+html[data-upa-mode="dark"] body.upa .pb-item-type-simple span {
+	color: var(--upa-text2);
+}
+
+html[data-upa-mode="dark"] body.upa .column-title,
+html[data-upa-mode="dark"] body.upa .pb-item .panel .column-title {
+	color: var(--upa-accent);
+}
+
+@media (prefers-color-scheme: dark) {
+	/* Same ladder for viewers on 'system' who are in a dark OS theme. */
+	html[data-upa-mode="system"] body.upa .pb-item-type-column.pb-item.custom-section {
+		background-color: var(--upa-bg);
+		border-color: var(--upa-border);
+	}
+
+	html[data-upa-mode="system"] body.upa .pb-item-type-column {
+		background-color: color-mix(in srgb, var(--upa-text) 4%, var(--upa-bg));
+		border-color: var(--upa-border);
+		color: var(--upa-accent);
+	}
+
+	html[data-upa-mode="system"] body.upa .custom-section .pb-item-type-column.custom-section.custom-flexbox {
+		background-color: color-mix(in srgb, var(--upa-text) 7%, var(--upa-bg));
+	}
+
+	html[data-upa-mode="system"] body.upa .custom-section .pb-item-type-column.custom-section.custom-flexbox .pb-item-type-column.custom-section.custom-flexbox {
+		background-color: color-mix(in srgb, var(--upa-text) 10%, var(--upa-bg));
+	}
+
+	/* The leaf stays the lightest step so it still reads as the content block. */
+	html[data-upa-mode="system"] body.upa .pb-item-type-simple {
+		background-color: var(--upa-panel2);
+		border-color: var(--upa-border);
+		color: var(--upa-text2);
+		box-shadow: none;
+	}
+
+	html[data-upa-mode="system"] body.upa .pb-item-type-simple .item-content,
+	html[data-upa-mode="system"] body.upa .pb-item-type-simple span {
+		color: var(--upa-text2);
+	}
+
+	html[data-upa-mode="system"] body.upa .column-title,
+	html[data-upa-mode="system"] body.upa .pb-item .panel .column-title {
+		color: var(--upa-accent);
+	}
+
+}
+
+html[data-upa-mode="dark"] {
+
+	/* Borders, not fills — the other half of the builder's light chrome, and
+	 * the half a background-colour sweep never sees. The dashed rules between
+	 * rows (#c3ccd7), the line under the element tabs (#eee) and the device
+	 * toggle's box (#c3c4c7) all read as bright white hairlines on a dark
+	 * canvas. Text stays light; only the LINES move to the border tokens. */
+	body.upa .builder-items,
+	body.upa .builder-items.fw-row {
+		border-color: var(--upa-border2);
+	}
+
+	body.upa .fw-options-tabs-wrapper,
+	body.upa .fw-option-type-builder .fw-options-tabs-wrapper {
+		border-bottom-color: var(--upa-border);
+	}
+
+	body.upa .fw-device-preview {
+		border-color: var(--upa-border);
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	html[data-upa-mode="system"] {
+		/* Borders, not fills — the other half of the builder's light chrome, and
+		 * the half a background-colour sweep never sees. The dashed rules between
+		 * rows (#c3ccd7), the line under the element tabs (#eee) and the device
+		 * toggle's box (#c3c4c7) all read as bright white hairlines on a dark
+		 * canvas. Text stays light; only the LINES move to the border tokens. */
+		body.upa .builder-items,
+		body.upa .builder-items.fw-row {
+			border-color: var(--upa-border2);
+		}
+
+		body.upa .fw-options-tabs-wrapper,
+		body.upa .fw-option-type-builder .fw-options-tabs-wrapper {
+			border-bottom-color: var(--upa-border);
+		}
+
+		body.upa .fw-device-preview {
+			border-color: var(--upa-border);
+		}
+	}
+}
+
+
+/* Site Converter review UI, DARK ONLY ---------------------------------------
+ *
+ * The converter renders its mapping table from JS with ~260 inline style
+ * attributes carrying about a hundred hardcoded light literals, so there are
+ * no classes to hook and a stylesheet only wins with !important.
+ *
+ * Rather than restyle its markup (that file belongs to the converter and is
+ * under active change), each literal is mapped to a token by ATTRIBUTE match
+ * on the colour itself. That keys the rule to the value rather than to the
+ * structure, so it keeps working when the table's markup is edited.
+ *
+ * The solid status fills (#1a7f37 green, #b32d2e red, #dba617 amber, #6d28d9
+ * purple) are deliberately untouched: they are semantic badges with white
+ * text and already read correctly on a dark surface.
+ *
+ * The real fix is to move these into classes in the converter itself; this is
+ * a skin-side bridge until then. */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+html[data-upa-mode="dark"] {
+	/* Header / Footer builder columns and their neighbours: light border
+	 * literals that a background sweep never sees. The column boxes
+	 * (.items-wrapper) were the most visible — three white rectangles on a
+	 * dark panel. */
+	body.upa .items-wrapper,
+	body.upa .items-wrapper.ui-sortable {
+		border-color: var(--upa-border) !important;
+	}
+
+	body.upa .fw-backend-option.fw-backend-option-design-default {
+		border-bottom-color: var(--upa-border);
+	}
+
+	body.upa .adaptive-switch {
+		border-color: var(--upa-border2);
+	}
+
+	/* A disabled primary button keeps core's grey chip; on a dark panel it
+	 * needs the panel's own tones. */
+	body.upa button.button-primary:disabled,
+	body.upa button.button-primary[disabled],
+	body.upa button.button-primary.disabled {
+		background-color: var(--upa-panel2) !important;
+		border-color: var(--upa-border) !important;
+		color: var(--upa-text3) !important;
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	html[data-upa-mode="system"] {
+		/* Header / Footer builder columns and their neighbours: light border
+		 * literals that a background sweep never sees. The column boxes
+		 * (.items-wrapper) were the most visible — three white rectangles on a
+		 * dark panel. */
+		body.upa .items-wrapper,
+		body.upa .items-wrapper.ui-sortable {
+			border-color: var(--upa-border) !important;
+		}
+
+		body.upa .fw-backend-option.fw-backend-option-design-default {
+			border-bottom-color: var(--upa-border);
+		}
+
+		body.upa .adaptive-switch {
+			border-color: var(--upa-border2);
+		}
+
+		/* A disabled primary button keeps core's grey chip; on a dark panel it
+		 * needs the panel's own tones. */
+		body.upa button.button-primary:disabled,
+		body.upa button.button-primary[disabled],
+		body.upa button.button-primary.disabled {
+			background-color: var(--upa-panel2) !important;
+			border-color: var(--upa-border) !important;
+			color: var(--upa-text3) !important;
+		}
+	}
+}
+
+html[data-upa-mode="dark"] {
+	/* The preset-loader row is highlighted with #f8fdff — a near-white tint
+	 * that reads as a bright band across a dark options panel. Same intent,
+	 * expressed as a faint accent wash over the panel. */
+	body.upa .fw-backend-option-type-preset-loader,
+	body.upa .fw-backend-option.fw-backend-option-type-preset-loader {
+		background-color: var(--upa-accent-soft) !important;
+	}
+}
+
+@media (prefers-color-scheme: dark) {
+	html[data-upa-mode="system"] {
+		/* The preset-loader row is highlighted with #f8fdff — a near-white tint
+		 * that reads as a bright band across a dark options panel. Same intent,
+		 * expressed as a faint accent wash over the panel. */
+		body.upa .fw-backend-option-type-preset-loader,
+		body.upa .fw-backend-option.fw-backend-option-type-preset-loader {
+			background-color: var(--upa-accent-soft) !important;
+		}
+	}
+}
+
+/* Preset list rows (Box / Button / Icon Badge / Table presets).
+ *
+ * The title carries no colour of its own, so it inherits #1d2327 from an
+ * ancestor — a near-black that lands on the row's own dark fill in dark mode
+ * at a contrast ratio of 1.14, i.e. effectively invisible. Setting it from
+ * the token fixes every family at once and is correct in light mode too,
+ * where --upa-text is the same near-black it was already inheriting. */
+body.upa .fw-option-type-border-presets-item-title,
+body.upa .fw-option-type-button-presets-item-title,
+body.upa .fw-option-type-icon-badge-presets-item-title,
+body.upa .fw-option-type-table-presets-item-title {
+	color: var(--upa-text);
+}
+
+
+/* Converter review table: the BORDERS.
+ *
+ * The first pass mapped background and colour literals but only three border
+ * ones, and the table writes its rules as shorthands (border:1px solid #…,
+ * border-top:…), of which #dcdcde alone appears nine times — so the panel went
+ * dark while every dividing line stayed white.
+ *
+ * Matching on "solid #hex" / "dotted #hex" catches every shorthand variant at
+ * once and cannot collide with a background declaration of the same colour.
+ *
+ * The 4px #dba617 left stripe is left alone: it is a notice's amber accent
+ * bar, which still reads correctly on a dark surface. */
+
+/* Converter status pills come from CLASS rules in the converter's own inline
+ * <style>, not inline attributes, so the colour-matching rules above cannot
+ * reach them. They are the one part of that UI with a stable class hook. */
+html[data-upa-mode="dark"] body.upa .fw-sc-signal--go {
+	background: var(--upa-green-soft) !important;
+	border-color: var(--upa-green) !important;
+	color: var(--upa-green-text) !important;
+}
+
+html[data-upa-mode="dark"] body.upa .fw-sc-signal--wait {
+	background: var(--upa-amber-soft) !important;
+	border-color: var(--upa-amber) !important;
+	color: var(--upa-amber-text) !important;
+}
+
+html[data-upa-mode="dark"] body.upa .fw-sc-signal--stop {
+	background: var(--upa-red-soft) !important;
+	border-color: var(--upa-red) !important;
+	color: var(--upa-red-text) !important;
+}
+
+html[data-upa-mode="dark"] body.upa .fw-sc-signal code {
+	background: rgba(255, 255, 255, .10);
+}
+
+/* Converter page tabs (.fw-sc-ptab).
+ *
+ * These were missed by the colour-matching rules for a mechanism worth
+ * noting: the converter sets their state in JS —
+ *   b.style.background = on ? '#fff' : '#eef0f2'
+ * — and a style set through the CSSOM serialises as `rgb(255, 255, 255)`,
+ * not as the authored `#fff`, so an attribute match on the hex never fires.
+ *
+ * They do carry a stable class, so the base state is styled directly. Only
+ * the ACTIVE tab needs a value match, because the converter marks it by
+ * inline background alone rather than by a class. Both the serialised rgb()
+ * and the authored hex are covered: the first render writes the hex into the
+ * HTML string, later clicks write rgb(). */
+html[data-upa-mode="dark"] body.upa .fw-sc-ptab {
+	background: var(--upa-panel2) !important;
+	color: var(--upa-text2) !important;
+	border-color: var(--upa-border) !important;
 }
