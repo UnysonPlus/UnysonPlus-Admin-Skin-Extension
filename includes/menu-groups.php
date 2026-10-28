@@ -28,6 +28,7 @@ function fw_ext_admin_skin_menu_groups() {
 	$map = [
 		// Workspace: the daily content screens.
 		'menu-dashboard'             => 'workspace',
+		'fw-ws-menu'                 => 'workspace', // an app given its own menu item (Unyson+ → Workspaces)
 		'menu-posts'                 => 'workspace',
 		'menu-pages'                 => 'workspace',
 		'menu-media'                 => 'workspace',

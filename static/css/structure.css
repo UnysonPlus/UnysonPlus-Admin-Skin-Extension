@@ -39,12 +39,29 @@ body.upa .code {
 	font-family: var(--upa-font-mono);
 }
 
-body.upa a {
+/* The blanket link colour, minus anchors that are BUTTONS.
+ *
+ * `body.upa a` is one class and one element, so it outranks a plugin's own
+ * single-class rule (`.xyz-admin-button { color: #fff }`) by exactly one
+ * element selector -- and a white tab sitting on that plugin's coloured header
+ * came out accent-purple on blue, which is both wrong and hard to read. Core's
+ * own `.button` was never affected (the skin styles it at two classes), so
+ * this only ever hit third-party buttons, where it hit every one of them.
+ *
+ * Excluding them lets whoever drew the button keep its colour. There is
+ * deliberately NO zero-specificity fallback putting the accent back on
+ * uncoloured button anchors: it would tie the plugin's own single-class rule
+ * and the winner would come down to stylesheet order, which differs between
+ * installs (the skin enqueues at priority 5, most plugins at 10). A button
+ * nobody coloured falls back to WordPress's own link blue instead -- a small
+ * cosmetic miss, in exchange for a plugin's button always looking the way its
+ * author drew it. */
+body.upa a:not([class*="button"]):not([class*="btn"]) {
 	color: var(--upa-accent);
 }
 
-body.upa a:hover,
-body.upa a:focus {
+body.upa a:not([class*="button"]):not([class*="btn"]):hover,
+body.upa a:not([class*="button"]):not([class*="btn"]):focus {
 	color: var(--upa-accent2);
 }
 
@@ -620,8 +637,29 @@ body.upa.folded #adminmenu {
 	overflow: visible;
 }
 
-body.upa.folded #adminmenu .wp-submenu {
+/* Every state core positions the folded flyout in, restated.
+ *
+ * Core pins the OPEN flyout to `left: 36px` -- its own rail width -- and does
+ * it through selectors carrying four classes (`.wp-has-current-submenu.opensub
+ * .wp-submenu`). A single `body.upa.folded #adminmenu .wp-submenu` is three,
+ * so core won for exactly one item: the one whose section you are already in.
+ * That is why only the CURRENT menu's flyout sat nudged left, overlapping the
+ * rail, while every other item lined up -- and why the misalignment followed
+ * you from Tools to Settings as you moved around.
+ *
+ * `100%` rather than a number: the li IS the rail, so this tracks the rail
+ * width instead of having to be updated alongside it. */
+body.upa.folded #adminmenu .wp-submenu,
+body.upa.folded #adminmenu .wp-submenu.sub-open,
+body.upa.folded #adminmenu .opensub .wp-submenu,
+body.upa.folded #adminmenu .wp-has-current-submenu .wp-submenu.sub-open,
+body.upa.folded #adminmenu .wp-has-current-submenu.opensub .wp-submenu,
+body.upa.folded #adminmenu a.menu-top:focus + .wp-submenu,
+body.upa.folded #adminmenu .wp-has-current-submenu a.menu-top:focus + .wp-submenu {
 	left: calc(100% + 6px);
+}
+
+body.upa.folded #adminmenu .wp-submenu {
 	width: 220px;
 	padding: 6px;
 	margin: 0;
@@ -866,20 +904,29 @@ body.upa #wpadminbar #wp-admin-bar-my-account.upa-account-moved {
 	height: 17px;
 }
 
-/* Folded sidebar */
+/* Folded sidebar
+ *
+ * The rail width is a token because four separate things have to agree on it:
+ * the rail itself, the content's left margin, the admin bar's left padding and
+ * the block editor's shell. They had the number written out four times, which
+ * is three chances to change one and miss the rest. */
+body.upa.folded {
+	--upa-rail-w: 48px;
+}
+
 body.upa.folded #adminmenuback,
 body.upa.folded #adminmenuwrap,
 body.upa.folded #adminmenu {
-	width: 64px;
+	width: var(--upa-rail-w, 48px);
 }
 
 body.upa.folded #wpcontent,
 body.upa.folded #wpfooter {
-	margin-left: 64px;
+	margin-left: var(--upa-rail-w, 48px);
 }
 
 body.upa.folded #adminmenu {
-	padding: 6px 10px 12px;
+	padding: 6px 2px 12px;
 }
 
 body.upa.folded #adminmenu li.menu-top {
@@ -912,6 +959,23 @@ body.upa.folded .upa-brand {
 body.upa.folded .upa-brand-link {
 	flex: 0 0 auto;
 	justify-content: center;
+}
+
+/* The WordPress mark carries an 8px right margin for the expanded brand row,
+ * where the site name sits beside it. Folded there is no name, so that margin
+ * is pure offset -- it is what pushed the W left of the icon column below it.
+ *
+ * The link next to it also has to go: its contents (site icon, name, visit
+ * arrow) are all hidden when folded, but the empty element still takes a slot
+ * in the centred row, so the pair centred rather than the mark. Only dropped
+ * when the mark is actually there -- with "Keep the WordPress logo" off, the
+ * link is the only thing in the row and has to stay. */
+body.upa.folded .upa-brand-wp {
+	margin-right: 0;
+}
+
+body.upa.folded .upa-brand:has(.upa-brand-wp-wrap) .upa-brand-link {
+	display: none;
 }
 
 /* Folded, the name, role and caret are hidden by the shared rule above and the
@@ -1001,7 +1065,7 @@ body.upa #wpadminbar {
 }
 
 body.upa.folded #wpadminbar {
-	padding-left: 64px;
+	padding-left: var(--upa-rail-w, 48px);
 }
 
 body.upa #wpadminbar .quicklinks {
@@ -1602,7 +1666,7 @@ body.upa .edit-post-layout .interface-interface-skeleton {
 }
 
 body.upa.folded .interface-interface-skeleton {
-	left: 64px;
+	left: var(--upa-rail-w, 48px);
 }
 
 body.upa.is-fullscreen-mode .interface-interface-skeleton {

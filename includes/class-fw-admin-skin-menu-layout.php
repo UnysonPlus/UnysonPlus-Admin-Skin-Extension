@@ -39,6 +39,16 @@ class FW_Admin_Skin_Menu_Layout {
 	public function __construct( $ext ) {
 		$this->ext = $ext;
 
+		// Core 3.0.55 moved this editor to Unyson+ → Admin Menu, where it
+		// works with or without the skin (and imports what was saved here). The
+		// skin then only lends it the groups, so an item can be dragged between them.
+		if ( class_exists( 'FW_Admin_Menu_Editor' ) ) {
+			add_filter( 'fw_admin_menu_editor_groups', function () {
+				return fw_ext_admin_skin_menu_groups();
+			} );
+			return;
+		}
+
 		// 998: after plugins have registered their menus, and before the
 		// skin's own removals at 999 — so the screen can list an item it is
 		// currently hiding, which is the only way to get it back.
@@ -319,7 +329,7 @@ class FW_Admin_Skin_Menu_Layout {
 	 * @internal
 	 */
 	public function maybe_save() {
-		if ( empty( $_POST['fw_admin_skin_menu_nonce'] ) ) {
+		if ( class_exists( 'FW_Admin_Menu_Editor' ) || empty( $_POST['fw_admin_skin_menu_nonce'] ) ) {
 			return;
 		}
 
@@ -410,6 +420,18 @@ class FW_Admin_Skin_Menu_Layout {
 	 */
 	public function render_tab() {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
+			return;
+		}
+
+		if ( class_exists( 'FW_Admin_Menu_Editor' ) ) {
+			?>
+			<div class="fw-ams-menu">
+				<p class="fw-ams-lede">
+					<?php esc_html_e( 'The admin menu is now arranged for every role under Unyson+ → Admin Menu: drag items between these groups, reorder, rename, change icons and hide items or sub-items. Layouts saved here were carried over.', 'fw' ); ?>
+				</p>
+				<p><a class="button button-primary" href="<?php echo esc_url( FW_Admin_Menu_Editor::url() ); ?>"><?php esc_html_e( 'Open the menu editor', 'fw' ); ?></a></p>
+			</div>
+			<?php
 			return;
 		}
 

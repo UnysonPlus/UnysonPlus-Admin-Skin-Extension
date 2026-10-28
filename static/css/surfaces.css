@@ -338,9 +338,91 @@ body.upa .fw-option-type-builder .builder-items-types .builder-item-type:hover {
 	outline-color: var(--upa-accent);
 	color: var(--upa-text);
 }
+/* The builder draws its items as ROUNDED dashed boxes (the page builder's own
+ * `.pb-item-type-column.pb-item.custom-section { border-radius: .75rem }`),
+ * and the skin fills the `.builder-items` inside them with an opaque surface.
+ * That fill had square corners and sits only 1px inside the parent's border,
+ * so it painted straight over the rounded bottom corners -- the dashed outline
+ * appeared to stop short, worst on nested items where the mismatch repeats at
+ * every level. The fill follows the corner it sits in now.
+ *
+ * Only the BOTTOM pair: the first child is the item's header bar, which is
+ * already rounded correctly against the top. `inherit` on a single corner
+ * takes that corner from the parent, so this tracks whatever radius the
+ * builder uses at each nesting depth instead of hardcoding one. */
+body.upa .fw-option-type-builder .pb-item > :last-child {
+	border-bottom-left-radius: inherit;
+	border-bottom-right-radius: inherit;
+}
+
 body.upa .builder-items-types {
 	background: transparent;
 	border: 0;
+}
+
+/* ...EXCEPT while it is the floating header.
+ *
+ * The builder promotes this strip to `position: absolute; z-index: 1` once the
+ * canvas scrolls under it (`.fw-option-type-builder.fixed-header`), and stock
+ * relies on its own `background-color: #fff` to make it opaque. The rule above
+ * removes that -- correct while the palette is inline, where a second surface
+ * around the tiles reads as a double card -- but it leaves the floating header
+ * see-through, so page content scrolls visibly through the Undo / Insert
+ * Section / device row. It needs a surface for exactly as long as it is
+ * floating, and the hairline underneath it has to be a token, not core's
+ * #eeeeee, or it disappears in dark mode. */
+body.upa .fw-option-type-builder.fixed-header > .builder-items-types {
+	/* The shadow goes on the CONTAINER, not on .fw-builder-header-tools.
+	 * This is the element that floats, carries the surface and draws the edge,
+	 * and it is the one that is always present: the toolbar can be `fw-hidden`
+	 * (the builder only adds `has-header-tools` when it is not), and a builder
+	 * without header tools still pins this strip over the canvas. Hung on the
+	 * toolbar, the depth would simply vanish in that case.
+	 *
+	 * Kept as a local custom property so the two mode overrides below are one
+	 * line each rather than a repeated box-shadow. The hairline stays: on a
+	 * light surface the shadow alone is too soft to say where the strip ends,
+	 * so the line defines the edge and the shadow gives it depth. */
+	--upa-builder-sticky-shadow: 0 10px 18px -12px rgba(16, 16, 24, .28);
+
+	background: var(--upa-panel);
+	border-bottom: 1px solid var(--upa-border);
+	box-shadow: var(--upa-builder-sticky-shadow);
+}
+
+/* A shadow that reads on a near-white page is invisible on a near-black one --
+ * depth in dark mode comes from a darker, slightly longer cast, not the same
+ * value reused. */
+html[data-upa-mode="dark"] body.upa .fw-option-type-builder.fixed-header > .builder-items-types {
+	--upa-builder-sticky-shadow: 0 12px 22px -12px rgba(0, 0, 0, .7);
+}
+
+@media (prefers-color-scheme: dark) {
+	html[data-upa-mode="system"] body.upa .fw-option-type-builder.fixed-header > .builder-items-types {
+		--upa-builder-sticky-shadow: 0 12px 22px -12px rgba(0, 0, 0, .7);
+	}
+}
+
+/* Slimmer while floating. The 20px all round is right for the inline palette,
+ * where the toolbar is just another row on the page; once the strip is pinned
+ * over the canvas it is chrome, and 72px of it eats the space you are trying
+ * to scroll through. The side padding stays 20px so the tools keep their
+ * alignment with the tiles above them. */
+body.upa .fw-option-type-builder.fixed-header > .builder-items-types > .fw-builder-header-tools {
+	padding: 4px 20px;
+}
+
+/* The tab strip above it tightens by the same logic: while floating, the gap
+ * under the tabs and the gap over the tiles are both chrome. `!important` is
+ * not decoration here -- the builder's own rule sets this margin with one, so
+ * specificity alone cannot win. The padding rule beneath needs none, since
+ * nothing marks that important. */
+body.upa .fw-option-type-builder.fixed-header > .builder-items-types .fw-options-tabs-wrapper.fw-options-tabs-first-level .fw-options-tabs-contents {
+	margin: 4px 0 0 !important;
+}
+
+body.upa .fw-option-type-builder.fixed-header > .builder-items-types > .fw-options-tabs-wrapper {
+	padding-bottom: 0;
 }
 /* NOTE: the framework's jQuery UI tab strips (Theme Settings inner tabs,
  * Page Settings, the page-builder element palette) are deliberately NOT
