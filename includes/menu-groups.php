@@ -28,7 +28,12 @@ function fw_ext_admin_skin_menu_groups() {
 	$map = [
 		// Workspace: the daily content screens.
 		'menu-dashboard'             => 'workspace',
-		'fw-ws-menu'                 => 'workspace', // an app given its own menu item (Unyson+ → Workspaces)
+		'fw-ws-menu'                 => 'workspace', // an app given its own menu item (Unyson+ → Admin Menu)
+		// Unyson+ apps with a menu of their own (Bookings always; the CRM and Membership for staff without the
+		// Unyson+ menu): daily work, so Workspace, not the Plugins fallback.
+		'toplevel_page_fw-bookings'  => 'workspace',
+		'toplevel_page_fw-crm'       => 'workspace',
+		'toplevel_page_fw-membership' => 'workspace',
 		'menu-posts'                 => 'workspace',
 		'menu-pages'                 => 'workspace',
 		'menu-media'                 => 'workspace',
@@ -64,11 +69,13 @@ function fw_ext_admin_skin_menu_groups() {
 		'toplevel_page_ai1wm_export' => 'tools',
 		'toplevel_page_backwpup'     => 'tools',
 		'toplevel_page_duplicator'   => 'tools',
+		'toplevel_page_fw-visitor-insights' => 'tools', // Unyson+ Visitor Insights, a top-level analytics app
 		'toplevel_page_koko-analytics' => 'tools',
 		'toplevel_page_wps_overview_page' => 'tools',
 		'toplevel_page_googlesitekit-dashboard' => 'tools',
 		'toplevel_page_wpseo_dashboard' => 'tools',
 		'toplevel_page_rank-math'    => 'tools',
+		'toplevel_page_fw-seo-settings' => 'tools', // Unyson+ SEO, now a top-level app (beside Yoast / Rank Math)
 
 		// Manage: site-level configuration.
 		'toplevel_page_fw-extensions' => 'manage',
