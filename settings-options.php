@@ -6,6 +6,11 @@
 $ext     = fw_ext( 'admin-skin' );
 $choices = $ext ? $ext->registry()->choices() : [ 'default' => 'Default' ];
 
+$bg_presets = [];
+foreach ( FW_Extension_Admin_Skin::bg_presets() as $slug => $preset ) {
+	$bg_presets[ $slug ] = $preset['label'];
+}
+
 $options = [
 	'skin_box' => [
 		'title'   => __( 'Skin', 'fw' ),
@@ -51,6 +56,115 @@ $options = [
 					'allow_user_prefs' => [
 						'label' => __( 'Let users choose', 'fw' ),
 						'desc'  => __( 'Each user may pick light / dark / system, their own accent, or switch back to the classic wp-admin from the top bar and their profile.', 'fw' ),
+						'type'  => 'switch',
+						'value' => true,
+					],
+				],
+			],
+		],
+	],
+	'background_box' => [
+		'title'   => __( 'Background', 'fw' ),
+		'type'    => 'box',
+		'options' => [
+			'group_background' => [
+				'type'    => 'group',
+				'options' => [
+					'bg_desc' => [
+						'type'  => 'html-fixed',
+						'label' => '',
+						'html'  => '<p style="margin:0 0 .4em">' . esc_html__( 'The surface the skin sits on. This is not part of the skin, so every skin that accepts one can use it &mdash; and changing the skin keeps your background. Skins that are opaque by design (Console, Classic) ignore it.', 'fw' ) . '</p>',
+					],
+					/*
+					 * One picker, not four always-visible rows. A background is a choice
+					 * BETWEEN a preset, a colour and an image -- they are alternatives and
+					 * never combined -- so listing all three at once asked the reader to
+					 * work out which of them the 'Background' select was actually going to
+					 * use. The multi-picker reveals only the chosen one.
+					 *
+					 * Inline picker (a plain select, no popover), so per the option-type
+					 * contract label/desc live on the PICKER sub-option and the top level
+					 * carries label:false.
+					 *
+					 * NOTE this changes the stored shape to
+					 * { type: <choice>, <choice>: { ...revealed... } }, and only the
+					 * selected branch is kept. bg_choice() in the extension class reads
+					 * it and still understands the flat bg_type / bg_preset / bg_color /
+					 * bg_image saved before 1.1.67, so an existing background survives
+					 * the upgrade untouched.
+					 */
+					'bg' => [
+						'type'  => 'multi-picker',
+						'label' => false,
+						'desc'  => false,
+						'value' => [ 'type' => 'none' ],
+						'show_borders' => false,
+						'picker' => [
+							'type' => [
+								'label'   => __( 'Background', 'fw' ),
+								'desc'    => __( 'A gradient preset needs nothing uploaded, weighs nothing, and has no detail to compete with text &mdash; it is the safest choice. An image is the most striking and the most risky: see the scrim below.', 'fw' ),
+								'type'    => 'select',
+								'choices' => [
+									'none'   => __( 'None — the skin\'s own flat colour', 'fw' ),
+									'preset' => __( 'Gradient preset', 'fw' ),
+									'color'  => __( 'A colour of my own', 'fw' ),
+									'image'  => __( 'An image', 'fw' ),
+								],
+								'value'   => 'none',
+							],
+						],
+						'choices' => [
+							/* 'none' reveals nothing, so it carries no entry at all. */
+							'preset' => [
+								'preset' => [
+									'label'   => __( 'Preset', 'fw' ),
+									'type'    => 'select',
+									'choices' => $bg_presets,
+									'value'   => 'mesh',
+								],
+							],
+							'color' => [
+								'color' => [
+									'label' => __( 'Colour', 'fw' ),
+									'desc'  => __( 'The flat colour the admin sits on.', 'fw' ),
+									'type'  => 'color-picker',
+									'value' => '',
+								],
+							],
+							'image' => [
+								'image' => [
+									'label' => __( 'Image', 'fw' ),
+									'desc'  => __( 'Shown full-bleed and held still while the page scrolls. Pick something calm and low-contrast: this sits behind screens people read all day, and a busy photograph is the one thing that can make an admin genuinely hard to use. Raise the scrim until the text below is comfortable.', 'fw' ),
+									'type'  => 'upload',
+									'images_only' => true,
+									'value' => '',
+								],
+								'behind' => [
+									'label' => __( 'Colour behind it', 'fw' ),
+									'desc'  => __( 'Shown while the image loads, and anywhere the image does not reach. Something close to the image\'s overall tone keeps the page from flashing a different colour on the way in.', 'fw' ),
+									'type'  => 'color-picker',
+									'value' => '',
+								],
+							],
+						],
+					],
+					'bg_scrim' => [
+						'label' => __( 'Scrim', 'fw' ),
+						'desc'  => __( 'A veil laid over the background to keep text readable &mdash; light in light mode, dark in dark mode. This is the guard rail: at 0 the background comes through at full strength, which almost no photograph survives. Raise it until the quietest text on screen is comfortable.', 'fw' ),
+						'type'  => 'slider',
+						'value' => 34,
+						'properties' => [ 'min' => 0, 'max' => 80, 'step' => 1, 'postfix' => '%' ],
+					],
+					'bg_blur' => [
+						'label' => __( 'Glass blur', 'fw' ),
+						'desc'  => __( 'How far a frosted skin blurs what is behind it. Only skins that frost their panels use this &mdash; Glass does. Blur is drawn by the graphics card on every scroll, so lower it if the admin feels heavy on an older machine; 0 leaves the panels simply translucent.', 'fw' ),
+						'type'  => 'slider',
+						'value' => 18,
+						'properties' => [ 'min' => 0, 'max' => 40, 'step' => 1, 'postfix' => 'px' ],
+					],
+					'allow_user_bg' => [
+						'label' => __( 'Let users turn it off', 'fw' ),
+						'desc'  => __( 'Adds a Plain background switch to each person\'s Appearance menu. Someone who finds a background distracting can drop back to the skin\'s flat colour without changing what anyone else sees.', 'fw' ),
 						'type'  => 'switch',
 						'value' => true,
 					],

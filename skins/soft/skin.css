@@ -1,0 +1,118 @@
+/**
+ * Soft — structure.
+ *
+ * Borderless cards on a warm ground, pill controls, and a sidebar that floats
+ * clear of the edge. The absence of borders is the identity here: separation
+ * comes from the lift of a card against the paper, so a stray 1px line reads
+ * as a mistake.
+ */
+
+/* --------------------------------------------------------------------------
+   1. The floating rail
+
+   The card is #adminmenuwrap — it holds the brand block, the search field,
+   the menu and the account row together, so rounding #adminmenu alone would
+   strand the search and account rows outside it. Fixed positioning means it
+   floats on its insets, not on a margin.
+   -------------------------------------------------------------------------- */
+
+body.upa.upa-skin-soft #adminmenuback {
+	background: transparent;
+	border-right: 0;
+}
+
+body.upa.upa-skin-soft #adminmenuwrap {
+	top: 12px !important;
+	bottom: 12px;
+	left: 12px;
+	border: 0;
+	border-radius: var(--upa-radius-lg);
+	background: var(--upa-panel);
+	box-shadow: var(--upa-shadow-sm);
+}
+
+body.upa.upa-skin-soft #adminmenu,
+body.upa.upa-skin-soft .upa-brand,
+body.upa.upa-skin-soft .upa-user {
+	background: transparent;
+}
+
+body.upa.upa-skin-soft #adminmenu {
+	padding: 4px 10px 12px;
+}
+
+body.upa.upa-skin-soft.folded #adminmenuwrap {
+	top: 8px !important;
+	bottom: 8px;
+	left: 6px;
+	border-radius: var(--upa-radius);
+}
+
+body.upa.upa-skin-soft.folded #adminmenu {
+	padding: 6px 2px 12px;
+}
+
+body.upa.upa-skin-soft #wpadminbar {
+	background: transparent;
+	border-bottom: 0;
+	box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   2. Borderless cards
+   -------------------------------------------------------------------------- */
+
+body.upa.upa-skin-soft .postbox,
+body.upa.upa-skin-soft .card,
+body.upa.upa-skin-soft .fw-backend-postbox,
+body.upa.upa-skin-soft .wp-list-table,
+body.upa.upa-skin-soft .widefat,
+body.upa.upa-skin-soft .upa-screen-meta {
+	border-color: transparent;
+	box-shadow: var(--upa-shadow-sm);
+}
+
+/* A table head with no card border needs its own rule to sit under. */
+body.upa.upa-skin-soft .wp-list-table thead th,
+body.upa.upa-skin-soft .widefat thead th {
+	background: transparent;
+	border-bottom: 1px solid var(--upa-border);
+}
+
+/* --------------------------------------------------------------------------
+   3. Pills
+   -------------------------------------------------------------------------- */
+
+body.upa.upa-skin-soft .button,
+body.upa.upa-skin-soft .button-primary,
+body.upa.upa-skin-soft .button-secondary,
+body.upa.upa-skin-soft input[type="text"],
+body.upa.upa-skin-soft input[type="search"],
+body.upa.upa-skin-soft input[type="email"],
+body.upa.upa-skin-soft input[type="url"],
+body.upa.upa-skin-soft select,
+body.upa.upa-skin-soft .upa-search input {
+	border-radius: var(--upa-radius-pill);
+}
+
+body.upa.upa-skin-soft #adminmenu a.menu-top,
+body.upa.upa-skin-soft #adminmenu .wp-submenu a {
+	border-radius: var(--upa-radius-pill);
+}
+
+/* A textarea stays rectangular — a pill-shaped multi-line field is silly. */
+body.upa.upa-skin-soft textarea {
+	border-radius: var(--upa-radius);
+}
+
+@media screen and (max-width: 782px) {
+	body.upa.upa-skin-soft #adminmenuwrap {
+		top: 0 !important;
+		bottom: 0;
+		left: 0;
+		border-radius: 0;
+	}
+	body.upa.upa-skin-soft #adminmenu {
+		padding: 0;
+	}
+}

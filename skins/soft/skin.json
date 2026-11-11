@@ -1,0 +1,33 @@
+{
+  "slug": "soft",
+  "title": "Soft",
+  "version": "1.0.0",
+  "author": "UnysonPlus",
+  "base": "default",
+  "canvas": "optional",
+  "description": "The light product dashboard: a warm paper ground, borderless cards with a soft lift, pill-shaped controls and a roomy sidebar that floats clear of the edge.",
+  "shape": { "radius-sm": "10px", "radius": "14px", "radius-lg": "20px", "radius-pill": "999px" },
+  "density": { "font-size": "13.5px", "line-height": "1.55", "control-h": "38px", "row-h": "54px", "sidebar-w": "244px", "bar-h": "60px", "tracking": "-0.005em" },
+  "tokens": {
+    "light": {
+      "bg": "#f3f0ea", "bg2": "#ffffff", "panel": "#ffffff", "panel2": "#f7f4ee", "hover": "#efe9df",
+      "border": "#e8e1d5", "border2": "#dcd3c3",
+      "text": "#231f1a", "text2": "#6b645a", "text3": "#938b7e",
+      "accent": "#d14f2e", "accent2": "#e4704f", "accent-fg": "#ffffff",
+      "green": "#2f8f63", "amber": "#9a6c12", "red": "#c8453a", "blue": "#2f6ad9", "pink": "#b8407e",
+      "shadow": "0 18px 40px rgba(60,46,30,0.12)", "shadow-sm": "0 3px 12px rgba(60,46,30,0.07)"
+    },
+    "dark": {
+      "bg": "#17150f", "bg2": "#1f1c15", "panel": "#231f18", "panel2": "#2a251d", "hover": "#332d23",
+      "border": "#342e24", "border2": "#453d30",
+      "text": "#f2ece1", "text2": "#b3a994", "text3": "#8e8574",
+      "accent": "#f0795a", "accent2": "#f79c83", "accent-fg": "#20100a",
+      "green": "#62c795", "amber": "#e8b65c", "red": "#ef8077", "blue": "#7fa9ea", "pink": "#e58cba",
+      "shadow": "0 18px 44px rgba(0,0,0,0.55)", "shadow-sm": "0 3px 14px rgba(0,0,0,0.35)"
+    }
+  },
+  "wp_color_scheme": {
+    "light": ["#f3f0ea", "#ffffff", "#d14f2e", "#e4704f"],
+    "dark": ["#17150f", "#231f18", "#f0795a", "#f79c83"]
+  }
+}

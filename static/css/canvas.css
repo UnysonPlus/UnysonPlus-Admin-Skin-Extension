@@ -1,0 +1,66 @@
+/**
+ * The background canvas.
+ *
+ * A background is NOT part of a skin: it is the surface a skin sits on, set
+ * per site (and switchable off per user). Keeping it separate is what lets
+ * one skin look like several things and lets every skin use the feature,
+ * rather than baking a photograph into one of them.
+ *
+ * The tokens are emitted inline by the extension, so everything here is
+ * plumbing:
+ *
+ *   --upa-canvas-image  a gradient or url(), already built server-side
+ *   --upa-canvas-solid  the flat colour behind it, and the whole background
+ *                       when no image is set
+ *   --upa-canvas-veil   the scrim, as a finished rgba() — mode-aware, so a
+ *                       light admin gets a light veil and a dark one a dark
+ *   --upa-canvas-blur   the glass blur radius a skin may read
+ *   --upa-canvas-ink    the scrim's base colour, for skins that need to mix
+ *                       their own opaque surfaces against it
+ *
+ * Painting happens on <html>, not on body: it is the only element that
+ * reliably covers the full viewport including the strip behind the fixed
+ * admin bar, and background-attachment:fixed on the root resolves against
+ * the viewport, so the canvas holds still while the page scrolls.
+ */
+
+html.wp-toolbar.upa-canvas {
+	background-color: var(--upa-canvas-solid, var(--upa-bg));
+	background-image:
+		linear-gradient(var(--upa-canvas-veil, transparent), var(--upa-canvas-veil, transparent)),
+		var(--upa-canvas-image, none);
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: cover;
+	background-attachment: fixed;
+}
+
+/*
+ * Everything that would paint over the canvas has to stand down. These are
+ * the skin's own full-height surfaces; core's are handled by the skin layers
+ * already, since they all read --upa-bg.
+ */
+html.upa-canvas body.upa,
+html.upa-canvas body.upa #wpwrap,
+html.upa-canvas body.upa #wpcontent,
+html.upa-canvas body.upa #wpbody,
+html.upa-canvas body.upa #wpfooter {
+	background: transparent;
+}
+
+/*
+ * A canvas is decoration, and decoration must not cost legibility. Any skin
+ * that does not opt in keeps solid panels, so the canvas only ever shows in
+ * the gaps around them -- which is why `upa-has-canvas` is set on the BODY
+ * separately from `upa-canvas` on the html: the first says "a canvas is
+ * configured", and a skin reads it to decide whether to go translucent.
+ */
+
+/*
+ * Printing a photograph behind an admin screen wastes ink and helps nobody.
+ */
+@media print {
+	html.wp-toolbar.upa-canvas {
+		background: #fff;
+	}
+}

@@ -1,0 +1,34 @@
+{
+  "slug": "console",
+  "title": "Console",
+  "version": "1.0.0",
+  "author": "UnysonPlus",
+  "base": "default",
+  "canvas": false,
+  "description": "A dense, instrument-panel admin: small type, square corners, monospace figures, ruled tables and a green signal colour. Built for people who live in list tables.",
+  "shape": { "radius-sm": "2px", "radius": "2px", "radius-lg": "3px", "radius-pill": "3px" },
+  "density": { "font-size": "12.5px", "line-height": "1.4", "control-h": "28px", "row-h": "34px", "sidebar-w": "212px", "bar-h": "40px", "tracking": "0" },
+  "density_compact": { "font-size": "12px", "line-height": "1.35", "control-h": "26px", "row-h": "30px", "sidebar-w": "188px", "bar-h": "36px" },
+  "tokens": {
+    "light": {
+      "bg": "#eef0f2", "bg2": "#ffffff", "panel": "#ffffff", "panel2": "#f3f5f7", "hover": "#e7eaee",
+      "border": "#d7dce2", "border2": "#c2c9d2",
+      "text": "#14171c", "text2": "#4d5663", "text3": "#6b7482",
+      "accent": "#0f7a43", "accent2": "#13a15a", "accent-fg": "#ffffff",
+      "green": "#0f7a43", "amber": "#9a6b00", "red": "#c0352f", "blue": "#1d5fb5", "pink": "#a8357f",
+      "shadow": "0 6px 18px rgba(15,20,30,0.10)", "shadow-sm": "0 1px 0 rgba(15,20,30,0.06)"
+    },
+    "dark": {
+      "bg": "#10131a", "bg2": "#151922", "panel": "#151922", "panel2": "#1b202b", "hover": "#222838",
+      "border": "#262c3a", "border2": "#333b4d",
+      "text": "#dfe4ee", "text2": "#98a1b4", "text3": "#6e7789",
+      "accent": "#4ade80", "accent2": "#86efac", "accent-fg": "#06130b",
+      "green": "#4ade80", "amber": "#fbbf24", "red": "#f87171", "blue": "#60a5fa", "pink": "#f0abfc",
+      "shadow": "0 8px 24px rgba(0,0,0,0.6)", "shadow-sm": "0 1px 0 rgba(0,0,0,0.4)"
+    }
+  },
+  "wp_color_scheme": {
+    "light": ["#eef0f2", "#ffffff", "#0f7a43", "#13a15a"],
+    "dark": ["#10131a", "#151922", "#4ade80", "#86efac"]
+  }
+}

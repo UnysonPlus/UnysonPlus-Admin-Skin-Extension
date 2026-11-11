@@ -1,0 +1,63 @@
+/**
+ * Console — structure.
+ *
+ * The tokens do the colour and the density; this file does the two things a
+ * token cannot say: make the tables ruled rather than striped, and put the
+ * figures in the mono face so columns of numbers line up.
+ */
+
+/* Ruled cells. A dense table reads as a grid, not as a list of rows. */
+body.upa.upa-skin-console .wp-list-table td + td,
+body.upa.upa-skin-console .wp-list-table th + th,
+body.upa.upa-skin-console .widefat td + td,
+body.upa.upa-skin-console .widefat th + th {
+	border-left: 1px solid var(--upa-border);
+}
+
+body.upa.upa-skin-console .wp-list-table tbody tr:hover > * {
+	background: var(--upa-hover);
+}
+
+/* Column headers earn their keep at this size by being small and spaced. */
+body.upa.upa-skin-console .wp-list-table thead th,
+body.upa.upa-skin-console .widefat thead th {
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: .1em;
+	text-transform: uppercase;
+}
+
+/* Monospace figures: counts, dates, slugs, IDs, versions, file sizes. */
+body.upa.upa-skin-console .wp-list-table .column-date,
+body.upa.upa-skin-console .wp-list-table .column-id,
+body.upa.upa-skin-console .wp-list-table .column-posts,
+body.upa.upa-skin-console .wp-list-table .column-slug,
+body.upa.upa-skin-console .wp-list-table .column-filesize,
+body.upa.upa-skin-console .row-actions,
+body.upa.upa-skin-console .displaying-num,
+body.upa.upa-skin-console .tablenav-paging-text,
+body.upa.upa-skin-console code,
+body.upa.upa-skin-console .code {
+	font-family: var(--upa-font-mono);
+	font-size: .92em;
+}
+
+/* Count bubbles square off with everything else. */
+body.upa.upa-skin-console #adminmenu .awaiting-mod,
+body.upa.upa-skin-console #adminmenu .update-plugins,
+body.upa.upa-skin-console .subsubsub .count {
+	border-radius: 2px;
+	font-family: var(--upa-font-mono);
+}
+
+/* Tight rows mean the nav can be tight too. */
+body.upa.upa-skin-console #adminmenu a.menu-top,
+body.upa.upa-skin-console #adminmenu .wp-submenu a {
+	border-radius: 2px;
+}
+
+body.upa.upa-skin-console .wrap > h1,
+body.upa.upa-skin-console .wrap > h1.wp-heading-inline {
+	font-size: 18px;
+	letter-spacing: 0;
+}

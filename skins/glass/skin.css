@@ -1,0 +1,204 @@
+/**
+ * Glass — structure.
+ *
+ * The translucency itself needs no CSS: the skin's --upa-panel / --upa-bg2
+ * tokens are rgba(), so every surface the primitives already paint with them
+ * goes see-through on its own. What this file adds is the part a token cannot
+ * carry — the blur, the floating chrome, and the readability rules that keep
+ * the whole thing usable over an arbitrary photograph.
+ *
+ * The readability rule, stated once because everything below follows from it:
+ * THE SURFACE YOU READ ON IS MORE OPAQUE THAN THE SURFACE YOU NAVIGATE ON.
+ * Chrome can be glassy. A list table, an editor, a form you are typing into
+ * cannot — text over a busy background is where every glass UI falls down.
+ */
+
+/* --------------------------------------------------------------------------
+   1. The floating sidebar
+
+   The card is #adminmenuwrap, NOT #adminmenu. The wrap is what holds the
+   brand block, the search field, the menu and the account row; rounding the
+   menu alone leaves the search box and the account row hanging outside the
+   card, which is exactly how it looked the first time. The wrap is
+   position:fixed with top/bottom/left pinned, so it floats by moving those
+   insets — a margin on a full-height fixed element just overflows.
+   -------------------------------------------------------------------------- */
+
+body.upa.upa-skin-glass #adminmenuback {
+	background: transparent;
+	border-right: 0;
+}
+
+body.upa.upa-skin-glass #adminmenuwrap {
+	top: 12px !important;
+	bottom: 12px;
+	left: 12px;
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius-lg);
+	background: var(--upa-bg2);
+	box-shadow: var(--upa-shadow);
+	backdrop-filter: blur(var(--upa-canvas-blur, 18px)) saturate(140%);
+	-webkit-backdrop-filter: blur(var(--upa-canvas-blur, 18px)) saturate(140%);
+}
+
+/* The menu inside the card carries no card of its own, and the brand and
+   account rows lose the edge-to-edge fills that only made sense against a
+   full-height rail. */
+body.upa.upa-skin-glass #adminmenu,
+body.upa.upa-skin-glass .upa-brand,
+body.upa.upa-skin-glass .upa-user {
+	background: transparent;
+}
+
+/* Folded, the rail is only 48px wide — a 12px inset would eat a quarter of
+   it, so the float tightens rather than disappearing. */
+body.upa.upa-skin-glass.folded #adminmenuwrap {
+	top: 8px !important;
+	bottom: 8px;
+	left: 6px;
+	border-radius: var(--upa-radius);
+}
+
+/* A flyout leaves the blurred rail, so it carries its own glass. */
+body.upa.upa-skin-glass #adminmenu .wp-submenu {
+	background: var(--upa-bg2);
+	backdrop-filter: blur(var(--upa-canvas-blur, 18px)) saturate(140%);
+	-webkit-backdrop-filter: blur(var(--upa-canvas-blur, 18px)) saturate(140%);
+}
+
+/* --------------------------------------------------------------------------
+   2. The top bar
+
+   Full-bleed, not floating. #wpadminbar is position:fixed across the whole
+   viewport and the sidebar card overlaps its left end, so insetting it would
+   fight both, and a radius on it renders off-screen anyway. Frosted edge to
+   edge reads as deliberate; a half-rounded bar reads as a bug.
+   -------------------------------------------------------------------------- */
+
+body.upa.upa-skin-glass #wpadminbar {
+	background: var(--upa-bg2);
+	border-bottom: 1px solid var(--upa-border);
+	box-shadow: var(--upa-shadow-sm);
+	backdrop-filter: blur(var(--upa-canvas-blur, 18px)) saturate(140%);
+	-webkit-backdrop-filter: blur(var(--upa-canvas-blur, 18px)) saturate(140%);
+}
+
+/* --------------------------------------------------------------------------
+   3. Panels — glassy, but not where you read
+   -------------------------------------------------------------------------- */
+
+body.upa.upa-skin-glass .postbox,
+body.upa.upa-skin-glass .card,
+body.upa.upa-skin-glass .fw-backend-postbox,
+body.upa.upa-skin-glass .upa-screen-meta,
+body.upa.upa-skin-glass .wp-list-table,
+body.upa.upa-skin-glass .widefat {
+	backdrop-filter: blur(var(--upa-canvas-blur, 18px)) saturate(140%);
+	-webkit-backdrop-filter: blur(var(--upa-canvas-blur, 18px)) saturate(140%);
+	box-shadow: var(--upa-shadow);
+}
+
+/*
+ * Reading surfaces get a near-solid backing instead of the token's rgba.
+ * --upa-canvas-ink is emitted by the extension: it is the scrim's own base
+ * colour, so this tracks a light or a dark background without a second rule.
+ */
+body.upa.upa-skin-glass .wp-list-table,
+body.upa.upa-skin-glass .widefat,
+body.upa.upa-skin-glass .postbox,
+body.upa.upa-skin-glass .fw-backend-postbox,
+body.upa.upa-skin-glass #postdivrich,
+body.upa.upa-skin-glass .fw-option-type-builder {
+	background: color-mix(in srgb, var(--upa-canvas-ink, #05070f) 62%, transparent);
+}
+
+/* Form fields: near-solid. Typing into a translucent box is miserable. */
+body.upa.upa-skin-glass input[type="text"],
+body.upa.upa-skin-glass input[type="search"],
+body.upa.upa-skin-glass input[type="email"],
+body.upa.upa-skin-glass input[type="url"],
+body.upa.upa-skin-glass input[type="password"],
+body.upa.upa-skin-glass input[type="number"],
+body.upa.upa-skin-glass textarea,
+body.upa.upa-skin-glass select {
+	background: color-mix(in srgb, var(--upa-canvas-ink, #05070f) 70%, transparent);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+
+/* --------------------------------------------------------------------------
+   4. Fallbacks — the part that decides whether this ships
+   -------------------------------------------------------------------------- */
+
+/*
+ * No canvas chosen. Glass over a flat colour has nothing to blur, so rather
+ * than render a washed-out admin it falls back to solid panels. The skin is
+ * still itself — the radii, the floating rail and the spacing all survive.
+ */
+body.upa.upa-skin-glass:not(.upa-has-canvas) #adminmenuwrap,
+body.upa.upa-skin-glass:not(.upa-has-canvas) #wpadminbar,
+body.upa.upa-skin-glass:not(.upa-has-canvas) .postbox,
+body.upa.upa-skin-glass:not(.upa-has-canvas) .card,
+body.upa.upa-skin-glass:not(.upa-has-canvas) .fw-backend-postbox,
+body.upa.upa-skin-glass:not(.upa-has-canvas) .upa-screen-meta,
+body.upa.upa-skin-glass:not(.upa-has-canvas) .wp-list-table,
+body.upa.upa-skin-glass:not(.upa-has-canvas) .widefat,
+body.upa.upa-skin-glass:not(.upa-has-canvas) input,
+body.upa.upa-skin-glass:not(.upa-has-canvas) textarea,
+body.upa.upa-skin-glass:not(.upa-has-canvas) select {
+	background: var(--upa-canvas-solid, var(--upa-panel2));
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+}
+
+/*
+ * Reduced transparency is an accessibility setting, not a taste: someone has
+ * told their operating system that layered translucency makes things hard to
+ * read. Honour it literally — solid panels, no blur.
+ */
+@media (prefers-reduced-transparency: reduce) {
+	body.upa.upa-skin-glass #adminmenuwrap,
+	body.upa.upa-skin-glass #wpadminbar,
+	body.upa.upa-skin-glass .postbox,
+	body.upa.upa-skin-glass .card,
+	body.upa.upa-skin-glass .fw-backend-postbox,
+	body.upa.upa-skin-glass .upa-screen-meta,
+	body.upa.upa-skin-glass .wp-list-table,
+	body.upa.upa-skin-glass .widefat,
+	body.upa.upa-skin-glass input,
+	body.upa.upa-skin-glass textarea,
+	body.upa.upa-skin-glass select {
+		background: var(--upa-canvas-solid, var(--upa-panel2));
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+	}
+}
+
+/*
+ * No backdrop-filter at all (older Firefox with the pref off, some embedded
+ * browsers). Without this the panels are merely transparent and the admin is
+ * unreadable, so the same solid fallback applies.
+ */
+@supports not (backdrop-filter: blur(1px)) {
+	body.upa.upa-skin-glass #adminmenuwrap,
+	body.upa.upa-skin-glass #wpadminbar,
+	body.upa.upa-skin-glass .postbox,
+	body.upa.upa-skin-glass .card,
+	body.upa.upa-skin-glass .fw-backend-postbox,
+	body.upa.upa-skin-glass .upa-screen-meta,
+	body.upa.upa-skin-glass .wp-list-table,
+	body.upa.upa-skin-glass .widefat {
+		background: var(--upa-canvas-solid, var(--upa-panel2));
+	}
+}
+
+/* Phones: the rail becomes a full-height overlay, so it stops floating. */
+@media screen and (max-width: 782px) {
+	body.upa.upa-skin-glass #adminmenuwrap {
+		top: 0 !important;
+		bottom: 0;
+		left: 0;
+		border: 0;
+		border-radius: 0;
+	}
+}

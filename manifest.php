@@ -13,7 +13,7 @@ $manifest['description'] = __(
 
 $manifest['thumbnail']   = 'thumbnail.svg';
 
-$manifest['version']     = '1.1.63';
+$manifest['version']     = '1.1.67';
 $manifest['display']     = true;
 $manifest['standalone']  = true;
 
@@ -35,6 +35,49 @@ $manifest['requires_wp']  = '6.0';
 /**
  * Changelog
  * -----------------------------------------------------------------------------
+ * 1.1.67 - The Background setting is one picker, and its stored shape changed.
+ *         A preset, a colour and an image are alternatives, never combined, but
+ *         the screen listed all three permanently: a site reading
+ *         "Background: None" still saw a preset, a colour swatch and an image
+ *         frame, with nothing to say which was in effect. It is now a single
+ *         multi-picker that reveals only the chosen branch, and the image
+ *         choice carries its own "Colour behind it" (what shows while the image
+ *         loads) rather than borrowing the standalone colour field.
+ *
+ *         That moves the value from four flat keys to the multi-picker's own
+ *         nested shape, { type: 'image', image: { image, behind } }, with only
+ *         the selected branch stored. Nothing is migrated: bg_choice() reads
+ *         both, so a background saved before this version keeps working until
+ *         the screen is saved once, after which the old keys are gone. Note the
+ *         new shape cannot be detected by asking whether `bg` is SET --
+ *         fw_get_db_ext_settings_option() merges the option defaults into what
+ *         it returns, so `bg` is always present; the reader decides by meaning
+ *         instead, and only a background that names nothing falls back.
+ *
+ * 1.1.64 - Three new skins, and a background the skin sits on. Until now a
+ *         skin could only recolour the admin: every structural rule lived in
+ *         the extension's own stylesheets, so a "new skin" was a new palette.
+ *         Skins may now ship a skin.css, loaded genuinely last (it previously
+ *         depended on primitives.css alone, which let surfaces.css and the
+ *         plugin partials win and a structural skin silently half-apply), and
+ *         four use it: Console, dense and square with ruled tables and
+ *         monospace figures; Aurora, a dark dashboard with a detached sidebar
+ *         and the content on its own inset canvas; Soft, a warm light product
+ *         admin with borderless cards and pill controls; and Glass, frosted
+ *         chrome over a background.
+ *
+ *         The background is a separate layer, not a skin token, so every skin
+ *         that accepts one can use it and changing skin keeps it. It is set
+ *         under Background: a gradient preset, a flat colour or an uploaded
+ *         image, with a scrim that veils it (light in light mode, dark in
+ *         dark) and a blur radius frosted skins read. A skin.json may declare
+ *         "canvas": false to refuse one -- Console and Classic do, being
+ *         opaque by design. Glass degrades to solid panels when no background
+ *         is set, under prefers-reduced-transparency, and where
+ *         backdrop-filter is unsupported. Each person can switch a background
+ *         off for themselves from the Appearance menu without changing what
+ *         anyone else sees.
+ *
  * 1.1.50 - One Admin Skin screen instead of two, and a menu you cannot hide
  *         yourself behind. The settings lived three clicks deep in the
  *         Extensions manager while the menu editor was its own submenu entry,

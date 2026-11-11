@@ -1399,6 +1399,11 @@ body.upa #wpadminbar #wp-admin-bar-user-info .username {
 	grid-template-columns: repeat(2, 1fr);
 }
 
+/* The background opt-out is a single switch, so it takes the whole row. */
+.upa-seg.upa-seg-bg {
+	grid-template-columns: 1fr;
+}
+
 .upa-seg button {
 	appearance: none;
 	border: 0;
@@ -1511,6 +1516,15 @@ body.upa #wpbody-content {
 	max-width: none;
 	margin: 0;
 	float: none;
+	/* Core ships `#wpbody-content { float: left; width: 100% }` -- the width is
+	 * there only to make the float fill its line. We drop the float just above,
+	 * so the width has to go with it: left at 100% it resolves against the FULL
+	 * containing block, and any margin a skin adds is then laid OUTSIDE that
+	 * width instead of being absorbed by it, pushing the box past the viewport.
+	 * Aurora's `margin: 0 10px` did exactly that and put a horizontal scrollbar
+	 * on every screen. `auto` is identical while margins are 0, so this is a
+	 * no-op for the skins that take none. */
+	width: auto;
 	/* A block formatting context, so the Screen Options card's 28px top margin
 	 * stays INSIDE this box instead of collapsing out through it and moving
 	 * #wpbody itself 28px down the moment the card opens. The Screen Options

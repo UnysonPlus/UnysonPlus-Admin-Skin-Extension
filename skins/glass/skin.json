@@ -1,0 +1,36 @@
+{
+  "slug": "glass",
+  "title": "Glass",
+  "version": "1.0.0",
+  "author": "UnysonPlus",
+  "base": "default",
+  "canvas": "required",
+  "canvas_default": "mesh",
+  "description": "Frosted chrome over a background of your choosing: a floating sidebar, a detached top bar and panels that blur whatever is behind them. Needs a background image or gradient to be itself — pick one under Background.",
+  "shape": { "radius-sm": "10px", "radius": "14px", "radius-lg": "22px", "radius-pill": "999px" },
+  "density": { "font-size": "13.5px", "line-height": "1.5", "control-h": "36px", "row-h": "50px", "sidebar-w": "240px", "bar-h": "56px", "tracking": "-0.005em" },
+  "tokens": {
+    "light": {
+      "bg": "#e8eaf2", "bg2": "rgba(255,255,255,0.46)",
+      "panel": "rgba(255,255,255,0.58)", "panel2": "rgba(255,255,255,0.40)", "hover": "rgba(255,255,255,0.72)",
+      "border": "rgba(255,255,255,0.62)", "border2": "rgba(255,255,255,0.85)",
+      "text": "#14161f", "text2": "#3f4453", "text3": "#5b6070",
+      "accent": "#1f6feb", "accent2": "#4a8df2", "accent-fg": "#ffffff",
+      "green": "#0f7a4c", "amber": "#8a6200", "red": "#b3302e", "blue": "#1f6feb", "pink": "#a8357f",
+      "shadow": "0 24px 60px rgba(20,24,45,0.22)", "shadow-sm": "0 6px 20px rgba(20,24,45,0.12)"
+    },
+    "dark": {
+      "bg": "#0d1222", "bg2": "rgba(255,255,255,0.07)",
+      "panel": "rgba(255,255,255,0.09)", "panel2": "rgba(255,255,255,0.06)", "hover": "rgba(255,255,255,0.16)",
+      "border": "rgba(255,255,255,0.18)", "border2": "rgba(255,255,255,0.30)",
+      "text": "#f4f6ff", "text2": "#c6cce0", "text3": "#99a1bb",
+      "accent": "#7dd3fc", "accent2": "#a5e4ff", "accent-fg": "#06121f",
+      "green": "#6ee7a8", "amber": "#fcd34d", "red": "#fda4af", "blue": "#7dd3fc", "pink": "#f0abfc",
+      "shadow": "0 24px 60px rgba(0,0,0,0.42)", "shadow-sm": "0 6px 20px rgba(0,0,0,0.26)"
+    }
+  },
+  "wp_color_scheme": {
+    "light": ["#e8eaf2", "#ffffff", "#1f6feb", "#4a8df2"],
+    "dark": ["#0d1222", "#1a2030", "#7dd3fc", "#a5e4ff"]
+  }
+}

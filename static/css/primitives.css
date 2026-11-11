@@ -1031,9 +1031,30 @@ body.upa .wrap form .postbox .hndle {
 
 /* NOTE: `display` here can resurrect a button core deliberately hides (the
  * media grid's .media-frame-menu-toggle is `display:none` above 782px), so
- * every such button is excluded below. */
-body.upa .wp-core-ui .button,
-body.upa .wp-core-ui .button-secondary,
+ * every such button is excluded below.
+ *
+ * NOTE: `body.upa.wp-core-ui` is a COMPOUND selector, not a descendant one.
+ * WordPress puts `wp-core-ui` on <body> itself (wp-admin/admin-header.php),
+ * the same element that carries `upa` -- so `body.upa .wp-core-ui .button`
+ * asks for a `.wp-core-ui` *inside* the body and matches nothing in wp-admin.
+ * Every rule here was written that way and was dead: disabled states, the
+ * small / large / hero sizes, button-group radii, button-link hover and the
+ * dashicons sizing had never applied, and icon-bearing buttons were left with
+ * core's 20px dashicon and line-height 1.9 inside a flex button.
+ *
+ * The compound form has identical specificity (0,3,1), so the cascade is
+ * unchanged, and it still reaches a `.button` nested anywhere in the page --
+ * the descendant `.wp-core-ui` was never doing any work.
+ *
+ * And note what `display: inline-flex` below costs: `vertical-align` is
+ * ignored on a flex item, so every `vertical-align` nudge core and the
+ * extensions use to seat a dashicon (core's `vertical-align: middle`, the CRM's
+ * `vertical-align: -3px`) silently stops working the moment the skin is on.
+ * Alignment here is `align-items: center` plus `line-height: 1` on the icon --
+ * nothing else. Those nudges are still correct for unskinned wp-admin, so they
+ * are left alone rather than removed. */
+body.upa.wp-core-ui .button,
+body.upa.wp-core-ui .button-secondary,
 body.upa .button,
 body.upa .button-secondary {
 	display: inline-flex;
@@ -1056,9 +1077,9 @@ body.upa .button-secondary {
 	transition: background-color .12s ease, border-color .12s ease, color .12s ease;
 }
 
-body.upa .wp-core-ui .button:hover,
-body.upa .wp-core-ui .button-secondary:hover,
-body.upa .wp-core-ui .button:focus,
+body.upa.wp-core-ui .button:hover,
+body.upa.wp-core-ui .button-secondary:hover,
+body.upa.wp-core-ui .button:focus,
 body.upa .button:hover,
 body.upa .button:focus {
 	background: var(--upa-hover);
@@ -1067,14 +1088,14 @@ body.upa .button:focus {
 	box-shadow: var(--upa-shadow-sm);
 }
 
-body.upa .wp-core-ui .button:focus,
+body.upa.wp-core-ui .button:focus,
 body.upa .button:focus {
 	box-shadow: 0 0 0 3px var(--upa-accent-ring);
 	outline: none;
 }
 
-body.upa .wp-core-ui .button-primary,
-body.upa .wp-core-ui .button.button-primary,
+body.upa.wp-core-ui .button-primary,
+body.upa.wp-core-ui .button.button-primary,
 body.upa .button-primary {
 	background: var(--upa-accent);
 	border-color: var(--upa-accent);
@@ -1084,9 +1105,9 @@ body.upa .button-primary {
 	box-shadow: none;
 }
 
-body.upa .wp-core-ui .button-primary:hover,
-body.upa .wp-core-ui .button-primary:focus,
-body.upa .wp-core-ui .button-primary:active,
+body.upa.wp-core-ui .button-primary:hover,
+body.upa.wp-core-ui .button-primary:focus,
+body.upa.wp-core-ui .button-primary:active,
 body.upa .button-primary:hover,
 body.upa .button-primary:focus {
 	background: var(--upa-accent2);
@@ -1094,10 +1115,10 @@ body.upa .button-primary:focus {
 	color: var(--upa-accent-fg);
 }
 
-body.upa .wp-core-ui .button-primary.disabled,
-body.upa .wp-core-ui .button-primary:disabled,
-body.upa .wp-core-ui .button-primary[disabled],
-body.upa .wp-core-ui .button-primary-disabled {
+body.upa.wp-core-ui .button-primary.disabled,
+body.upa.wp-core-ui .button-primary:disabled,
+body.upa.wp-core-ui .button-primary[disabled],
+body.upa.wp-core-ui .button-primary-disabled {
 	background: var(--upa-accent) !important;
 	border-color: var(--upa-accent) !important;
 	color: var(--upa-accent-fg) !important;
@@ -1105,16 +1126,16 @@ body.upa .wp-core-ui .button-primary-disabled {
 	text-shadow: none !important;
 }
 
-body.upa .wp-core-ui .button.disabled,
-body.upa .wp-core-ui .button:disabled,
-body.upa .wp-core-ui .button[disabled] {
+body.upa.wp-core-ui .button.disabled,
+body.upa.wp-core-ui .button:disabled,
+body.upa.wp-core-ui .button[disabled] {
 	background: var(--upa-panel2) !important;
 	border-color: var(--upa-border) !important;
 	color: var(--upa-text3) !important;
 	box-shadow: none !important;
 }
 
-body.upa .wp-core-ui .button-link,
+body.upa.wp-core-ui .button-link,
 body.upa .button-link {
 	color: var(--upa-accent);
 	background: transparent;
@@ -1124,44 +1145,58 @@ body.upa .button-link {
 	padding: 0;
 }
 
-body.upa .wp-core-ui .button-link:hover {
+body.upa.wp-core-ui .button-link:hover {
 	color: var(--upa-accent2);
 }
 
-body.upa .wp-core-ui .button-link-delete,
-body.upa .wp-core-ui .button-link-delete:hover {
+body.upa.wp-core-ui .button-link-delete,
+body.upa.wp-core-ui .button-link-delete:hover {
 	color: var(--upa-red-text);
 }
 
-body.upa .wp-core-ui .button.button-small {
+body.upa.wp-core-ui .button.button-small {
 	min-height: 28px;
 	padding: 0 10px;
 	font-size: 12px;
 }
 
-body.upa .wp-core-ui .button.button-large,
-body.upa .wp-core-ui .button.button-hero {
+body.upa.wp-core-ui .button.button-large,
+body.upa.wp-core-ui .button.button-hero {
 	min-height: 42px;
 	padding: 0 20px;
 	font-size: 14px;
 }
 
-body.upa .wp-core-ui .button .dashicons {
+/* The icon in a button.
+ *
+ * `line-height: 1` is doing the real alignment work, not a vertical-align:
+ * the button is a flex container, so the 16px box is seated by
+ * `align-items: center` and the only thing that can still push the GLYPH off
+ * centre inside that box is a line-height taller than the box -- which is
+ * exactly what core's `.wp-core-ui .button .dashicons { line-height: 1.9 }`
+ * does. Overriding it is the fix; a vertical-align here would do nothing.
+ *
+ * `flex: none` keeps the icon from being squashed when a long label runs out
+ * of room, since a flex item's default `min-width: auto` will not save a
+ * fixed-width icon in a button with a max-width. */
+body.upa.wp-core-ui .button .dashicons,
+body.upa.wp-core-ui .button .dashicons-before::before {
+	flex: none;
 	font-size: 16px;
 	width: 16px;
 	height: 16px;
 	line-height: 1;
 }
 
-body.upa .wp-core-ui .button-group > .button {
+body.upa.wp-core-ui .button-group > .button {
 	border-radius: 0;
 }
 
-body.upa .wp-core-ui .button-group > .button:first-child {
+body.upa.wp-core-ui .button-group > .button:first-child {
 	border-radius: var(--upa-radius, 9px) 0 0 var(--upa-radius, 9px);
 }
 
-body.upa .wp-core-ui .button-group > .button:last-child {
+body.upa.wp-core-ui .button-group > .button:last-child {
 	border-radius: 0 var(--upa-radius, 9px) var(--upa-radius, 9px) 0;
 }
 
@@ -2946,17 +2981,17 @@ body.upa table.widefat tbody tr:last-child > *:last-child {
 
 
 /* Buttons core hides: keep them hidden. */
-body.upa .wp-core-ui .button.media-frame-menu-toggle,
+body.upa.wp-core-ui .button.media-frame-menu-toggle,
 body.upa .button.media-frame-menu-toggle,
-body.upa .wp-core-ui .button.hidden,
+body.upa.wp-core-ui .button.hidden,
 body.upa .button.hidden,
-body.upa .wp-core-ui .button[hidden],
+body.upa.wp-core-ui .button[hidden],
 body.upa .button[hidden] {
 	display: none;
 }
 
 @media screen and (max-width: 782px) {
-	body.upa .wp-core-ui .button.media-frame-menu-toggle,
+	body.upa.wp-core-ui .button.media-frame-menu-toggle,
 	body.upa .button.media-frame-menu-toggle {
 		display: inline-flex;
 	}

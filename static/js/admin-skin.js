@@ -713,6 +713,31 @@
 			dens.appendChild( b );
 		} );
 
+		/*
+		 * Plain background.
+		 *
+		 * Only offered when a canvas is actually configured and the site lets
+		 * people opt out -- a switch that turns off something you cannot see
+		 * is just a puzzle. The page reloads rather than toggling the class
+		 * live, because a skin that frosts its panels has to swap to its solid
+		 * fallback at the same moment, and that is decided server-side.
+		 */
+		var plainRow = null;
+		if ( cfg.canvas && cfg.userBg ) {
+			var plainBtn = el( 'button', {
+				type: 'button',
+				class: 'upa-toggle' + ( cfg.plainBg ? ' is-active' : '' ),
+				'aria-pressed': cfg.plainBg ? 'true' : 'false',
+				text: i18n.plainBg || 'Plain background'
+			} );
+			plainBtn.addEventListener( 'click', function () {
+				post( { plainbg: cfg.plainBg ? '0' : '1' } ).then( function () {
+					window.location.reload();
+				} );
+			} );
+			plainRow = el( 'div', { class: 'upa-seg upa-seg-bg' }, [ plainBtn ] );
+		}
+
 		var classic = el( 'a', { href: '#', text: i18n.classic || 'Use classic wp-admin' } );
 		classic.addEventListener( 'click', function ( e ) {
 			e.preventDefault();
@@ -727,6 +752,10 @@
 		pop.appendChild( swatches );
 		pop.appendChild( el( 'h4', { text: i18n.density || 'Density' } ) );
 		pop.appendChild( dens );
+		if ( plainRow ) {
+			pop.appendChild( el( 'h4', { text: i18n.background || 'Background' } ) );
+			pop.appendChild( plainRow );
+		}
 		pop.appendChild( el( 'div', { class: 'upa-appearance-foot' }, [
 			el( 'span', { text: cfg.skinTitle || '' } ),
 			classic

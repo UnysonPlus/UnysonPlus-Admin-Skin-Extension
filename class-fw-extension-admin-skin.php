@@ -317,6 +317,10 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 			'dark_canvas'      => false,
 			'hide_design'      => 'auto',
 			'hide_fonts'       => 'auto',
+			'bg'               => [ 'type' => 'none' ],
+			'bg_scrim'         => '34',
+			'bg_blur'          => '18',
+			'allow_user_bg'    => true,
 		];
 
 		$out = [];
@@ -453,6 +457,304 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 	}
 
 	/**
+	 * The bundled gradient presets.
+	 *
+	 * These exist so the common case needs no upload at all. A gradient is
+	 * also the safest default: it has no detail to compete with text, it
+	 * weighs nothing, and it scales to any screen without going soft -- which
+	 * is most of what goes wrong when someone points a background at a
+	 * photograph.
+	 *
+	 * `solid` is the flat colour a preset collapses to when the image cannot
+	 * be drawn (printing, a skin that declines the canvas).
+	 *
+	 * @return array slug => [ label, image, solid ]
+	 */
+	public static function bg_presets() {
+		$presets = [
+			'mesh'   => [
+				'label' => __( 'Mesh', 'fw' ),
+				'solid' => '#0a1030',
+				'image' => 'radial-gradient(900px 600px at 12% 8%, #6d5cf6 0%, transparent 60%),'
+					. 'radial-gradient(800px 700px at 88% 22%, #11b5c9 0%, transparent 55%),'
+					. 'radial-gradient(900px 800px at 55% 95%, #f0538f 0%, transparent 55%),'
+					. 'linear-gradient(140deg, #1b1340, #0a1030 60%, #06131f)',
+			],
+			'dusk'   => [
+				'label' => __( 'Dusk', 'fw' ),
+				'solid' => '#121a38',
+				'image' => 'radial-gradient(700px 500px at 80% 10%, #ff9a5a 0%, transparent 60%),'
+					. 'radial-gradient(900px 700px at 10% 80%, #3b2a7a 0%, transparent 60%),'
+					. 'linear-gradient(160deg, #241a4d, #121a38 55%, #0b1224)',
+			],
+			'forest' => [
+				'label' => __( 'Forest', 'fw' ),
+				'solid' => '#061a28',
+				'image' => 'radial-gradient(800px 600px at 20% 15%, #0f8a6a 0%, transparent 58%),'
+					. 'radial-gradient(700px 600px at 85% 75%, #124b7a 0%, transparent 58%),'
+					. 'linear-gradient(150deg, #06241f, #061a28 60%, #04121c)',
+			],
+			'slate'  => [
+				'label' => __( 'Slate', 'fw' ),
+				'solid' => '#171c28',
+				'image' => 'linear-gradient(160deg, #2b3242, #171c28 70%)',
+			],
+			'sand'   => [
+				'label' => __( 'Sand', 'fw' ),
+				'solid' => '#e8ddcc',
+				'image' => 'linear-gradient(160deg, #efe6d8, #e2d7c4 70%)',
+			],
+			'linen'  => [
+				'label' => __( 'Linen', 'fw' ),
+				'solid' => '#eef0f4',
+				'image' => 'radial-gradient(700px 500px at 15% 10%, #ffffff 0%, transparent 60%),'
+					. 'linear-gradient(155deg, #f4f6fa, #e4e8f0 75%)',
+			],
+		];
+
+		/** Filters the bundled background gradient presets. */
+		return apply_filters( 'fw_ext_admin_skin_bg_presets', $presets );
+	}
+
+	/**
+	 * The background the viewer actually gets, with every reason it might not
+	 * apply already resolved.
+	 *
+	 * A background is deliberately NOT part of the skin: it is the surface a
+	 * skin sits on. Keeping the two apart means one skin can look like several
+	 * things, every skin can use the feature, and a skin package stays a
+	 * design system rather than a wallpaper.
+	 *
+	 * Four things can switch it off, in this order:
+	 *   1. the site setting says none;
+	 *   2. the active skin declares `"canvas": false` (Console and Classic do
+	 *      -- they are opaque by design, and a photograph behind them only
+	 *      makes them worse);
+	 *   3. the viewer turned it off for themselves, which is the escape hatch
+	 *      for anyone who finds it distracting;
+	 *   4. the chosen type has nothing to show (an image type with no image).
+	 *
+	 * @return array {
+	 *     @type bool   $active whether a canvas should be painted at all
+	 *     @type string $image  a CSS <image> (gradient list or url()), or ''
+	 *     @type string $solid  the flat colour behind it
+	 *     @type float  $scrim  0..0.8
+	 *     @type int    $blur   px
+	 * }
+	 */
+	/**
+	 * The background choice, flattened out of whichever shape it was saved in.
+	 *
+	 * Since 1.1.67 the four separate rows are one `bg` multi-picker, which
+	 * nests: { type: 'image', image: { image: <upload>, behind: <colour> } },
+	 * and stores ONLY the selected branch. Settings written before that are
+	 * still flat -- bg_type / bg_preset / bg_color / bg_image -- so both are
+	 * read here and the rest of the class never has to know which it got.
+	 *
+	 * @return array { type, preset, color, image }
+	 */
+	private function bg_choice() {
+		$none = [ 'type' => 'none', 'preset' => 'mesh', 'color' => '', 'image' => '' ];
+		$raw  = (array) fw_get_db_ext_settings_option( $this->get_name() );
+
+		// Which shape is on disk cannot be decided by asking whether `bg` is
+		// SET: fw_get_db_ext_settings_option() merges the option definitions'
+		// defaults into what it returns, so `bg` is always there, reading
+		// { type: 'none' } even on a site whose background was saved in the old
+		// flat keys. Decide by MEANING instead -- the new shape wins whenever it
+		// actually names a background, and only a silent one defers to the
+		// legacy keys. After the settings screen is saved once the legacy keys
+		// are gone (the form submits only the options it defines), so this
+		// fallback is self-retiring.
+		$new = $this->bg_read_nested( isset( $raw['bg'] ) ? $raw['bg'] : null, $none );
+		if ( 'none' !== $new['type'] ) {
+			return $new;
+		}
+
+		$old = $this->bg_read_flat( $raw, $none );
+		return 'none' !== $old['type'] ? $old : $none;
+	}
+
+	/** The `bg` multi-picker shape: { type, <type>: { ...revealed... } }. */
+	private function bg_read_nested( $bg, $out ) {
+		if ( ! is_array( $bg ) ) {
+			return $out;
+		}
+
+		$type = isset( $bg['type'] ) && is_string( $bg['type'] ) ? $bg['type'] : 'none';
+		if ( ! in_array( $type, [ 'preset', 'color', 'image' ], true ) ) {
+			return $out;
+		}
+
+		$group       = ( isset( $bg[ $type ] ) && is_array( $bg[ $type ] ) ) ? $bg[ $type ] : [];
+		$out['type'] = $type;
+
+		if ( isset( $group['preset'] ) && is_string( $group['preset'] ) && '' !== $group['preset'] ) {
+			$out['preset'] = $group['preset'];
+		}
+		if ( isset( $group['image'] ) ) {
+			$out['image'] = $group['image'];
+		}
+		// The colour is `color` under its own choice, and `behind` when it is
+		// merely the backing an image loads over.
+		foreach ( [ 'color', 'behind' ] as $k ) {
+			if ( isset( $group[ $k ] ) && is_string( $group[ $k ] ) && '' !== $group[ $k ] ) {
+				$out['color'] = $group[ $k ];
+				break;
+			}
+		}
+
+		return $out;
+	}
+
+	/** The flat bg_type / bg_preset / bg_color / bg_image shape (pre-1.1.67). */
+	private function bg_read_flat( $raw, $out ) {
+		if ( ! isset( $raw['bg_type'] ) || ! in_array( $raw['bg_type'], [ 'preset', 'color', 'image' ], true ) ) {
+			return $out;
+		}
+
+		$out['type'] = $raw['bg_type'];
+		foreach ( [ 'preset', 'color', 'image' ] as $k ) {
+			if ( isset( $raw[ 'bg_' . $k ] ) && '' !== $raw[ 'bg_' . $k ] ) {
+				$out[ $k ] = $raw[ 'bg_' . $k ];
+			}
+		}
+
+		return $out;
+	}
+
+	public function get_background() {
+		$settings = $this->get_settings();
+		$skin     = $this->registry->resolve( $settings['skin'] );
+
+		$off = [ 'active' => false, 'image' => '', 'solid' => '', 'scrim' => 0, 'blur' => 0 ];
+
+		// The skin has the last word: one that declares canvas:false is opaque
+		// by design and never shows a canvas.
+		if ( isset( $skin['canvas'] ) && false === $skin['canvas'] ) {
+			return $off;
+		}
+
+		if ( $settings['allow_user_bg'] ) {
+			$prefs = $this->get_user_prefs();
+			if ( ! empty( $prefs['plainbg'] ) ) {
+				return $off;
+			}
+		}
+
+		$bg   = $this->bg_choice();
+		$type = $bg['type'];
+
+		if ( 'none' === $type ) {
+			return $off;
+		}
+
+		$presets = self::bg_presets();
+		$image   = '';
+		$solid   = '';
+
+		if ( 'preset' === $type ) {
+			$slug  = isset( $presets[ $bg['preset'] ] ) ? $bg['preset'] : key( $presets );
+			$image = $presets[ $slug ]['image'];
+			$solid = $presets[ $slug ]['solid'];
+		} elseif ( 'color' === $type ) {
+			$solid = $this->hex( $bg['color'] );
+			if ( ! $solid ) {
+				return $off;
+			}
+		} else {
+			$url = $this->bg_image_url( $bg['image'] );
+			if ( ! $url ) {
+				return $off; // An image background with no image is no background.
+			}
+			$image = 'url("' . $url . '")';
+			$solid = $this->hex( $bg['color'] ) ?: '#101420';
+		}
+
+		$scrim = max( 0, min( 80, (int) $settings['bg_scrim'] ) ) / 100;
+		$blur  = max( 0, min( 40, (int) $settings['bg_blur'] ) );
+
+		return [
+			'active' => true,
+			'image'  => $image,
+			'solid'  => $solid,
+			'scrim'  => $scrim,
+			'blur'   => $blur,
+		];
+	}
+
+	/** A six-digit hex, lowercased, or '' when the value is not one. */
+	private function hex( $value ) {
+		if ( is_array( $value ) ) {
+			$value = isset( $value['hex'] ) ? $value['hex'] : '';
+		}
+		$value = trim( (string) $value );
+		return preg_match( '/^#[0-9a-f]{6}$/i', $value ) ? strtolower( $value ) : '';
+	}
+
+	/**
+	 * Resolve a stored background image value to a URL.
+	 *
+	 * The upload option type stores an array carrying an attachment id; older
+	 * or hand-edited values may be a bare URL. Both are accepted, and the id
+	 * is preferred because it survives a site move that a hardcoded URL does
+	 * not.
+	 */
+	private function bg_image_url( $value ) {
+		if ( is_array( $value ) ) {
+			if ( ! empty( $value['attachment_id'] ) ) {
+				$src = wp_get_attachment_image_url( (int) $value['attachment_id'], 'full' );
+				if ( $src ) {
+					return $src;
+				}
+			}
+			$value = isset( $value['url'] ) ? $value['url'] : '';
+		}
+
+		$value = esc_url_raw( (string) $value );
+
+		return $value ? $value : '';
+	}
+
+	/**
+	 * The canvas tokens, as an inline CSS block.
+	 *
+	 * The scrim is emitted as a finished rgba() per mode rather than as a bare
+	 * number the stylesheet has to assemble: a light admin needs a light veil
+	 * and a dark one a dark veil, and the alternative (one colour plus a
+	 * calc() inside color-mix) is both harder to read and less portable.
+	 *
+	 * @return string
+	 */
+	public function canvas_css() {
+		$bg = $this->get_background();
+
+		if ( empty( $bg['active'] ) ) {
+			return '';
+		}
+
+		$alpha = rtrim( rtrim( number_format( (float) $bg['scrim'], 2, '.', '' ), '0' ), '.' );
+		if ( '' === $alpha ) {
+			$alpha = '0';
+		}
+
+		$vars = sprintf(
+			'--upa-canvas-image:%s;--upa-canvas-solid:%s;--upa-canvas-blur:%dpx;',
+			$bg['image'] ? $bg['image'] : 'none',
+			$bg['solid'] ? $bg['solid'] : 'var(--upa-bg)',
+			$bg['blur']
+		);
+
+		$light = '--upa-canvas-ink:#ffffff;--upa-canvas-veil:rgba(255,255,255,' . $alpha . ');';
+		$dark  = '--upa-canvas-ink:#05070f;--upa-canvas-veil:rgba(5,7,15,' . $alpha . ');';
+
+		return ':root{' . $vars . "}\n"
+			. ':root,html[data-upa-mode="light"]{' . $light . "}\n"
+			. 'html[data-upa-mode="dark"]{' . $dark . "}\n"
+			. '@media (prefers-color-scheme:dark){html[data-upa-mode="system"]{' . $dark . "}}\n";
+	}
+
+	/**
 	 * Register one wp-admin colour scheme so core's scheme-aware chrome
 	 * (admin bar, menu, Gutenberg's --wp-admin-theme-color) follows the skin.
 	 * The scheme stylesheet is ours and reads the tokens, so it is tiny.
@@ -499,6 +801,12 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 		if ( $settings['group_menu'] ) {
 			$classes .= ' upa-grouped';
 		}
+		// A skin reads this to decide whether to go translucent: it says a
+		// canvas is configured, not merely that one is allowed.
+		$bg = $this->get_background();
+		if ( ! empty( $bg['active'] ) ) {
+			$classes .= ' upa-has-canvas';
+		}
 		return $classes;
 	}
 
@@ -511,11 +819,17 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 		if ( ! $this->is_enabled() ) {
 			return;
 		}
+		$bg = $this->get_background();
+
 		printf(
 			'<script>var d=document.documentElement;d.setAttribute("data-upa-mode",%s);'
-				. 'd.setAttribute("data-upa-density",%s);</script>' . "\n",
+				. 'd.setAttribute("data-upa-density",%s);%s</script>' . "\n",
 			wp_json_encode( $this->get_mode() ),
-			wp_json_encode( $this->get_density() )
+			wp_json_encode( $this->get_density() ),
+			// The canvas paints on <html>, so the class has to be there before
+			// the first paint too -- otherwise the admin flashes its flat
+			// background and then repaints with the canvas.
+			empty( $bg['active'] ) ? '' : 'd.classList.add("upa-canvas");'
 		);
 	}
 
@@ -537,6 +851,13 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 		wp_enqueue_style( 'fw-admin-skin-tokens' );
 		wp_add_inline_style( 'fw-admin-skin-tokens', $this->registry->css( $skin, $this->get_accent() ) );
 
+		// 1b. The background canvas, if one is configured. Its tokens ride on
+		// the same inline handle so they cannot land before the skin's.
+		$canvas = $this->canvas_css();
+		if ( $canvas ) {
+			wp_add_inline_style( 'fw-admin-skin-tokens', $canvas );
+		}
+
 		// 2. Structure + 3. primitives. Depend on the tokens so order is fixed,
 		// and on 'colors' so they load after core's scheme sheet.
 		wp_enqueue_style(
@@ -551,6 +872,17 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 			[ 'fw-admin-skin-structure' ],
 			$version
 		);
+
+		// 3b. The canvas layer: stands the skin's full-height surfaces down so
+		// the background on <html> shows through. Only loaded when there is one.
+		if ( $canvas ) {
+			wp_enqueue_style(
+				'fw-admin-skin-canvas',
+				fw_min_uri( $this->get_declared_URI( '/static/css/canvas.css' ) ),
+				[ 'fw-admin-skin-primitives' ],
+				$version
+			);
+		}
 
 		// 4. UnysonPlus surfaces: remaps the framework's own --u-* admin tokens.
 		wp_enqueue_style(
@@ -571,11 +903,32 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 		}
 
 		// 6. A skin's own extra CSS (structure changes), last.
+		//
+		// "Last" has to mean last: a skin that restructures the admin -- a
+		// floating sidebar, an inset content canvas -- is overriding rules
+		// that live in surfaces.css and the plugin partials, not only in
+		// primitives.css. Depending on primitives alone let those later
+		// sheets win and a structural skin silently half-applied.
 		if ( file_exists( $skin['_dir'] . '/skin.css' ) ) {
+			$after = [ 'fw-admin-skin-surfaces' ];
+			foreach ( $this->plugin_partials( $hook ) as $slug ) {
+				$after[] = 'fw-admin-skin-plugin-' . $slug;
+			}
+			if ( $canvas ) {
+				$after[] = 'fw-admin-skin-canvas';
+			}
+
+			// Bundled skins are built, so they have a .min.css beside them;
+			// one installed from the Library may not, so fall back by hand
+			// rather than enqueuing a URL that 404s.
+			$skin_css = file_exists( $skin['_dir'] . '/skin.min.css' )
+				? '/skin.min.css'
+				: '/skin.css';
+
 			wp_enqueue_style(
 				'fw-admin-skin-skin',
-				$skin['_url'] . '/skin.css',
-				[ 'fw-admin-skin-primitives' ],
+				$skin['_url'] . $skin_css,
+				$after,
 				isset( $skin['version'] ) ? $skin['version'] : $version
 			);
 		}
@@ -611,6 +964,9 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 			'adminUrl'  => admin_url(),
 			'logo'      => $this->site_logo_url(),
 			'accountPlacement' => $settings['account_placement'],
+			'canvas'    => ! empty( $this->get_background()['active'] ),
+			'userBg'    => $settings['allow_user_bg'],
+			'plainBg'   => ! empty( $this->get_user_prefs()['plainbg'] ),
 			'user'      => [
 				'name'   => $user->display_name,
 				'role'   => $this->user_role_label( $user ),
@@ -642,6 +998,8 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 				'editProfile' => __( 'Edit Profile', 'fw' ),
 				'logOut'      => __( 'Log Out', 'fw' ),
 				'collapse'    => __( 'Collapse sidebar', 'fw' ),
+				'background'  => __( 'Background', 'fw' ),
+				'plainBg'     => __( 'Plain background', 'fw' ),
 				'noMatch'     => __( 'No menu item matches', 'fw' ),
 			],
 		] );
@@ -837,6 +1195,14 @@ class FW_Extension_Admin_Skin extends FW_Extension {
 			$density = sanitize_key( wp_unslash( $_POST['density'] ) );
 			if ( in_array( $density, [ 'comfortable', 'compact' ], true ) ) {
 				$prefs['density'] = $density;
+			}
+		}
+
+		if ( isset( $_POST['plainbg'] ) ) {
+			if ( '1' === (string) $_POST['plainbg'] ) {
+				$prefs['plainbg'] = 1;
+			} else {
+				unset( $prefs['plainbg'] );
 			}
 		}
 

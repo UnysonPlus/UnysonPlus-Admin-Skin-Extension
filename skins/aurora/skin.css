@@ -1,0 +1,98 @@
+/**
+ * Aurora — structure.
+ *
+ * Two structural moves the tokens cannot make: the sidebar detaches from the
+ * window edge, and the content sits on its own inset canvas rather than
+ * bleeding to the edges. Together they turn a full-bleed admin into a
+ * dashboard, which is the whole point of the skin.
+ */
+
+/* --------------------------------------------------------------------------
+   1. The detached rail
+
+   The card is #adminmenuwrap: it holds the brand block, the search field, the
+   menu and the account row, so rounding #adminmenu alone would strand the
+   search and account rows outside it. The wrap is position:fixed, so it
+   detaches by moving its insets rather than by taking a margin.
+   -------------------------------------------------------------------------- */
+
+body.upa.upa-skin-aurora #adminmenuback {
+	background: transparent;
+	border-right: 0;
+}
+
+body.upa.upa-skin-aurora #adminmenuwrap {
+	top: 10px !important;
+	bottom: 10px;
+	left: 10px;
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius-lg);
+	background: var(--upa-panel);
+}
+
+body.upa.upa-skin-aurora #adminmenu,
+body.upa.upa-skin-aurora .upa-brand,
+body.upa.upa-skin-aurora .upa-user {
+	background: transparent;
+}
+
+body.upa.upa-skin-aurora.folded #adminmenuwrap {
+	top: 8px !important;
+	bottom: 8px;
+	left: 6px;
+	border-radius: var(--upa-radius);
+}
+
+/* --------------------------------------------------------------------------
+   2. The inset content canvas
+   -------------------------------------------------------------------------- */
+
+body.upa.upa-skin-aurora #wpbody-content {
+	margin: 0 10px 10px;
+	padding: 18px 20px 28px;
+	background: var(--upa-bg2);
+	border: 1px solid var(--upa-border);
+	border-radius: var(--upa-radius-lg);
+}
+
+/* The bar floats over the canvas rather than ruling across it. */
+body.upa.upa-skin-aurora #wpadminbar {
+	background: transparent;
+	border-bottom: 0;
+	box-shadow: none;
+}
+
+/*
+ * Cards sit ON the canvas, so they carry no shadow — the value step between
+ * --upa-bg2 and --upa-panel is what separates them. A shadow here would read
+ * as grime rather than as lift.
+ */
+body.upa.upa-skin-aurora .postbox,
+body.upa.upa-skin-aurora .card,
+body.upa.upa-skin-aurora .fw-backend-postbox,
+body.upa.upa-skin-aurora .wp-list-table,
+body.upa.upa-skin-aurora .widefat {
+	box-shadow: none;
+}
+
+/* The current item is marked by a bar, not only by a fill. */
+body.upa.upa-skin-aurora #adminmenu li.current > a.menu-top,
+body.upa.upa-skin-aurora #adminmenu li.wp-has-current-submenu > a.menu-top {
+	box-shadow: inset 2px 0 0 var(--upa-accent);
+}
+
+@media screen and (max-width: 782px) {
+	body.upa.upa-skin-aurora #adminmenuwrap {
+		top: 0 !important;
+		bottom: 0;
+		left: 0;
+		border: 0;
+		border-radius: 0;
+	}
+	body.upa.upa-skin-aurora #wpbody-content {
+		margin: 0;
+		padding: 12px;
+		border: 0;
+		border-radius: 0;
+	}
+}

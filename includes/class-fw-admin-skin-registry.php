@@ -66,6 +66,28 @@ class FW_Admin_Skin_Registry {
 				$data['_dir'] = dirname( $file );
 				$data['_url'] = rtrim( $url, '/' ) . '/' . basename( dirname( $file ) );
 				$data['_bundled'] = ( $dir === $dirs[0][0] );
+
+				/*
+				 * Absolutise font sources HERE, at discovery, against the
+				 * folder of the skin that declares them.
+				 *
+				 * resolve() merges a base skin's values into the child, and
+				 * the merged array then carries the CHILD's _url -- so a
+				 * relative src inherited from a base resolved against the
+				 * child's folder and 404'd. Every skin that inherits the
+				 * bundled typefaces hit this. Stamping at discovery means the
+				 * merge cannot lose the provenance, because there is no
+				 * relative path left to resolve.
+				 */
+				if ( ! empty( $data['fonts']['files'] ) && is_array( $data['fonts']['files'] ) ) {
+					foreach ( $data['fonts']['files'] as $i => $f ) {
+						if ( empty( $f['src'] ) || preg_match( '#^https?://#', $f['src'] ) ) {
+							continue;
+						}
+						$data['fonts']['files'][ $i ]['src'] = $data['_url'] . '/' . ltrim( $f['src'], '/' );
+					}
+				}
+
 				$this->skins[ $slug ] = $data;
 			}
 		}
