@@ -16,6 +16,32 @@
    floats on its insets, not on a margin.
    -------------------------------------------------------------------------- */
 
+/*
+ * The content moves right by the same amount the rail did.
+ *
+ * Core offsets #wpcontent by the sidebar's WIDTH alone, which assumes a rail
+ * flush against the window edge. This skin floats the rail on a 12px inset, so
+ * its right edge sits at 12 + width and the stock offset leaves the content
+ * UNDERNEATH it -- measured at -12px of overlap, which reads as the content
+ * having no gap against the menu at all.
+ *
+ * box-sizing keeps any border inside the declared width, so the inset is the
+ * only thing the offset has to account for.
+ */
+body.upa.upa-skin-soft #adminmenuwrap {
+	box-sizing: border-box;
+}
+
+body.upa.upa-skin-soft #wpcontent,
+body.upa.upa-skin-soft #wpfooter {
+	margin-left: calc(var(--upa-sidebar-w, 248px) + 12px);
+}
+
+body.upa.upa-skin-soft.folded #wpcontent,
+body.upa.upa-skin-soft.folded #wpfooter {
+	margin-left: calc(var(--upa-rail-w, 48px) + 6px);
+}
+
 body.upa.upa-skin-soft #adminmenuback {
 	background: transparent;
 	border-right: 0;
@@ -106,6 +132,12 @@ body.upa.upa-skin-soft textarea {
 }
 
 @media screen and (max-width: 782px) {
+	body.upa.upa-skin-soft #wpcontent,
+	body.upa.upa-skin-soft #wpfooter,
+	body.upa.upa-skin-soft.folded #wpcontent,
+	body.upa.upa-skin-soft.folded #wpfooter {
+		margin-left: 0;
+	}
 	body.upa.upa-skin-soft #adminmenuwrap {
 		top: 0 !important;
 		bottom: 0;

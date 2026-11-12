@@ -47,12 +47,63 @@ body.upa.upa-skin-aurora.folded #adminmenuwrap {
    2. The inset content canvas
    -------------------------------------------------------------------------- */
 
+/*
+ * The content has to move right by the same amount the rail did.
+ *
+ * Core offsets #wpcontent by the sidebar's WIDTH, which assumes a rail flush
+ * against the window edge. Aurora insets the rail by 10px, so its right edge
+ * now sits at 10 + width, and the old offset leaves the content UNDER it --
+ * measured at -2px, i.e. the content box overlapped the rail by two pixels
+ * while still showing its 10px gap on the right. That read as "no spacing
+ * against the menu", which is exactly what it was.
+ *
+ * box-sizing keeps the rail's 1px border inside its declared width, so the
+ * inset is the only thing the offset has to account for.
+ */
+body.upa.upa-skin-aurora #adminmenuwrap {
+	box-sizing: border-box;
+}
+
+body.upa.upa-skin-aurora #wpcontent,
+body.upa.upa-skin-aurora #wpfooter {
+	margin-left: calc(var(--upa-sidebar-w, 248px) + 10px);
+}
+
+body.upa.upa-skin-aurora.folded #wpcontent,
+body.upa.upa-skin-aurora.folded #wpfooter {
+	margin-left: calc(var(--upa-rail-w, 48px) + 6px);
+}
+
+/*
+ * No surface here by default -- on purpose.
+ *
+ * This used to paint a bordered, rounded card behind everything. It did not
+ * earn the layer: its fill sat ~9/255 from the page behind it, so in light
+ * mode you could not see it at all; the tables and postboxes it wrapped carry
+ * their OWN surfaces, so it was a second one behind them; and it is only as
+ * tall as the content, so a short screen ended in a slab edge halfway down
+ * with bare canvas beneath. What actually reads as Aurora is the detached
+ * rail and the palette, not this.
+ *
+ * It comes back when a background canvas is on (below), where a surface has
+ * something real to do.
+ */
 body.upa.upa-skin-aurora #wpbody-content {
 	margin: 0 10px 10px;
 	padding: 18px 20px 28px;
+}
+
+/*
+ * With a canvas behind, the surface earns its place: it is what keeps the
+ * headings and bare text off the gradient or photograph. It also runs to the
+ * bottom of the viewport, so it reads as a canvas rather than as a slab that
+ * stops where the content happens to end.
+ */
+body.upa.upa-skin-aurora.upa-has-canvas #wpbody-content {
 	background: var(--upa-bg2);
 	border: 1px solid var(--upa-border);
 	border-radius: var(--upa-radius-lg);
+	min-height: calc(100vh - var(--upa-bar-h, 52px) - 20px);
 }
 
 /* The bar floats over the canvas rather than ruling across it. */
@@ -89,10 +140,18 @@ body.upa.upa-skin-aurora #adminmenu li.wp-has-current-submenu > a.menu-top {
 		border: 0;
 		border-radius: 0;
 	}
-	body.upa.upa-skin-aurora #wpbody-content {
+	body.upa.upa-skin-aurora #wpcontent,
+	body.upa.upa-skin-aurora #wpfooter,
+	body.upa.upa-skin-aurora.folded #wpcontent,
+	body.upa.upa-skin-aurora.folded #wpfooter {
+		margin-left: 0;
+	}
+	body.upa.upa-skin-aurora #wpbody-content,
+	body.upa.upa-skin-aurora.upa-has-canvas #wpbody-content {
 		margin: 0;
 		padding: 12px;
 		border: 0;
 		border-radius: 0;
+		min-height: 0;
 	}
 }
