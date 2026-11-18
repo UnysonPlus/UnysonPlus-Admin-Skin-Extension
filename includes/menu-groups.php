@@ -34,6 +34,8 @@ function fw_ext_admin_skin_menu_groups() {
 		'toplevel_page_fw-bookings'  => 'workspace',
 		'toplevel_page_fw-crm'       => 'workspace',
 		'toplevel_page_fw-membership' => 'workspace',
+		'toplevel_page_fw-shop'     => 'workspace', // the store: products, stock, enquiries
+		'toplevel_page_fw-payments' => 'workspace', // the shared Payments screen (shown once a feature takes money)
 		'menu-posts'                 => 'workspace',
 		'menu-pages'                 => 'workspace',
 		'menu-media'                 => 'workspace',
